@@ -4,8 +4,22 @@ import { bankService } from "@/api/services/bank-service";
 import type {
 	BankCounterparty,
 	ObjectID,
-	UpdateCounterpartyNoteRequest,
+	UpdateCounterpartyRequest,
 } from "@/api/types";
+
+/**
+ * Hook to fetch all counterparties for authenticated user.
+ */
+export function useCounterparties(options?: { enabled?: boolean }) {
+	return useQuery({
+		queryKey: queryKeys.counterparties.lists(),
+		queryFn: async () => {
+			const res = await bankService.listCounterparties();
+			return res.counterparties;
+		},
+		enabled: options?.enabled,
+	});
+}
 
 /**
  * Hook to fetch counterparty details by ID.
@@ -28,9 +42,9 @@ export function useCounterparty(
 }
 
 /**
- * Mutation to update counterparty note.
+ * Mutation to update a counterparty.
  */
-export function useUpdateCounterpartyNote() {
+export function useUpdateCounterparty() {
 	const queryClient = useQueryClient();
 
 	return useMutation({
@@ -39,9 +53,9 @@ export function useUpdateCounterpartyNote() {
 			payload,
 		}: {
 			id: ObjectID;
-			payload: UpdateCounterpartyNoteRequest;
+			payload: UpdateCounterpartyRequest;
 		}) => {
-			const res = await bankService.updateCounterpartyNote(id, payload);
+			const res = await bankService.updateCounterparty(id, payload);
 			return res.counterparty;
 		},
 		onSuccess: (updatedCounterparty: BankCounterparty) => {
@@ -49,6 +63,31 @@ export function useUpdateCounterpartyNote() {
 				queryKeys.counterparties.detail(updatedCounterparty.id),
 				updatedCounterparty,
 			);
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.counterparties.all,
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.transactions.all,
+			});
+		},
+	});
+}
+
+/**
+ * Mutation to delete a counterparty.
+ */
+export function useDeleteCounterparty() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (id: ObjectID) => {
+			const res = await bankService.deleteCounterparty(id);
+			return { id, deleted: res.deleted };
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.counterparties.all,
+			});
 			queryClient.invalidateQueries({
 				queryKey: queryKeys.transactions.all,
 			});

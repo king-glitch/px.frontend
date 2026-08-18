@@ -29,11 +29,20 @@ export const queryKeys = {
 	},
 	counterparties: {
 		all: ["counterparties"] as const,
+		lists: () => [...queryKeys.counterparties.all, "list"] as const,
 		detail: (id: ObjectID) =>
 			[...queryKeys.counterparties.all, "detail", id] as const,
 	},
+	summary: {
+		all: ["summary"] as const,
+		range: (from?: string, to?: string) =>
+			[...queryKeys.summary.all, "range", { from, to }] as const,
+	},
 	queue: {
 		all: ["queue"] as const,
+		lists: () => [...queryKeys.queue.all, "list"] as const,
+		list: (params?: Record<string, unknown>) =>
+			[...queryKeys.queue.lists(), params ?? {}] as const,
 		detail: (id: ObjectID) =>
 			[...queryKeys.queue.all, "detail", id] as const,
 	},

@@ -1,7 +1,63 @@
-import { createSystem, defaultConfig, defineConfig } from "@chakra-ui/react";
+import { createSystem, defaultConfig, defineConfig, defineRecipe } from "@chakra-ui/react";
+
+const buttonRecipe = defineRecipe({
+	base: {
+		rounded: "pill",
+		fontWeight: "semibold",
+		letterSpacing: "0.03em",
+		transition: "all 0.22s cubic-bezier(0.16, 1, 0.3, 1)",
+		_hover: {
+			transform: "translateY(-1px)",
+		},
+		_active: {
+			transform: "scale(0.98)",
+		},
+	},
+	variants: {
+		variant: {
+			solid: {
+				bg: "bg.solid",
+				color: "fg.inverted",
+				_hover: {
+					bg: "bg.solid",
+					opacity: 0.9,
+				},
+			},
+			outline: {
+				borderWidth: "1px",
+				borderColor: "border",
+				bg: "transparent",
+				color: "fg",
+				_hover: {
+					bg: "bg.muted",
+				},
+			},
+			ghost: {
+				bg: "transparent",
+				color: "fg",
+				_hover: {
+					bg: "bg.muted",
+				},
+			},
+			subtle: {
+				bg: "bg.muted",
+				color: "fg",
+				_hover: {
+					bg: "bg.panel",
+				},
+			},
+		},
+	},
+	defaultVariants: {
+		variant: "solid",
+	},
+});
 
 const config = defineConfig({
 	theme: {
+		recipes: {
+			button: buttonRecipe,
+		},
 		tokens: {
 			colors: {
 				obsidian: { value: "#0C0E14" },
@@ -104,9 +160,15 @@ const config = defineConfig({
 		},
 	},
 	globalCss: {
+		"html, body": {
+			minHeight: "100%",
+			margin: 0,
+			padding: 0,
+		},
 		body: {
 			bg: "bg.canvas",
 			color: "fg",
+			overflowX: "hidden",
 		},
 	},
 });

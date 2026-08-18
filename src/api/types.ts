@@ -169,6 +169,28 @@ export interface UpdateCategoryRequest {
 export interface ListTransactionsParams {
 	page?: number;
 	amount?: number;
+	from?: string;
+	to?: string;
+}
+
+export interface BankCategorySummary {
+	category_id?: ObjectID;
+	name: string;
+	color?: string;
+	in: number;
+	out: number;
+	count: number;
+}
+
+export interface BankSummary {
+	from?: ISO8601String;
+	to?: ISO8601String;
+	total_in: number;
+	total_out: number;
+	total_fee: number;
+	net: number;
+	count: number;
+	by_category: BankCategorySummary[];
 }
 
 export interface CreateTransactionRequest {
@@ -199,6 +221,11 @@ export interface UpdateTransactionRequest {
 }
 
 // Bank Counterparty
+export interface UpdateCounterpartyRequest {
+	name?: string;
+	note?: string;
+}
+
 export interface UpdateCounterpartyNoteRequest {
 	note: string;
 }
@@ -207,6 +234,18 @@ export interface UpdateCounterpartyNoteRequest {
 export interface UploadSlipResponse {
 	queue_id: ObjectID;
 	status: QueueItemStatus;
+}
+
+export interface ListQueuesParams {
+	tag?: string;
+	type?: string;
+	action_type?: string;
+	status?: string;
+	limit?: number;
+}
+
+export interface ListQueuesResponse {
+	queues: QueueItem[];
 }
 
 export interface MailInboxResponse {

@@ -40,14 +40,22 @@ export const createCategorySchema = z.object({
 
 export type CreateCategoryFormData = z.infer<typeof createCategorySchema>;
 
+export const updateCategorySchema = z.object({
+  name: z.string().min(1, "Category name is required").optional(),
+  color: z.string().optional(),
+  icon: z.string().optional(),
+});
+
+export type UpdateCategoryFormData = z.infer<typeof updateCategorySchema>;
+
 /**
  * Transaction Schemas
  */
 export const createTransactionSchema = z.object({
   direction: z.enum(["in", "out"]),
   amount: z.number().positive("Amount must be greater than 0"),
-  fee: z.number().min(0).default(0),
-  currency: z.string().default("THB"),
+  fee: z.number().min(0).optional(),
+  currency: z.string().optional(),
   occurred_at: z.string().optional(),
   transaction_number: z.string().optional(),
   from_account: z.string().optional(),
@@ -61,3 +69,25 @@ export const createTransactionSchema = z.object({
 });
 
 export type CreateTransactionFormData = z.infer<typeof createTransactionSchema>;
+
+export const updateTransactionSchema = z.object({
+  amount: z.number().positive("Amount must be greater than 0").optional(),
+  fee: z.number().min(0).optional(),
+  occurred_at: z.string().optional(),
+  from_account: z.string().optional(),
+  note: z.string().optional(),
+  category_id: z.string().optional(),
+  direction: z.enum(["in", "out"]).optional(),
+});
+
+export type UpdateTransactionFormData = z.infer<typeof updateTransactionSchema>;
+
+/**
+ * Counterparty Schemas
+ */
+export const counterpartySchema = z.object({
+  name: z.string().min(1, "Counterparty name is required").optional(),
+  note: z.string().optional(),
+});
+
+export type CounterpartyFormData = z.infer<typeof counterpartySchema>;

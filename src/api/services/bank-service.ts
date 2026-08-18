@@ -2,16 +2,19 @@ import { apiDelete, apiGet, apiPatch, apiPost } from "@/api/client";
 import type {
 	BankCategory,
 	BankCounterparty,
+	BankSummary,
 	BankTransaction,
 	Collection,
 	CreateCategoryRequest,
 	CreateTransactionRequest,
+	ListQueuesParams,
+	ListQueuesResponse,
 	ListTransactionsParams,
 	MailInboxResponse,
 	ObjectID,
 	QueueItem,
 	UpdateCategoryRequest,
-	UpdateCounterpartyNoteRequest,
+	UpdateCounterpartyRequest,
 	UpdateTransactionRequest,
 	UploadSlipResponse,
 } from "@/api/types";
@@ -90,6 +93,19 @@ export const bankService = {
 	},
 
 	/**
+	 * Get bank transactions summary.
+	 * Path: GET /api/v1/bank/transactions/summary
+	 */
+	async getSummary(
+		from?: string,
+		to?: string,
+	): Promise<{ summary: BankSummary }> {
+		return apiGet<{ summary: BankSummary }>("/bank/transactions/summary", {
+			params: { from, to },
+		});
+	},
+
+	/**
 	 * Create a manual bank transaction.
 	 * Path: POST /api/v1/bank/transactions
 	 */
@@ -141,6 +157,14 @@ export const bankService = {
 	// -------------------------------------------------------------------------
 
 	/**
+	 * List counterparties for authenticated user.
+	 * Path: GET /api/v1/bank/counterparties
+	 */
+	async listCounterparties(): Promise<{ counterparties: BankCounterparty[] }> {
+		return apiGet<{ counterparties: BankCounterparty[] }>("/bank/counterparties");
+	},
+
+	/**
 	 * Get counterparty details by ID.
 	 * Path: GET /api/v1/bank/counterparties/:id
 	 */
@@ -153,17 +177,25 @@ export const bankService = {
 	},
 
 	/**
-	 * Update counterparty user note.
-	 * Path: PATCH /api/v1/bank/counterparties/:id/note
+	 * Update counterparty by ID.
+	 * Path: PATCH /api/v1/bank/counterparties/:id
 	 */
-	async updateCounterpartyNote(
+	async updateCounterparty(
 		id: ObjectID,
-		payload: UpdateCounterpartyNoteRequest,
+		payload: UpdateCounterpartyRequest,
 	): Promise<{ counterparty: BankCounterparty }> {
 		return apiPatch<
 			{ counterparty: BankCounterparty },
-			UpdateCounterpartyNoteRequest
-		>(`/bank/counterparties/${id}/note`, payload);
+			UpdateCounterpartyRequest
+		>(`/bank/counterparties/${id}`, payload);
+	},
+
+	/**
+	 * Delete counterparty by ID.
+	 * Path: DELETE /api/v1/bank/counterparties/:id
+	 */
+	async deleteCounterparty(id: ObjectID): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/bank/counterparties/${id}`);
 	},
 
 	// -------------------------------------------------------------------------
@@ -194,6 +226,14 @@ export const bankService = {
 	 */
 	async getQueueStatus(queueId: ObjectID): Promise<QueueItem> {
 		return apiGet<QueueItem>(`/queue/queues/${queueId}`);
+	},
+
+	/**
+	 * List queue items with optional filters.
+	 * Path: GET /api/v1/queue/queues
+	 */
+	async listQueues(params?: ListQueuesParams): Promise<ListQueuesResponse> {
+		return apiGet<ListQueuesResponse>("/queue/queues", { params });
 	},
 
 	// -------------------------------------------------------------------------

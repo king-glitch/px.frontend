@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Link as RouterLink, Navigate, useNavigate } from "react-router";
 import {
   Box,
-  Button,
   Container,
   Heading,
   HStack,
@@ -13,6 +12,7 @@ import {
   Stack,
   Text,
 } from "@chakra-ui/react";
+import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
 import { toaster } from "@/components/ui/toaster";
@@ -107,7 +107,7 @@ export const Login: React.FC = () => {
 
         <HStack justify="center" fontSize="sm">
           <Text color="fg.muted">Don't have an account?</Text>
-          <Link asChild colorPalette="blue">
+          <Link asChild color="fg" fontWeight="semibold" textDecoration="underline">
             <RouterLink to="/authentication/register">Register</RouterLink>
           </Link>
         </HStack>
