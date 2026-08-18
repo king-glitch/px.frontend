@@ -31,10 +31,10 @@ const config = defineConfig({
 			radii: {
 				pill: { value: "9999px" },
 				squircle: { value: "32px" },
-				card: { value: "22px" },
+				card: { value: "26px" },
 			},
 			shadows: {
-				glass: { value: "0 8px 32px rgba(15, 23, 42, 0.04)" },
+				glass: { value: "0 10px 40px rgba(15, 23, 42, 0.05)" },
 				float: { value: "0 24px 64px rgba(15, 23, 42, 0.10)" },
 			},
 			blurs: {
@@ -58,7 +58,7 @@ const config = defineConfig({
 					},
 					glass: {
 						value: {
-							base: "rgba(255, 255, 255, 0.72)",
+							base: "rgba(246, 247, 251, 0.62)",
 							_dark: "rgba(20, 22, 30, 0.72)",
 						},
 					},

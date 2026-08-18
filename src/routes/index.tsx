@@ -1,6 +1,6 @@
-import React from "react";
-import { Navigate } from "react-router";
-import { keyframes } from "@emotion/react";
+import { Avatar } from "@/components/ui/avatar";
+import { useColorMode } from "@/components/ui/color-mode";
+import { useAuthContext } from "@/contexts/auth-context";
 import {
 	Box,
 	Button,
@@ -18,6 +18,8 @@ import {
 	Text,
 	VStack,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
+import React from "react";
 import {
 	LuArrowUpRight,
 	LuBell,
@@ -31,9 +33,7 @@ import {
 	LuTarget,
 	LuWallet,
 } from "react-icons/lu";
-import { Avatar } from "@/components/ui/avatar";
-import { useColorMode } from "@/components/ui/color-mode";
-import { useAuthContext } from "@/contexts/auth-context";
+import { Navigate } from "react-router";
 
 const railIcons = [
 	LuLayoutDashboard,
@@ -46,8 +46,8 @@ const railIcons = [
 const trackerRows = [
 	{ label: "Work 1 - 5 hrs", tone: "solid" as const },
 	{ label: "Valuable investment", tone: "solid" as const },
-	{ label: "Complete at least 10 task today - 2/10", tone: "solid" as const },
-	{ label: "Spent 30 seconds", tone: "solid" as const },
+	{ label: "Complete at least 10 task today - 2/10", tone: "muted" as const },
+	{ label: "Spent 30 seconds", tone: "muted" as const },
 	{ label: "Still time", tone: "muted" as const },
 ];
 
@@ -57,35 +57,26 @@ const glassCard = {
 	borderColor: "border.glass",
 	rounded: "card",
 	shadow: "glass",
-	backdropFilter: "blur(20px)",
+	backdropFilter: "blur(30px) saturate(1.4)",
 } as const;
 
-const drift = keyframes({
-	"0%": { transform: "translate(-50%, 0) rotate(0deg) scale(1)" },
-	"50%": { transform: "translate(-50%, -2%) rotate(6deg) scale(1.04)" },
-	"100%": { transform: "translate(-50%, 0) rotate(0deg) scale(1)" },
+const float = keyframes({
+	"0%, 100%": { transform: "translateY(0) scale(1)" },
+	"50%": { transform: "translateY(-1.5%) scale(1.02)" },
 });
-
-const shimmer = keyframes({
-	"0%, 100%": { opacity: 0.25 },
-	"50%": { opacity: 0.5 },
-});
-
-const holoSpectrum =
-	"conic-gradient(from 200deg at 50% 40%, {colors.holo.cyan} 0deg, {colors.holo.lavender} 90deg, {colors.holo.blush} 175deg, {colors.holo.butter} 255deg, {colors.holo.cyan} 360deg)";
 
 /**
- * Stand-in for the holographic character art: the prism spectrum masked into a
- * head-and-shoulders silhouette that dissolves into the canvas. Replace the
- * whole component with an <Image> once real artwork exists.
+ * Art focal point. No silhouette mask: the source is blown out toward white and
+ * composited with `multiply`, so white pixels drop out entirely and only the
+ * prismatic shapes survive — whatever the artwork's own background is.
  */
-const HoloFigure: React.FC = () => (
+const HoloArt: React.FC = () => (
 	<Box
 		position="absolute"
-		left="50%"
-		bottom="2%"
-		w="clamp(220px, 19vw, 300px)"
-		h="76%"
+		left="49%"
+		top="6%"
+		w="clamp(360px, 33vw, 620px)"
+		h="86%"
 		transform="translateX(-50%)"
 		zIndex={0}
 		pointerEvents="none"
@@ -93,11 +84,11 @@ const HoloFigure: React.FC = () => (
 	>
 		<Box
 			position="absolute"
-			inset="-40%"
-			opacity={0.28}
+			inset="-12%"
+			opacity={0.45}
 			css={{
 				background:
-					"radial-gradient(45% 42% at 50% 52%, {colors.holo.lavender} 0%, {colors.holo.blush} 55%, transparent 78%)",
+					"radial-gradient(40% 38% at 50% 45%, {colors.holo.lavender} 0%, {colors.holo.blush} 45%, {colors.holo.butter} 68%, transparent 80%)",
 				filter: "blur(70px)",
 			}}
 		/>
@@ -105,29 +96,15 @@ const HoloFigure: React.FC = () => (
 		<Box
 			position="absolute"
 			inset="0"
-			opacity={0.55}
-			animation={`${drift} 26s ease-in-out infinite`}
+			animation={`${float} 18s ease-in-out infinite`}
 			css={{
-				background: holoSpectrum,
-				filter: "blur(22px) saturate(1.15)",
+				backgroundImage: "url('/image.png')",
+				backgroundSize: "contain",
+				backgroundPosition: "center",
+				backgroundRepeat: "no-repeat",
+				mixBlendMode: "multiply",
 				maskImage:
-					"radial-gradient(42% 50% at 50% 48%, #000 30%, transparent 100%)",
-			}}
-		/>
-
-		<Box
-			position="absolute"
-			top="6%"
-			left="50%"
-			w="40%"
-			h="30%"
-			transform="translateX(-50%)"
-			rounded="full"
-			animation={`${shimmer} 9s ease-in-out infinite`}
-			css={{
-				background:
-					"radial-gradient(50% 50% at 50% 45%, rgba(255,255,255,0.85), transparent 74%)",
-				filter: "blur(24px)",
+					"radial-gradient(54% 46% at 50% 48%, #000 44%, transparent 100%)",
 			}}
 		/>
 	</Box>
@@ -138,52 +115,61 @@ interface OutlinePillProps {
 }
 
 const OutlinePill: React.FC<OutlinePillProps> = ({ children }) => (
-	<Box
+	<Flex
 		as="span"
-		display="inline-block"
-		borderWidth="1px"
+		display="inline-flex"
+		align="center"
+		justify="center"
+		borderWidth="1.5px"
 		borderColor="fg"
 		rounded="pill"
-		px={5}
-		py={1}
+		px="0.55em"
+		py="0.16em"
+		lineHeight="1.05"
 	>
 		{children}
-	</Box>
+	</Flex>
 );
 
 interface StatCardProps {
 	label: string;
 	labelIcon?: React.ElementType;
-	accent?: boolean;
+	badge?: "mint" | "ink";
 	children: React.ReactNode;
 }
 
 const StatCard: React.FC<StatCardProps> = ({
 	label,
 	labelIcon,
-	accent,
+	badge,
 	children,
 }) => (
-	<Box {...glassCard} px={5} py={4} minH="112px" position="relative">
+	<Box
+		{...glassCard}
+		px={5}
+		py={4}
+		minH="clamp(120px, 18vh, 190px)"
+		position="relative"
+	>
 		<HStack gap={2} color="fg.muted">
 			{labelIcon && <Icon as={labelIcon} boxSize={3.5} />}
-			<Text fontSize="sm">{label}</Text>
+			<Text fontSize="clamp(0.85rem, 1.9vh, 1.05rem)">{label}</Text>
 		</HStack>
 
-		{accent && (
+		{badge && (
 			<Circle
-				size="8"
-				bg="mint.solid"
-				color="mint.contrast"
+				size="7"
+				bg={badge === "mint" ? "mint.solid" : "bg.solid"}
+				color={badge === "mint" ? "mint.contrast" : "fg.inverted"}
 				position="absolute"
-				top={4}
-				right={4}
+				top={3}
+				right={3}
 			>
-				<Icon as={LuArrowUpRight} boxSize={4} />
+				<Icon as={LuArrowUpRight} boxSize={3.5} />
 			</Circle>
 		)}
 
-		<Box mt={6}>{children}</Box>
+		<Box mt={10}>{children}</Box>
 	</Box>
 );
 
@@ -195,7 +181,7 @@ interface TaskCountProps {
 const TaskCount: React.FC<TaskCountProps> = ({ value, unit }) => (
 	<HStack align="baseline" gap={1}>
 		<Text
-			fontSize="4xl"
+			fontSize="clamp(2rem, 5.4vh, 3.4rem)"
 			fontWeight="semibold"
 			letterSpacing="-0.04em"
 			lineHeight="1"
@@ -229,27 +215,27 @@ export const Index: React.FC<IndexProps> = () => {
 	return (
 		<Flex
 			direction="column"
-			gap={{ base: 5, lg: 4 }}
+			gap={3}
 			h={{ base: "auto", lg: "100dvh" }}
 			minH="100dvh"
 			bg="bg.canvas"
 			position="relative"
 			overflowX="hidden"
 			overflowY={{ lg: "hidden" }}
-			px={{ base: 5, md: 8, xl: 14 }}
-			py={{ base: 5, md: 6 }}
+			px={{ base: 4, md: 7 }}
+			py={{ base: 4, md: 5 }}
 		>
-			<HoloFigure />
+			<HoloArt />
 
 			<Grid
 				templateColumns={{ base: "1fr", md: "1fr auto 1fr" }}
 				alignItems="center"
-				gap={6}
+				gap={4}
 				position="relative"
 				zIndex={2}
 			>
-				<HStack gap={3} maxW="380px">
-					<Circle size="11" bg="bg.solid" color="fg.inverted">
+				<HStack gap={2.5} maxW="400px">
+					<Circle size="12" bg="bg.solid" color="fg.inverted">
 						<Icon as={LuSearch} boxSize={4} />
 					</Circle>
 					<Input
@@ -257,7 +243,7 @@ export const Index: React.FC<IndexProps> = () => {
 						rounded="pill"
 						bg="bg.muted"
 						border="none"
-						h="11"
+						h="12"
 						px={5}
 						fontSize="sm"
 						_placeholder={{ color: "fg.muted" }}
@@ -266,19 +252,27 @@ export const Index: React.FC<IndexProps> = () => {
 
 				<VStack
 					gap={0}
-					lineHeight="0.95"
+					lineHeight="0.9"
 					display={{ base: "none", md: "flex" }}
 				>
-					<Text fontSize="lg" fontWeight="bold" letterSpacing="0.18em">
+					<Text
+						fontSize="lg"
+						fontWeight="bold"
+						letterSpacing="0.16em"
+					>
 						HA
 					</Text>
-					<Text fontSize="lg" fontWeight="bold" letterSpacing="0.18em">
+					<Text
+						fontSize="lg"
+						fontWeight="bold"
+						letterSpacing="0.16em"
+					>
 						BIT
 					</Text>
 				</VStack>
 
-				<HStack gap={4} justify="flex-end">
-					<Circle size="10" bg="bg.muted">
+				<HStack gap={3} justify="flex-end">
+					<Circle size="11" bg="bg.muted">
 						<Icon as={LuBell} boxSize={4} />
 					</Circle>
 					<HStack
@@ -290,13 +284,13 @@ export const Index: React.FC<IndexProps> = () => {
 						<Text fontSize="sm" whiteSpace="nowrap">
 							Hi, {user?.username}
 						</Text>
-						<Avatar size="sm" name={user?.username} />
+						<Avatar size="md" name={user?.username} />
 					</HStack>
 					<Button
 						rounded="pill"
 						bg="mint.solid"
 						color="mint.contrast"
-						size="sm"
+						size="md"
 						px={5}
 						_hover={{ bg: "mint.400" }}
 					>
@@ -309,17 +303,30 @@ export const Index: React.FC<IndexProps> = () => {
 			<Grid
 				flex="1"
 				minH="0"
-				gap={6}
-				templateColumns={{ base: "1fr", lg: "72px 1fr 330px" }}
+				gap={4}
+				templateColumns={{
+					base: "1fr",
+					lg: "76px minmax(0, 1fr) 340px",
+				}}
 				position="relative"
 				zIndex={2}
 			>
-				<GridItem display={{ base: "none", lg: "block" }}>
-					<VStack gap={3} bg="bg.muted" rounded="pill" py={5} px={2}>
+				<GridItem
+					display={{ base: "none", lg: "flex" }}
+					alignItems="flex-end"
+				>
+					<VStack
+						gap={2}
+						bg="bg.muted"
+						rounded="pill"
+						py={4}
+						px={2}
+						mb={6}
+					>
 						{railIcons.map((RailIcon, index) => (
 							<Circle
 								key={index}
-								size="10"
+								size="11"
 								bg={index === 0 ? "bg.panel" : "transparent"}
 								color={index === 0 ? "fg" : "fg.muted"}
 								shadow={index === 0 ? "glass" : "none"}
@@ -331,7 +338,7 @@ export const Index: React.FC<IndexProps> = () => {
 						<Text
 							fontSize="10px"
 							color="fg.muted"
-							pt={2}
+							pt={1}
 							style={{ writingMode: "vertical-rl" }}
 						>
 							Post
@@ -339,64 +346,130 @@ export const Index: React.FC<IndexProps> = () => {
 					</VStack>
 				</GridItem>
 
-				<GridItem>
-					<Stack gap={2} pt={4}>
-						<Heading
-							fontSize={{ base: "3xl", md: "5xl" }}
-							fontWeight="semibold"
-							letterSpacing="-0.04em"
-						>
-							Today is
-						</Heading>
-						<Heading
-							fontSize={{ base: "3xl", md: "5xl" }}
-							fontWeight="normal"
-							letterSpacing="-0.04em"
-						>
-							<OutlinePill>a best</OutlinePill>
-						</Heading>
-						<Heading
-							fontSize={{ base: "3xl", md: "5xl" }}
-							fontWeight="normal"
-							letterSpacing="-0.04em"
-							pl={{ base: 0, md: 12 }}
-						>
-							<OutlinePill>day to win</OutlinePill>
-						</Heading>
-					</Stack>
+				<GridItem position="relative">
+					<Flex
+						direction="column"
+						h="full"
+						justify="space-between"
+						gap={6}
+						position="relative"
+						zIndex={1}
+					>
+						<Stack gap={1.5} pt={2}>
+							<Heading
+								fontSize="clamp(2.2rem, 6.6vh, 4.2rem)"
+								fontWeight="semibold"
+								letterSpacing="-0.04em"
+								lineHeight="1.05"
+							>
+								Today is
+							</Heading>
+							<Heading
+								fontSize="clamp(2.2rem, 6.6vh, 4.2rem)"
+								fontWeight="normal"
+								letterSpacing="-0.04em"
+								lineHeight="1.05"
+							>
+								<OutlinePill>a best</OutlinePill>
+							</Heading>
+							<Heading
+								fontSize="clamp(2.2rem, 6.6vh, 4.2rem)"
+								fontWeight="normal"
+								letterSpacing="-0.04em"
+								lineHeight="1.05"
+								pl={{ base: 0, md: 8 }}
+							>
+								<OutlinePill>day to win</OutlinePill>
+							</Heading>
+						</Stack>
+
+						<Stack gap={2.5}>
+							<HStack gap={2}>
+								<Text fontSize="lg">Daily</Text>
+								<Text fontSize="lg">
+									<OutlinePill>summary</OutlinePill>
+								</Text>
+							</HStack>
+
+							<Grid
+								gap={3}
+								templateColumns={{
+									base: "1fr",
+									md: "repeat(2, 1fr)",
+									lg: "repeat(4, 1fr)",
+								}}
+							>
+								<StatCard label="To do" badge="mint">
+									<TaskCount value="158" unit="tasks" />
+								</StatCard>
+								<StatCard label="On going" badge="ink">
+									<TaskCount value="28" unit="tasks" />
+								</StatCard>
+								<StatCard label="Complete">
+									<Box
+										bg="bg.panel"
+										rounded="pill"
+										px={4}
+										py={2}
+										shadow="glass"
+										w="fit-content"
+									>
+										<TaskCount value="02" unit="tasks" />
+									</Box>
+								</StatCard>
+								<StatCard label="Earnings" labelIcon={LuWallet}>
+									<Text
+										fontSize="lg"
+										fontWeight="semibold"
+										letterSpacing="-0.03em"
+									>
+										$2,932.07
+									</Text>
+									<Text fontSize="xs" color="fg.muted">
+										02 tasks
+									</Text>
+								</StatCard>
+							</Grid>
+						</Stack>
+					</Flex>
 				</GridItem>
 
 				<GridItem>
-					<Stack gap={4}>
+					<Flex direction="column" h="full" gap={3}>
 						<Box {...glassCard} p={5}>
 							<Heading
-								fontSize="2xl"
+								fontSize="clamp(1.3rem, 3.4vh, 2rem)"
 								fontWeight="normal"
 								letterSpacing="-0.03em"
 							>
 								Habit <OutlinePill>tracker</OutlinePill>
 							</Heading>
-							<Text fontSize="xs" color="fg.muted" mt={3}>
+							<Text fontSize="xs" color="fg.muted" mt={2}>
 								Today, Dec 28, 2030
 							</Text>
 
-							<Stack gap={2} mt={4}>
+							<Flex wrap="wrap" gap={1.5} mt={3}>
 								{trackerRows.map((row) => (
 									<HStack
 										key={row.label}
+										flex="1 1 auto"
 										bg={
 											row.tone === "solid"
 												? "bg.solid"
-												: "bg.muted"
+												: "bg.panel"
 										}
 										color={
 											row.tone === "solid"
 												? "fg.inverted"
 												: "fg.muted"
 										}
+										borderWidth={
+											row.tone === "solid" ? "0" : "1px"
+										}
+										borderColor="border"
 										rounded="pill"
-										px={4}
-										py={1.5}
+										px={3.5}
+										py={2}
 										gap={2}
 									>
 										<Circle
@@ -407,67 +480,75 @@ export const Index: React.FC<IndexProps> = () => {
 													: "fg.muted"
 											}
 										/>
-										<Text fontSize="xs">{row.label}</Text>
+										<Text
+											fontSize="clamp(0.72rem, 1.6vh, 0.9rem)"
+											whiteSpace="nowrap"
+										>
+											{row.label}
+										</Text>
 									</HStack>
 								))}
-							</Stack>
+							</Flex>
 						</Box>
 
-						<HStack justify="flex-end" gap={3}>
+						<HStack justify="center" gap={3} mt="auto">
 							<Box
+								bg="bg.panel"
 								borderWidth="1px"
 								borderColor="border"
 								rounded="pill"
 								px={4}
 								py={1}
 								fontSize="xs"
+								shadow="glass"
 							>
 								Light Mode
 							</Box>
 							<HStack
-								bg="bg.solid"
-								rounded="pill"
-								p={1}
-								gap={1}
+								gap={0}
 								cursor="pointer"
 								onClick={toggleColorMode}
 							>
 								<Circle
-									size="8"
-									bg={
-										colorMode === "light"
-											? "bg.panel"
-											: "transparent"
-									}
-									color={
-										colorMode === "light"
-											? "fg"
-											: "fg.inverted"
-									}
+									size="11"
+									bg="bg.panel"
+									color="fg"
+									borderWidth="1px"
+									borderColor="border"
+									shadow="glass"
+									zIndex={1}
 								>
-									<Icon as={LuSun} boxSize={4} />
+									<Icon
+										as={LuSun}
+										boxSize={4}
+										opacity={
+											colorMode === "light" ? 1 : 0.35
+										}
+									/>
 								</Circle>
 								<Circle
-									size="8"
-									bg={
-										colorMode === "dark"
-											? "bg.panel"
-											: "transparent"
-									}
-									color={
-										colorMode === "dark"
-											? "fg"
-											: "fg.inverted"
-									}
+									size="14"
+									bg="bg.solid"
+									color="fg.inverted"
+									ml="-3"
+									shadow="glass"
 								>
-									<Icon as={LuMoon} boxSize={4} />
+									<Icon
+										as={LuMoon}
+										boxSize={5}
+										opacity={
+											colorMode === "dark" ? 1 : 0.75
+										}
+									/>
 								</Circle>
 							</HStack>
 						</HStack>
 
 						<Box {...glassCard} p={5}>
-							<Text fontSize="sm">Performance</Text>
-							<Stack gap={2} mt={4}>
+							<Text fontSize="clamp(0.9rem, 2vh, 1.15rem)">
+								Performance
+							</Text>
+							<Stack gap={2} mt={3}>
 								<Box
 									h="2"
 									rounded="pill"
@@ -495,87 +576,48 @@ export const Index: React.FC<IndexProps> = () => {
 									/>
 								</Box>
 							</Stack>
+
+							<HStack align="center" gap={1} mt={4}>
+								<Text
+									fontSize="clamp(2.2rem, 5.8vh, 3.6rem)"
+									fontWeight="semibold"
+									letterSpacing="-0.04em"
+									lineHeight="1"
+								>
+									35
+								</Text>
+								<Text
+									fontSize="clamp(2.2rem, 5.8vh, 3.6rem)"
+									color="fg.muted"
+									fontWeight="light"
+									lineHeight="1"
+								>
+									/
+								</Text>
+								<Text
+									fontSize="clamp(2.2rem, 5.8vh, 3.6rem)"
+									fontWeight="semibold"
+									letterSpacing="-0.04em"
+									lineHeight="1"
+								>
+									82
+								</Text>
+								<Text
+									fontSize="xs"
+									color="fg.muted"
+									alignSelf="flex-end"
+									pb={1}
+									pl={2}
+								>
+									Total
+									<br />
+									target
+								</Text>
+							</HStack>
 						</Box>
-					</Stack>
+					</Flex>
 				</GridItem>
 			</Grid>
-
-			<Stack gap={3} pl={{ lg: "96px" }} position="relative" zIndex={2}>
-				<HStack gap={3}>
-					<Text fontSize="lg">Daily</Text>
-					<Text fontSize="lg">
-						<OutlinePill>summary</OutlinePill>
-					</Text>
-				</HStack>
-
-				<Grid
-					gap={4}
-					templateColumns={{
-						base: "1fr",
-						md: "repeat(2, 1fr)",
-						lg: "repeat(5, 1fr)",
-					}}
-				>
-					<StatCard label="To do" accent>
-						<TaskCount value="158" unit="tasks" />
-					</StatCard>
-					<StatCard label="On going" accent>
-						<TaskCount value="28" unit="tasks" />
-					</StatCard>
-					<StatCard label="Complete">
-						<TaskCount value="02" unit="tasks" />
-					</StatCard>
-					<StatCard label="Earnings" labelIcon={LuWallet}>
-						<Text
-							fontSize="xl"
-							fontWeight="semibold"
-							letterSpacing="-0.03em"
-						>
-							$2,932.07
-						</Text>
-						<Text fontSize="xs" color="fg.muted">
-							02 tasks
-						</Text>
-					</StatCard>
-					<Box {...glassCard} px={5} py={4} minH="112px">
-						<Flex align="center" gap={1} h="full">
-							<Text
-								fontSize="5xl"
-								fontWeight="semibold"
-								letterSpacing="-0.04em"
-								lineHeight="1"
-							>
-								35
-							</Text>
-							<Text
-								fontSize="5xl"
-								color="fg.muted"
-								fontWeight="light"
-								lineHeight="1"
-							>
-								/
-							</Text>
-							<Text
-								fontSize="5xl"
-								fontWeight="semibold"
-								letterSpacing="-0.04em"
-								lineHeight="1"
-							>
-								82
-							</Text>
-							<Text
-								fontSize="xs"
-								color="fg.muted"
-								alignSelf="flex-end"
-								pb={2}
-								pl={2}
-							>
-								Total target
-							</Text>
-						</Flex>
-					</Box>
-				</Grid>
-			</Stack>
 		</Flex>
 	);
 };
