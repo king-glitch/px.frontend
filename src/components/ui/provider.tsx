@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChakraProvider, defaultSystem } from "@chakra-ui/react";
+import { ChakraProvider } from "@chakra-ui/react";
+import { system } from "@/theme";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ColorModeProvider, type ColorModeProviderProps } from "@/components/ui/color-mode";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,8 +24,12 @@ export function Provider(props: ColorModeProviderProps) {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<ChakraProvider value={defaultSystem}>
-				<ColorModeProvider {...props}>
+			<ChakraProvider value={system}>
+				<ColorModeProvider
+					defaultTheme="light"
+					enableSystem={false}
+					{...props}
+				>
 					<AuthProvider>
 						{props.children}
 						<Toaster />
