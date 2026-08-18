@@ -1,5 +1,6 @@
 import React from "react";
 import { Navigate } from "react-router";
+import { keyframes } from "@emotion/react";
 import {
 	Box,
 	Button,
@@ -33,7 +34,6 @@ import {
 import { Avatar } from "@/components/ui/avatar";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useAuthContext } from "@/contexts/auth-context";
-import { holoGradient } from "@/theme";
 
 const railIcons = [
 	LuLayoutDashboard,
@@ -59,6 +59,79 @@ const glassCard = {
 	shadow: "glass",
 	backdropFilter: "blur(20px)",
 } as const;
+
+const drift = keyframes({
+	"0%": { transform: "translate(-50%, 0) rotate(0deg) scale(1)" },
+	"50%": { transform: "translate(-50%, -2%) rotate(6deg) scale(1.04)" },
+	"100%": { transform: "translate(-50%, 0) rotate(0deg) scale(1)" },
+});
+
+const shimmer = keyframes({
+	"0%, 100%": { opacity: 0.25 },
+	"50%": { opacity: 0.5 },
+});
+
+const holoSpectrum =
+	"conic-gradient(from 200deg at 50% 40%, {colors.holo.cyan} 0deg, {colors.holo.lavender} 90deg, {colors.holo.blush} 175deg, {colors.holo.butter} 255deg, {colors.holo.cyan} 360deg)";
+
+/**
+ * Stand-in for the holographic character art: the prism spectrum masked into a
+ * head-and-shoulders silhouette that dissolves into the canvas. Replace the
+ * whole component with an <Image> once real artwork exists.
+ */
+const HoloFigure: React.FC = () => (
+	<Box
+		position="absolute"
+		left="50%"
+		bottom="2%"
+		w="clamp(220px, 19vw, 300px)"
+		h="76%"
+		transform="translateX(-50%)"
+		zIndex={0}
+		pointerEvents="none"
+		display={{ base: "none", lg: "block" }}
+	>
+		<Box
+			position="absolute"
+			inset="-40%"
+			opacity={0.28}
+			css={{
+				background:
+					"radial-gradient(45% 42% at 50% 52%, {colors.holo.lavender} 0%, {colors.holo.blush} 55%, transparent 78%)",
+				filter: "blur(70px)",
+			}}
+		/>
+
+		<Box
+			position="absolute"
+			inset="0"
+			opacity={0.55}
+			animation={`${drift} 26s ease-in-out infinite`}
+			css={{
+				background: holoSpectrum,
+				filter: "blur(22px) saturate(1.15)",
+				maskImage:
+					"radial-gradient(42% 50% at 50% 48%, #000 30%, transparent 100%)",
+			}}
+		/>
+
+		<Box
+			position="absolute"
+			top="6%"
+			left="50%"
+			w="40%"
+			h="30%"
+			transform="translateX(-50%)"
+			rounded="full"
+			animation={`${shimmer} 9s ease-in-out infinite`}
+			css={{
+				background:
+					"radial-gradient(50% 50% at 50% 45%, rgba(255,255,255,0.85), transparent 74%)",
+				filter: "blur(24px)",
+			}}
+		/>
+	</Box>
+);
 
 interface OutlinePillProps {
 	children: React.ReactNode;
@@ -91,7 +164,7 @@ const StatCard: React.FC<StatCardProps> = ({
 	accent,
 	children,
 }) => (
-	<Box {...glassCard} px={5} py={4} minH="132px" position="relative">
+	<Box {...glassCard} px={5} py={4} minH="112px" position="relative">
 		<HStack gap={2} color="fg.muted">
 			{labelIcon && <Icon as={labelIcon} boxSize={3.5} />}
 			<Text fontSize="sm">{label}</Text>
@@ -110,7 +183,7 @@ const StatCard: React.FC<StatCardProps> = ({
 			</Circle>
 		)}
 
-		<Box mt={8}>{children}</Box>
+		<Box mt={6}>{children}</Box>
 	</Box>
 );
 
@@ -156,14 +229,18 @@ export const Index: React.FC<IndexProps> = () => {
 	return (
 		<Flex
 			direction="column"
-			gap={6}
-			minH="100vh"
+			gap={{ base: 5, lg: 4 }}
+			h={{ base: "auto", lg: "100dvh" }}
+			minH="100dvh"
 			bg="bg.canvas"
 			position="relative"
-			overflow="hidden"
-			px={{ base: 5, md: 10, xl: 16 }}
-			py={{ base: 5, md: 8 }}
+			overflowX="hidden"
+			overflowY={{ lg: "hidden" }}
+			px={{ base: 5, md: 8, xl: 14 }}
+			py={{ base: 5, md: 6 }}
 		>
+			<HoloFigure />
+
 			<Grid
 				templateColumns={{ base: "1fr", md: "1fr auto 1fr" }}
 				alignItems="center"
@@ -231,6 +308,7 @@ export const Index: React.FC<IndexProps> = () => {
 
 			<Grid
 				flex="1"
+				minH="0"
 				gap={6}
 				templateColumns={{ base: "1fr", lg: "72px 1fr 330px" }}
 				position="relative"
@@ -261,24 +339,24 @@ export const Index: React.FC<IndexProps> = () => {
 					</VStack>
 				</GridItem>
 
-				<GridItem position="relative" minH="360px">
-					<Stack gap={2} pt={6} position="relative" zIndex={1}>
+				<GridItem>
+					<Stack gap={2} pt={4}>
 						<Heading
-							fontSize={{ base: "3xl", md: "5xl", xl: "6xl" }}
+							fontSize={{ base: "3xl", md: "5xl" }}
 							fontWeight="semibold"
 							letterSpacing="-0.04em"
 						>
 							Today is
 						</Heading>
 						<Heading
-							fontSize={{ base: "3xl", md: "5xl", xl: "6xl" }}
+							fontSize={{ base: "3xl", md: "5xl" }}
 							fontWeight="normal"
 							letterSpacing="-0.04em"
 						>
 							<OutlinePill>a best</OutlinePill>
 						</Heading>
 						<Heading
-							fontSize={{ base: "3xl", md: "5xl", xl: "6xl" }}
+							fontSize={{ base: "3xl", md: "5xl" }}
 							fontWeight="normal"
 							letterSpacing="-0.04em"
 							pl={{ base: 0, md: 12 }}
@@ -286,26 +364,10 @@ export const Index: React.FC<IndexProps> = () => {
 							<OutlinePill>day to win</OutlinePill>
 						</Heading>
 					</Stack>
-
-					{/* stand-in for the holographic character art */}
-					<Box
-						position="absolute"
-						left="50%"
-						transform="translateX(-50%)"
-						bottom="0"
-						w={{ base: "0", lg: "34%" }}
-						h="88%"
-						roundedTop="50% 50%"
-						roundedBottom="42% 18%"
-						filter="blur(24px)"
-						opacity={0.55}
-						zIndex={0}
-						css={{ backgroundImage: holoGradient }}
-					/>
 				</GridItem>
 
 				<GridItem>
-					<Stack gap={5}>
+					<Stack gap={4}>
 						<Box {...glassCard} p={5}>
 							<Heading
 								fontSize="2xl"
@@ -334,7 +396,7 @@ export const Index: React.FC<IndexProps> = () => {
 										}
 										rounded="pill"
 										px={4}
-										py={2}
+										py={1.5}
 										gap={2}
 									>
 										<Circle
@@ -438,7 +500,7 @@ export const Index: React.FC<IndexProps> = () => {
 				</GridItem>
 			</Grid>
 
-			<Stack gap={4} pl={{ lg: "96px" }} position="relative" zIndex={2}>
+			<Stack gap={3} pl={{ lg: "96px" }} position="relative" zIndex={2}>
 				<HStack gap={3}>
 					<Text fontSize="lg">Daily</Text>
 					<Text fontSize="lg">
@@ -475,7 +537,7 @@ export const Index: React.FC<IndexProps> = () => {
 							02 tasks
 						</Text>
 					</StatCard>
-					<Box {...glassCard} px={5} py={4} minH="132px">
+					<Box {...glassCard} px={5} py={4} minH="112px">
 						<Flex align="center" gap={1} h="full">
 							<Text
 								fontSize="5xl"

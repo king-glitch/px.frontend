@@ -112,6 +112,3 @@ const config = defineConfig({
 });
 
 export const system = createSystem(defaultConfig, config);
-
-export const holoGradient =
-	"linear-gradient(135deg, {colors.holo.cyan} 0%, {colors.holo.lavender} 38%, {colors.holo.blush} 68%, {colors.holo.butter} 100%)";
