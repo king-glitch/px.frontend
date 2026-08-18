@@ -26,6 +26,7 @@ export function Provider(props: ColorModeProviderProps) {
 		<QueryClientProvider client={queryClient}>
 			<ChakraProvider value={system}>
 				<ColorModeProvider
+					storageKey="px-theme"
 					defaultTheme="light"
 					enableSystem={false}
 					{...props}
