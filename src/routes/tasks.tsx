@@ -14,6 +14,7 @@ import {
   Input,
   Progress,
   Stack,
+  Tabs,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -153,26 +154,58 @@ export const TasksRoute: React.FC = () => {
               <Text fontSize="xs" color="fg.muted">Execute daily routines and track continuous improvement</Text>
             </Stack>
 
-            {/* Filter Pills */}
-            <HStack bg="bg.muted" p={1} rounded="pill" gap={1}>
-              {categories.map((cat) => (
-                <Button
-                  key={cat}
-                  size="xs"
-                  rounded="pill"
-                  variant={selectedCategory === cat ? "solid" : "ghost"}
-                  onClick={() => setSelectedCategory(cat)}
-                  fontSize="xs"
-                  px={3}
-                >
-                  {cat}
-                </Button>
-              ))}
-            </HStack>
+            {/* Filter Tabs using Chakra Tabs */}
+            <Tabs.Root
+              value={selectedCategory}
+              onValueChange={(details) => details.value && setSelectedCategory(details.value)}
+              variant="plain"
+              size="sm"
+              css={{
+                "--tabs-indicator-bg": "colors.bg.solid",
+                "--tabs-indicator-shadow": "shadows.glass",
+                "--tabs-trigger-radius": "radii.full",
+              }}
+            >
+              <Tabs.List
+                bg="bg.muted"
+                borderWidth="1px"
+                borderColor="border.glass"
+                rounded="pill"
+                p={1}
+                gap={1}
+                shadow="glass"
+                position="relative"
+              >
+                {categories.map((cat) => (
+                  <Tabs.Trigger
+                    key={cat}
+                    value={cat}
+                    px={3}
+                    py={1}
+                    cursor="pointer"
+                    fontWeight="semibold"
+                    fontSize="xs"
+                    color={selectedCategory === cat ? "fg.inverted" : "fg.muted"}
+                    _selected={{
+                      color: "fg.inverted",
+                      fontWeight: "bold",
+                    }}
+                    _hover={{
+                      color: selectedCategory === cat ? "fg.inverted" : "fg",
+                    }}
+                    zIndex={1}
+                    transition="color 0.15s ease-out"
+                  >
+                    {cat}
+                  </Tabs.Trigger>
+                ))}
+                <Tabs.Indicator rounded="pill" />
+              </Tabs.List>
+            </Tabs.Root>
           </Flex>
 
           {/* Quick Input Bar */}
-          <form onSubmit={handleAddTask}>
+          <form noValidate onSubmit={handleAddTask}>
             <HStack gap={2}>
               <Input
                 placeholder="Add a new task or habit (press Enter)..."

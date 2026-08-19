@@ -13,9 +13,9 @@ export * from "@/api/services/bank-service";
 
 // TanStack Query Hooks
 export * from "@/api/hooks/use-auth";
+export * from "@/api/hooks/use-banks";
 export * from "@/api/hooks/use-categories";
 export * from "@/api/hooks/use-transactions";
-export * from "@/api/hooks/use-counterparties";
 export * from "@/api/hooks/use-slips";
 export * from "@/api/hooks/use-summary";
 export * from "@/api/hooks/use-active-queues";

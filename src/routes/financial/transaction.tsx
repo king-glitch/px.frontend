@@ -23,15 +23,16 @@ import {
 	LuFileText,
 	LuReceipt,
 	LuTrash2,
-	LuUser,
 } from "react-icons/lu";
 import { Link, useNavigate, useParams } from "react-router";
 import {
+	useAccounts,
+	useBanks,
 	useCategories,
-	useCounterparties,
 	useDeleteTransaction,
 	useTransaction,
 } from "@/api";
+import type { BankAccount } from "@/api/types";
 import TransactionForm from "@/components/financial/transaction-form";
 import {
 	DialogActionTrigger,
@@ -55,15 +56,37 @@ export const FinancialTransactionDetail: React.FC = () => {
 
 	const { data: transaction, isLoading } = useTransaction(id);
 	const { data: categories = [] } = useCategories();
-	const { data: counterparties = [] } = useCounterparties();
+	const { data: banks = [] } = useBanks();
+	const { data: accounts = [] } = useAccounts();
 
 	const deleteMutation = useDeleteTransaction();
 
 	const category = transaction?.category_id
 		? categories.find((c) => c.id === transaction.category_id)
 		: undefined;
-	const counterparty = transaction?.counterparty_id
-		? counterparties.find((cp) => cp.id === transaction.counterparty_id)
+
+	const fromBank = transaction?.from_bank_id
+		? banks.find((b) => b.id === transaction.from_bank_id)
+		: undefined;
+
+	const toBank = transaction?.to_bank_id
+		? banks.find((b) => b.id === transaction.to_bank_id)
+		: undefined;
+
+	const fromAccountObj = transaction?.from_account
+		? accounts.find((a: BankAccount) => {
+				if (transaction.from_bank_id && a.bank_id !== transaction.from_bank_id) return false;
+				const fromAcc = transaction.from_account || "";
+				return a.account_number === fromAcc || fromAcc.endsWith(a.account_number.slice(-4));
+		  })
+		: undefined;
+
+	const toAccountObj = transaction?.to_account
+		? accounts.find((a: BankAccount) => {
+				if (transaction.to_bank_id && a.bank_id !== transaction.to_bank_id) return false;
+				const toAcc = transaction.to_account || "";
+				return a.account_number === toAcc || toAcc.endsWith(a.account_number.slice(-4));
+		  })
 		: undefined;
 
 	const handleDelete = async () => {
@@ -271,23 +294,6 @@ export const FinancialTransactionDetail: React.FC = () => {
 								)}
 							</Flex>
 
-							<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
-								<HStack gap={2} color="fg.muted">
-									<Icon as={LuUser} boxSize={4} />
-									<Text fontSize="xs">Payee / Counterparty</Text>
-								</HStack>
-								<VStack align="flex-end" gap={0}>
-									<Text fontSize="xs" fontWeight="semibold">
-										{counterparty?.note || counterparty?.name || "-"}
-									</Text>
-									{counterparty?.name && counterparty.note && (
-										<Text fontSize="10px" color="fg.muted">
-											{counterparty.name} ({counterparty.type})
-										</Text>
-									)}
-								</VStack>
-							</Flex>
-
 							{transaction.fee > 0 && (
 								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
 									<HStack gap={2} color="fg.muted">
@@ -304,6 +310,18 @@ export const FinancialTransactionDetail: React.FC = () => {
 								</Flex>
 							)}
 
+							{fromBank && (
+								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+									<HStack gap={2} color="fg.muted">
+										<Icon as={LuCreditCard} boxSize={4} />
+										<Text fontSize="xs">From Bank</Text>
+									</HStack>
+									<Text fontSize="xs" fontWeight="semibold">
+										{fromBank.name} ({fromBank.code})
+									</Text>
+								</Flex>
+							)}
+
 							{transaction.from_account && (
 								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
 									<HStack gap={2} color="fg.muted">
@@ -311,7 +329,35 @@ export const FinancialTransactionDetail: React.FC = () => {
 										<Text fontSize="xs">From Account</Text>
 									</HStack>
 									<Text fontSize="xs" fontWeight="semibold">
-										{transaction.from_account}
+										{fromAccountObj
+											? `${fromAccountObj.name} (${transaction.from_account})`
+											: transaction.from_account}
+									</Text>
+								</Flex>
+							)}
+
+							{toBank && (
+								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+									<HStack gap={2} color="fg.muted">
+										<Icon as={LuCreditCard} boxSize={4} />
+										<Text fontSize="xs">To Bank / Destination</Text>
+									</HStack>
+									<Text fontSize="xs" fontWeight="semibold">
+										{toBank.name} ({toBank.code})
+									</Text>
+								</Flex>
+							)}
+
+							{transaction.to_account && (
+								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+									<HStack gap={2} color="fg.muted">
+										<Icon as={LuCreditCard} boxSize={4} />
+										<Text fontSize="xs">To Account</Text>
+									</HStack>
+									<Text fontSize="xs" fontWeight="semibold">
+										{toAccountObj
+											? `${toAccountObj.name} (${transaction.to_account})`
+											: transaction.to_account}
 									</Text>
 								</Flex>
 							)}

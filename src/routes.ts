@@ -11,7 +11,7 @@ const financialRoutes = layout("routes/financial/layout.tsx", [
 	route("transactions", "routes/financial/transactions.tsx"),
 	route("transactions/:id", "routes/financial/transaction.tsx"),
 	route("categories", "routes/financial/categories.tsx"),
-	route("counterparties", "routes/financial/counterparties.tsx"),
+	route("banks", "routes/financial/banks.tsx"),
 ]);
 
 export default [

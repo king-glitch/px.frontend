@@ -1,4 +1,8 @@
-import type { ListTransactionsParams, ObjectID } from "@/api/types";
+import type {
+	DateRangeParams,
+	ListTransactionsParams,
+	ObjectID,
+} from "@/api/types";
 
 /**
  * Centralized Query Key factory for TanStack React Query.
@@ -27,16 +31,22 @@ export const queryKeys = {
 		detail: (id: ObjectID) =>
 			[...queryKeys.transactions.all, "detail", id] as const,
 	},
-	counterparties: {
-		all: ["counterparties"] as const,
-		lists: () => [...queryKeys.counterparties.all, "list"] as const,
+	banks: {
+		all: ["banks"] as const,
+		lists: () => [...queryKeys.banks.all, "list"] as const,
 		detail: (id: ObjectID) =>
-			[...queryKeys.counterparties.all, "detail", id] as const,
+			[...queryKeys.banks.all, "detail", id] as const,
+	},
+	accounts: {
+		all: ["accounts"] as const,
+		lists: () => [...queryKeys.accounts.all, "list"] as const,
+		detail: (id: ObjectID) =>
+			[...queryKeys.accounts.all, "detail", id] as const,
 	},
 	summary: {
 		all: ["summary"] as const,
-		range: (from?: string, to?: string) =>
-			[...queryKeys.summary.all, "range", { from, to }] as const,
+		range: (params?: DateRangeParams) =>
+			[...queryKeys.summary.all, "range", params ?? {}] as const,
 	},
 	queue: {
 		all: ["queue"] as const,

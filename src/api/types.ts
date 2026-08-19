@@ -36,8 +36,6 @@ export interface UserSession {
 
 export type BankTransactionDirection = "in" | "out";
 
-export type BankCounterpartyType = "account" | "promptpay" | "company" | "card";
-
 export type QueueItemStatus =
 	| "unknown"
 	| "pending"
@@ -49,6 +47,20 @@ export type QueueItemStatus =
 
 export type Priority = 0 | 1 | 2 | 3 | 4; // 0=Lowest, 2=Normal, 4=Highest
 
+export interface Bank extends ModelBase {
+	code: string;
+	name: string;
+}
+
+export interface BankAccount extends ModelBase {
+	user_id: ObjectID;
+	bank_id: ObjectID;
+	account_number: string;
+	name: string;
+	color?: string;
+	note?: string;
+}
+
 export interface BankCategory extends ModelBase {
 	user_id: ObjectID;
 	name: string;
@@ -56,25 +68,15 @@ export interface BankCategory extends ModelBase {
 	icon?: string;
 }
 
-export interface BankCounterparty extends ModelBase {
-	user_id: ObjectID;
-	bank_id?: ObjectID;
-	type: BankCounterpartyType;
-	name: string;
-	fingerprint: string;
-	account_number?: string;
-	prompt_pay_id?: string;
-	card_number?: string;
-	note: string;
-}
-
 export interface BankTransaction extends ModelBase {
 	user_id: ObjectID;
 	bank_id: ObjectID;
+	from_bank_id?: ObjectID;
+	to_bank_id?: ObjectID;
 	transaction_number: string;
 	direction: BankTransactionDirection;
 	from_account?: string;
-	counterparty_id?: ObjectID;
+	to_account?: string;
 	amount: number;
 	fee: number;
 	currency: string;
@@ -152,6 +154,33 @@ export interface LoginRequest {
 	password: string;
 }
 
+// Bank Entities
+export interface CreateBankRequest {
+	code: string;
+	name: string;
+}
+
+export interface UpdateBankRequest {
+	code?: string;
+	name?: string;
+}
+
+export interface CreateBankAccountRequest {
+	bank_id: ObjectID;
+	account_number: string;
+	name: string;
+	color?: string;
+	note?: string;
+}
+
+export interface UpdateBankAccountRequest {
+	bank_id?: ObjectID;
+	account_number?: string;
+	name?: string;
+	color?: string;
+	note?: string;
+}
+
 // Bank Categories
 export interface CreateCategoryRequest {
 	name: string;
@@ -166,6 +195,11 @@ export interface UpdateCategoryRequest {
 }
 
 // Bank Transactions
+export interface DateRangeParams {
+	from?: string;
+	to?: string;
+}
+
 export interface ListTransactionsParams {
 	page?: number;
 	amount?: number;
@@ -200,12 +234,11 @@ export interface CreateTransactionRequest {
 	currency?: string;
 	occurred_at?: ISO8601String;
 	transaction_number?: string;
+	from_bank_id?: ObjectID;
+	to_bank_id?: ObjectID;
 	from_account?: string;
+	to_account?: string;
 	bank_code?: string;
-	counterparty_type?: BankCounterpartyType;
-	counterparty_name?: string;
-	counterparty_account?: string;
-	counterparty_bank?: string;
 	category_id?: ObjectID;
 	note?: string;
 }
@@ -214,20 +247,13 @@ export interface UpdateTransactionRequest {
 	amount?: number;
 	fee?: number;
 	occurred_at?: ISO8601String;
+	from_bank_id?: ObjectID;
+	to_bank_id?: ObjectID;
 	from_account?: string;
+	to_account?: string;
 	note?: string;
 	category_id?: ObjectID; // empty string "" clears assigned category
 	direction?: BankTransactionDirection;
-}
-
-// Bank Counterparty
-export interface UpdateCounterpartyRequest {
-	name?: string;
-	note?: string;
-}
-
-export interface UpdateCounterpartyNoteRequest {
-	note: string;
 }
 
 // Slip Ingestion

@@ -68,7 +68,7 @@ export const Login: React.FC = () => {
           <Text color="fg.muted">Enter your credentials to access your account.</Text>
         </Stack>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form noValidate onSubmit={handleSubmit(onSubmit)}>
           <Stack gap={4}>
             {serverError && <Text color="red.500">{serverError}</Text>}
 

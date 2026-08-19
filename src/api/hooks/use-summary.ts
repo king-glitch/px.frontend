@@ -1,101 +1,107 @@
-import { useQueries, useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import React from "react";
+import { keepPreviousData, useQueries, useQuery } from "@tanstack/react-query";
 import { queryKeys } from "@/api/query-keys";
 import { bankService } from "@/api/services/bank-service";
-import type { BankSummary } from "@/api/types";
-
-/**
- * Hook to fetch bank transactions summary for a date range.
- */
-export function useSummary(
-	from?: string,
-	to?: string,
-	options?: { enabled?: boolean },
-) {
-	return useQuery({
-		queryKey: queryKeys.summary.range(from, to),
-		queryFn: async () => {
-			const res = await bankService.getSummary(from, to);
-			return res.summary;
-		},
-		enabled: options?.enabled,
-	});
-}
+import type { DateRangeParams } from "@/api/types";
 
 export interface MonthSummaryPoint {
 	monthKey: string;
 	monthLabel: string;
-	from: string;
-	to: string;
+	year: number;
 	totalIn: number;
 	totalOut: number;
-	totalFee: number;
 	net: number;
 	count: number;
 }
 
 /**
- * Hook to fetch multi-month summary trends (e.g. past 6 months).
+ * Hook to fetch aggregate totals and the per-category breakdown for a range.
  */
-export function usePastMonthsSummary(monthsCount = 6) {
-	const months = useMemo(() => {
-		const result: {
+export function useSummary(
+	params?: DateRangeParams,
+	options?: { enabled?: boolean },
+) {
+	return useQuery({
+		queryKey: queryKeys.summary.range(params),
+		queryFn: async () => {
+			const res = await bankService.getSummary(params);
+			return res.summary;
+		},
+		placeholderData: keepPreviousData,
+		enabled: options?.enabled,
+	});
+}
+
+/**
+ * Hook to fetch summary statistics for the past N months (e.g., past 6 months).
+ */
+export function usePastMonthsSummary(monthCount: number = 6) {
+	const months = React.useMemo(() => {
+		const result: Array<{
 			monthKey: string;
 			monthLabel: string;
+			year: number;
 			from: string;
 			to: string;
-		}[] = [];
-		const now = new Date();
+		}> = [];
 
-		for (let i = monthsCount - 1; i >= 0; i--) {
+		const now = new Date();
+		for (let i = monthCount - 1; i >= 0; i--) {
 			const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
 			const year = d.getFullYear();
-			const month = d.getMonth() + 1;
-			const monthKey = `${year}-${String(month).padStart(2, "0")}`;
-			const monthLabel = d.toLocaleString("en-US", { month: "short" });
+			const month = d.getMonth();
+			const monthKey = `${year}-${String(month + 1).padStart(2, "0")}`;
+			const monthLabel = d.toLocaleString("default", { month: "short" });
 
-			const from = `${year}-${String(month).padStart(2, "0")}-01`;
-			let nextYear = year;
-			let nextMonth = month + 1;
-			if (nextMonth > 12) {
-				nextYear += 1;
-				nextMonth = 1;
-			}
-			const to = `${nextYear}-${String(nextMonth).padStart(2, "0")}-01`;
+			const start = new Date(year, month, 1);
+			const end = new Date(year, month + 1, 0, 23, 59, 59, 999);
 
-			result.push({ monthKey, monthLabel, from, to });
+			result.push({
+				monthKey,
+				monthLabel,
+				year,
+				from: start.toISOString(),
+				to: end.toISOString(),
+			});
 		}
 		return result;
-	}, [monthsCount]);
+	}, [monthCount]);
 
 	const queries = useQueries({
 		queries: months.map((m) => ({
-			queryKey: queryKeys.summary.range(m.from, m.to),
+			queryKey: queryKeys.summary.range({ from: m.from, to: m.to }),
 			queryFn: async () => {
-				const res = await bankService.getSummary(m.from, m.to);
+				const res = await bankService.getSummary({ from: m.from, to: m.to });
 				return res.summary;
 			},
+			staleTime: 60 * 1000,
 		})),
 	});
 
 	const isLoading = queries.some((q) => q.isLoading);
 
-	const data: MonthSummaryPoint[] = useMemo(() => {
+	const data: MonthSummaryPoint[] = React.useMemo(() => {
 		return months.map((m, idx) => {
 			const summary = queries[idx]?.data;
+			const totalIn = summary?.total_in || 0;
+			const totalOut = summary?.total_out || 0;
+			const net = summary?.net || 0;
+			const count = summary?.count || 0;
+
 			return {
 				monthKey: m.monthKey,
 				monthLabel: m.monthLabel,
-				from: m.from,
-				to: m.to,
-				totalIn: summary?.total_in || 0,
-				totalOut: summary?.total_out || 0,
-				totalFee: summary?.total_fee || 0,
-				net: summary?.net || 0,
-				count: summary?.count || 0,
+				year: m.year,
+				totalIn,
+				totalOut,
+				net,
+				count,
 			};
 		});
 	}, [months, queries]);
 
-	return { data, isLoading };
+	return {
+		data,
+		isLoading,
+	};
 }

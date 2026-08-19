@@ -37,13 +37,14 @@ import {
 import { Link, useSearchParams } from "react-router";
 import {
 	useActiveQueues,
+	useAccounts,
+	useBanks,
 	useCategories,
-	useCounterparties,
 	useDeleteTransaction,
 	useTransactions,
-	useUpdateCounterparty,
 	useUpdateTransaction,
 } from "@/api";
+import type { BankAccount } from "@/api/types";
 import MonthRange from "@/components/financial/month-range";
 import SlipDropzone from "@/components/financial/slip-dropzone";
 import TransactionForm from "@/components/financial/transaction-form";
@@ -87,14 +88,23 @@ export const FinancialTransactions: React.FC = () => {
 		to,
 	});
 	const { data: categories = [] } = useCategories();
-	const { data: counterparties = [] } = useCounterparties();
+	const { data: banks = [] } = useBanks();
+	const { data: accounts = [] } = useAccounts();
 
 	const updateTxMutation = useUpdateTransaction();
-	const updateCpMutation = useUpdateCounterparty();
 	const deleteTxMutation = useDeleteTransaction();
 
 	const categoriesMap = new Map(categories.map((c) => [c.id, c]));
-	const counterpartiesMap = new Map(counterparties.map((cp) => [cp.id, cp]));
+	const banksMap = new Map(banks.map((b) => [b.id, b]));
+
+	const findAccountName = (bankId?: string, accNum?: string) => {
+		if (!accNum) return undefined;
+		const match = accounts.find((a: BankAccount) => {
+			if (bankId && a.bank_id !== bankId) return false;
+			return a.account_number === accNum || accNum.endsWith(a.account_number.slice(-4));
+		});
+		return match?.name;
+	};
 
 	const transactions = transactionsData?.collection || [];
 	const totalPages = transactionsData?.meta?.total_pages || 1;
@@ -284,7 +294,7 @@ export const FinancialTransactions: React.FC = () => {
 											Type
 										</Table.ColumnHeader>
 										<Table.ColumnHeader fontSize="xs" minW="180px">
-											Payee (Counterparty)
+											Transaction / Ref
 										</Table.ColumnHeader>
 										<Table.ColumnHeader fontSize="xs" minW="180px">
 											Note / Description
@@ -304,9 +314,6 @@ export const FinancialTransactions: React.FC = () => {
 									{transactions.map((tx) => {
 										const category = tx.category_id
 											? categoriesMap.get(tx.category_id)
-											: undefined;
-										const counterparty = tx.counterparty_id
-											? counterpartiesMap.get(tx.counterparty_id)
 											: undefined;
 										const isExpense = tx.direction === "out";
 
@@ -346,52 +353,56 @@ export const FinancialTransactions: React.FC = () => {
 													</Badge>
 												</Table.Cell>
 
-												{/* Counterparty Editable */}
+												{/* Transaction Number, Bank & Account */}
 												<Table.Cell>
-													{counterparty ? (
-														<VStack align="flex-start" gap={0}>
-															<Editable.Root
-																key={counterparty.id + (counterparty.note || "")}
-																defaultValue={counterparty.note || counterparty.name || ""}
-																placeholder="Add payee note..."
-																onValueCommit={(details) => {
-																	if (details.value !== counterparty.note) {
-																		updateCpMutation.mutate({
-																			id: counterparty.id,
-																			payload: { note: details.value },
-																		});
-																	}
-																}}
-															>
-																<Editable.Preview
-																	fontSize="xs"
-																	fontWeight="semibold"
-																	cursor="pointer"
-																	_hover={{
-																		bg: "bg.panel",
-																		rounded: "sm",
-																		px: 1,
-																	}}
-																/>
-																<Editable.Input
-																	fontSize="xs"
-																	rounded="pill"
-																	bg="bg.panel"
-																	px={2}
-																	py={1}
-																/>
-															</Editable.Root>
-															{counterparty.name && (
-																<Text fontSize="10px" color="fg.muted">
-																	{counterparty.name} ({counterparty.type})
+													{(() => {
+														const fromBank = tx.from_bank_id
+															? banksMap.get(tx.from_bank_id)
+															: undefined;
+														const toBank = tx.to_bank_id
+															? banksMap.get(tx.to_bank_id)
+															: undefined;
+
+														const fromAccName = findAccountName(tx.from_bank_id, tx.from_account);
+														const toAccName = findAccountName(tx.to_bank_id, tx.to_account);
+
+														return (
+															<VStack align="flex-start" gap={0.5}>
+																<Text fontSize="xs" fontWeight="semibold">
+																	<Link to={`/financial/transactions/${tx.id}`}>
+																		{tx.transaction_number || "Transaction"}
+																	</Link>
 																</Text>
-															)}
-														</VStack>
-													) : (
-														<Text fontSize="xs" color="fg.muted">
-															-
-														</Text>
-													)}
+																<HStack gap={1} fontSize="10px" color="fg.muted" flexWrap="wrap">
+																	{fromBank && (
+																		<Badge size="xs" variant="surface">
+																			{fromBank.code}
+																		</Badge>
+																	)}
+																	{tx.from_account && (
+																		<Text>
+																			{fromAccName ? `${fromAccName} (${tx.from_account})` : tx.from_account}
+																		</Text>
+																	)}
+																	{(toBank || tx.to_account) && (
+																		<>
+																			<Text>→</Text>
+																			{toBank && (
+																				<Badge size="xs" variant="surface">
+																					{toBank.code}
+																				</Badge>
+																			)}
+																			{tx.to_account && (
+																				<Text>
+																					{toAccName ? `${toAccName} (${tx.to_account})` : tx.to_account}
+																				</Text>
+																			)}
+																		</>
+																	)}
+																</HStack>
+															</VStack>
+														);
+													})()}
 												</Table.Cell>
 
 												{/* Note Editable */}

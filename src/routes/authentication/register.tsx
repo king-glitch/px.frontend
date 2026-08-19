@@ -84,7 +84,7 @@ export const Register: React.FC = () => {
           <Text color="fg.muted">Create a new account to get started.</Text>
         </Stack>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form noValidate onSubmit={handleSubmit(onSubmit)}>
           <Stack gap={4}>
             {serverError && <Text color="red.500">{serverError}</Text>}
 

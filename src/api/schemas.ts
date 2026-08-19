@@ -30,6 +30,46 @@ export const registerSchema = z
 export type RegisterFormData = z.infer<typeof registerSchema>;
 
 /**
+ * Bank Schemas
+ */
+export const createBankSchema = z.object({
+  code: z.string().min(1, "Bank code is required"),
+  name: z.string().min(1, "Bank name is required"),
+});
+
+export type CreateBankFormData = z.infer<typeof createBankSchema>;
+
+export const updateBankSchema = z.object({
+  code: z.string().min(1, "Bank code is required").optional(),
+  name: z.string().min(1, "Bank name is required").optional(),
+});
+
+export type UpdateBankFormData = z.infer<typeof updateBankSchema>;
+
+/**
+ * Bank Account Schemas
+ */
+export const createBankAccountSchema = z.object({
+  bank_id: z.string().min(1, "Bank is required"),
+  account_number: z.string().min(1, "Account number is required"),
+  name: z.string().min(1, "Account name / nickname is required"),
+  color: z.string().optional(),
+  note: z.string().optional(),
+});
+
+export type CreateBankAccountFormData = z.infer<typeof createBankAccountSchema>;
+
+export const updateBankAccountSchema = z.object({
+  bank_id: z.string().min(1, "Bank is required").optional(),
+  account_number: z.string().min(1, "Account number is required").optional(),
+  name: z.string().min(1, "Account name is required").optional(),
+  color: z.string().optional(),
+  note: z.string().optional(),
+});
+
+export type UpdateBankAccountFormData = z.infer<typeof updateBankAccountSchema>;
+
+/**
  * Category Schemas
  */
 export const createCategorySchema = z.object({
@@ -58,12 +98,11 @@ export const createTransactionSchema = z.object({
   currency: z.string().optional(),
   occurred_at: z.string().optional(),
   transaction_number: z.string().optional(),
+  from_bank_id: z.string().optional(),
+  to_bank_id: z.string().optional(),
   from_account: z.string().optional(),
+  to_account: z.string().optional(),
   bank_code: z.string().optional(),
-  counterparty_type: z.enum(["account", "promptpay", "company", "card"]).optional(),
-  counterparty_name: z.string().optional(),
-  counterparty_account: z.string().optional(),
-  counterparty_bank: z.string().optional(),
   category_id: z.string().optional(),
   note: z.string().optional(),
 });
@@ -74,7 +113,10 @@ export const updateTransactionSchema = z.object({
   amount: z.number().positive("Amount must be greater than 0").optional(),
   fee: z.number().min(0).optional(),
   occurred_at: z.string().optional(),
+  from_bank_id: z.string().optional(),
+  to_bank_id: z.string().optional(),
   from_account: z.string().optional(),
+  to_account: z.string().optional(),
   note: z.string().optional(),
   category_id: z.string().optional(),
   direction: z.enum(["in", "out"]).optional(),
@@ -82,12 +124,3 @@ export const updateTransactionSchema = z.object({
 
 export type UpdateTransactionFormData = z.infer<typeof updateTransactionSchema>;
 
-/**
- * Counterparty Schemas
- */
-export const counterpartySchema = z.object({
-  name: z.string().min(1, "Counterparty name is required").optional(),
-  note: z.string().optional(),
-});
-
-export type CounterpartyFormData = z.infer<typeof counterpartySchema>;

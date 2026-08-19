@@ -1,20 +1,25 @@
 import { apiDelete, apiGet, apiPatch, apiPost } from "@/api/client";
 import type {
+	Bank,
+	BankAccount,
 	BankCategory,
-	BankCounterparty,
 	BankSummary,
 	BankTransaction,
 	Collection,
+	CreateBankAccountRequest,
+	CreateBankRequest,
 	CreateCategoryRequest,
 	CreateTransactionRequest,
+	DateRangeParams,
 	ListQueuesParams,
 	ListQueuesResponse,
 	ListTransactionsParams,
 	MailInboxResponse,
 	ObjectID,
 	QueueItem,
+	UpdateBankAccountRequest,
+	UpdateBankRequest,
 	UpdateCategoryRequest,
-	UpdateCounterpartyRequest,
 	UpdateTransactionRequest,
 	UploadSlipResponse,
 } from "@/api/types";
@@ -93,15 +98,12 @@ export const bankService = {
 	},
 
 	/**
-	 * Get bank transactions summary.
+	 * Aggregate totals and per-category breakdown for a date range.
 	 * Path: GET /api/v1/bank/transactions/summary
 	 */
-	async getSummary(
-		from?: string,
-		to?: string,
-	): Promise<{ summary: BankSummary }> {
+	async getSummary(params?: DateRangeParams): Promise<{ summary: BankSummary }> {
 		return apiGet<{ summary: BankSummary }>("/bank/transactions/summary", {
-			params: { from, to },
+			params,
 		});
 	},
 
@@ -153,49 +155,113 @@ export const bankService = {
 	},
 
 	// -------------------------------------------------------------------------
-	// Counterparties
+	// Banks
 	// -------------------------------------------------------------------------
 
 	/**
-	 * List counterparties for authenticated user.
-	 * Path: GET /api/v1/bank/counterparties
+	 * List all banks.
+	 * Path: GET /api/v1/bank/banks
 	 */
-	async listCounterparties(): Promise<{ counterparties: BankCounterparty[] }> {
-		return apiGet<{ counterparties: BankCounterparty[] }>("/bank/counterparties");
+	async listBanks(): Promise<{ banks: Bank[] }> {
+		return apiGet<{ banks: Bank[] }>("/bank/banks");
 	},
 
 	/**
-	 * Get counterparty details by ID.
-	 * Path: GET /api/v1/bank/counterparties/:id
+	 * Get bank by ID.
+	 * Path: GET /api/v1/bank/banks/:id
 	 */
-	async getCounterparty(
-		id: ObjectID,
-	): Promise<{ counterparty: BankCounterparty }> {
-		return apiGet<{ counterparty: BankCounterparty }>(
-			`/bank/counterparties/${id}`,
+	async getBank(id: ObjectID): Promise<{ bank: Bank }> {
+		return apiGet<{ bank: Bank }>(`/bank/banks/${id}`);
+	},
+
+	/**
+	 * Create a new bank.
+	 * Path: POST /api/v1/bank/banks
+	 */
+	async createBank(
+		payload: CreateBankRequest,
+	): Promise<{ bank: Bank }> {
+		return apiPost<{ bank: Bank }, CreateBankRequest>(
+			"/bank/banks",
+			payload,
 		);
 	},
 
 	/**
-	 * Update counterparty by ID.
-	 * Path: PATCH /api/v1/bank/counterparties/:id
+	 * Update bank by ID.
+	 * Path: PATCH /api/v1/bank/banks/:id
 	 */
-	async updateCounterparty(
+	async updateBank(
 		id: ObjectID,
-		payload: UpdateCounterpartyRequest,
-	): Promise<{ counterparty: BankCounterparty }> {
-		return apiPatch<
-			{ counterparty: BankCounterparty },
-			UpdateCounterpartyRequest
-		>(`/bank/counterparties/${id}`, payload);
+		payload: UpdateBankRequest,
+	): Promise<{ bank: Bank }> {
+		return apiPatch<{ bank: Bank }, UpdateBankRequest>(
+			`/bank/banks/${id}`,
+			payload,
+		);
 	},
 
 	/**
-	 * Delete counterparty by ID.
-	 * Path: DELETE /api/v1/bank/counterparties/:id
+	 * Delete bank by ID.
+	 * Path: DELETE /api/v1/bank/banks/:id
 	 */
-	async deleteCounterparty(id: ObjectID): Promise<{ deleted: boolean }> {
-		return apiDelete<{ deleted: boolean }>(`/bank/counterparties/${id}`);
+	async deleteBank(id: ObjectID): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/bank/banks/${id}`);
+	},
+
+	// -------------------------------------------------------------------------
+	// Bank Accounts
+	// -------------------------------------------------------------------------
+
+	/**
+	 * List all bank accounts for the authenticated user.
+	 * Path: GET /api/v1/bank/accounts
+	 */
+	async listAccounts(): Promise<{ accounts: BankAccount[] }> {
+		return apiGet<{ accounts: BankAccount[] }>("/bank/accounts");
+	},
+
+	/**
+	 * Create a new bank account.
+	 * Path: POST /api/v1/bank/accounts
+	 */
+	async createAccount(
+		payload: CreateBankAccountRequest,
+	): Promise<{ account: BankAccount }> {
+		return apiPost<{ account: BankAccount }, CreateBankAccountRequest>(
+			"/bank/accounts",
+			payload,
+		);
+	},
+
+	/**
+	 * Get bank account by ID.
+	 * Path: GET /api/v1/bank/accounts/:id
+	 */
+	async getAccount(id: ObjectID): Promise<{ account: BankAccount }> {
+		return apiGet<{ account: BankAccount }>(`/bank/accounts/${id}`);
+	},
+
+	/**
+	 * Update bank account by ID.
+	 * Path: PATCH /api/v1/bank/accounts/:id
+	 */
+	async updateAccount(
+		id: ObjectID,
+		payload: UpdateBankAccountRequest,
+	): Promise<{ account: BankAccount }> {
+		return apiPatch<{ account: BankAccount }, UpdateBankAccountRequest>(
+			`/bank/accounts/${id}`,
+			payload,
+		);
+	},
+
+	/**
+	 * Delete bank account by ID.
+	 * Path: DELETE /api/v1/bank/accounts/:id
+	 */
+	async deleteAccount(id: ObjectID): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/bank/accounts/${id}`);
 	},
 
 	// -------------------------------------------------------------------------

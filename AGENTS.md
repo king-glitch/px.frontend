@@ -113,5 +113,5 @@ All API communication follows the backend contract in [API.md](file:///Users/rac
 
 ## 🧪 6. Type Safety & Validation
 
-- **Domain Models**: Export domain interfaces (`BankTransaction`, `BankCategory`, `BankCounterparty`, `User`, `Collection<T>`) matching the backend schema.
+- **Domain Models**: Export domain interfaces (`BankTransaction`, `BankCategory`, `User`, `Collection<T>`) matching the backend schema.
 - **Form Validation**: Handle backend validation violations returned in the error envelope (`errors.violations[field_name]`) to provide inline field feedback.

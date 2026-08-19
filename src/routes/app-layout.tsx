@@ -28,20 +28,19 @@ export const AppLayout: React.FC = () => {
 			display="flex"
 			flexDirection="column"
 		>
-			{/* Ambient background glow */}
+			{/* High-performance GPU-friendly ambient gradient without expensive software blur filters */}
 			<Box
 				position="fixed"
 				top="-10%"
 				left="30%"
 				w="700px"
 				h="600px"
-				rounded="full"
 				pointerEvents="none"
 				opacity={0.35}
-				css={{
+				zIndex={0}
+				style={{
 					background:
-						"radial-gradient(circle, {colors.holo.lavender} 0%, {colors.holo.blush} 50%, transparent 75%)",
-					filter: "blur(90px)",
+						"radial-gradient(circle at center, rgba(221, 214, 254, 0.4) 0%, rgba(251, 207, 232, 0.25) 35%, rgba(165, 243, 252, 0.1) 60%, transparent 75%)",
 				}}
 			/>
 
@@ -54,6 +53,8 @@ export const AppLayout: React.FC = () => {
 				flexDirection="column"
 				px={{ base: 4, md: 8, xl: 10 }}
 				py={{ base: 3, md: 4 }}
+				position="relative"
+				zIndex={1}
 			>
 				{/* Top Global App Navbar — Persists across all pages */}
 				<AppNavbar />

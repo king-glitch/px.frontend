@@ -1,31 +1,31 @@
-"use client"
+"use client";
 
-import { For, SegmentGroup } from "@chakra-ui/react"
-import * as React from "react"
+import { For, SegmentGroup } from "@chakra-ui/react";
+import * as React from "react";
 
-interface Item {
-  value: string
-  label: React.ReactNode
-  disabled?: boolean
+export interface SegmentedControlItem {
+  value: string;
+  label: React.ReactNode;
+  disabled?: boolean;
 }
 
 export interface SegmentedControlProps extends SegmentGroup.RootProps {
-  items: Array<string | Item>
+  items: Array<string | SegmentedControlItem>;
 }
 
-function normalize(items: Array<string | Item>): Item[] {
+function normalize(items: Array<string | SegmentedControlItem>): SegmentedControlItem[] {
   return items.map((item) => {
-    if (typeof item === "string") return { value: item, label: item }
-    return item
-  })
+    if (typeof item === "string") return { value: item, label: item };
+    return item;
+  });
 }
 
 export const SegmentedControl = React.forwardRef<
   HTMLDivElement,
   SegmentedControlProps
 >(function SegmentedControl(props, ref) {
-  const { items, ...rest } = props
-  const data = React.useMemo(() => normalize(items), [items])
+  const { items, ...rest } = props;
+  const data = React.useMemo(() => normalize(items), [items]);
 
   return (
     <SegmentGroup.Root ref={ref} {...rest}>
@@ -43,5 +43,7 @@ export const SegmentedControl = React.forwardRef<
         )}
       </For>
     </SegmentGroup.Root>
-  )
-})
+  );
+});
+
+export default SegmentedControl;

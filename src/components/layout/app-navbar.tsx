@@ -11,6 +11,7 @@ import {
 	Heading,
 	Icon,
 	Spinner,
+	Tabs,
 	Text,
 } from "@chakra-ui/react";
 import React from "react";
@@ -24,7 +25,7 @@ import {
 	LuSun,
 	LuWallet,
 } from "react-icons/lu";
-import { Link, useLocation } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 
 export interface AppNavbarProps {
 	/** Optional additional content rendered in the center */
@@ -34,6 +35,7 @@ export interface AppNavbarProps {
 export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 	const { user, logout } = useAuthContext();
 	const { pathname } = useLocation();
+	const navigate = useNavigate();
 	const { colorMode, toggleColorMode } = useColorMode();
 
 	const { activeQueues, hasActiveQueues } = useActiveQueues({
@@ -50,6 +52,14 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 	const isFinancial = pathname.startsWith("/financial");
 	const isTasks = pathname.startsWith("/tasks");
 	const isHealth = pathname.startsWith("/health");
+
+	const currentPillarValue = isFinancial
+		? "/financial"
+		: isTasks
+			? "/tasks"
+			: isHealth
+				? "/health"
+				: "/dashboard";
 
 	const navPillars = [
 		{
@@ -93,7 +103,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			borderColor="border.glass"
 			rounded="card"
 			shadow="glass"
-			backdropFilter="blur(30px) saturate(1.4)"
+			backdropFilter="blur(20px)"
 			position="relative"
 			zIndex={20}
 		>
@@ -105,7 +115,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 						bg="bg.solid"
 						color="fg.inverted"
 						shadow="glass"
-						transition="all 0.2s cubic-bezier(0.16, 1, 0.3, 1)"
+						transition="transform 0.15s ease-out"
 						_hover={{ transform: "scale(1.08)" }}
 					>
 						<Icon as={LuSparkles} boxSize={4} />
@@ -133,49 +143,73 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 				</Link>
 			</HStack>
 
-			{/* Center: Holistic Pillar Segmented Navigation Bar */}
+			{/* Center: Holistic Pillar Segmented Navigation Bar using Chakra Tabs */}
 			<Flex flex="1" justify="center" px={{ base: 1, md: 4 }}>
 				{children ? (
 					children
 				) : (
-					<HStack
-						bg="bg.muted"
-						borderWidth="1px"
-						borderColor="border"
-						rounded="pill"
-						p={1}
-						gap={1}
-						shadow="glass"
+					<Tabs.Root
+						value={currentPillarValue}
+						onValueChange={(details) => {
+							if (details.value && details.value !== pathname) {
+								navigate(details.value);
+							}
+						}}
+						variant="plain"
+						size="sm"
+						css={{
+							"--tabs-indicator-bg": "colors.bg.solid",
+							"--tabs-indicator-shadow": "shadows.glass",
+							"--tabs-trigger-radius": "radii.full",
+						}}
 					>
-						{navPillars.map((pillar) => (
-							<HStack
-								key={pillar.to}
-								asChild
-								px={{ base: 3, md: 4 }}
-								py={1.5}
-								rounded="pill"
-								bg={pillar.active ? "bg.solid" : "transparent"}
-								color={pillar.active ? "fg.inverted" : "fg.muted"}
-								fontSize="xs"
-								fontWeight={pillar.active ? "bold" : "semibold"}
-								letterSpacing="0.01em"
-								cursor="pointer"
-								transition="all 0.22s cubic-bezier(0.16, 1, 0.3, 1)"
-								shadow={pillar.active ? "glass" : "none"}
-								_hover={{
-									color: pillar.active ? "fg.inverted" : "fg",
-									bg: pillar.active ? "bg.solid" : "bg.panel",
-									transform: pillar.active ? "none" : "translateY(-1px)",
-								}}
-								_active={{ transform: "scale(0.97)" }}
-							>
-								<Link to={pillar.to}>
-									<Icon as={pillar.icon} boxSize={3.5} />
-									<Text whiteSpace="nowrap">{pillar.label}</Text>
-								</Link>
-							</HStack>
-						))}
-					</HStack>
+						<Tabs.List
+							bg="bg.muted"
+							borderWidth="1px"
+							borderColor="border.glass"
+							rounded="pill"
+							p={1}
+							gap={1}
+							shadow="glass"
+							position="relative"
+						>
+							{navPillars.map((pillar) => (
+								<Tabs.Trigger
+									key={pillar.to}
+									value={pillar.to}
+									px={{ base: 3, md: 4 }}
+									py={1.5}
+									cursor="pointer"
+									fontWeight="semibold"
+									fontSize="xs"
+									color={
+										pillar.active
+											? "fg.inverted"
+											: "fg.muted"
+									}
+									_selected={{
+										color: "fg.inverted",
+										fontWeight: "bold",
+									}}
+									_hover={{
+										color: pillar.active
+											? "fg.inverted"
+											: "fg",
+									}}
+									zIndex={1}
+									transition="color 0.15s ease-out"
+								>
+									<Box as="span" display="inline-flex" alignItems="center" gap={2}>
+										<Icon as={pillar.icon} boxSize={3.5} />
+										<Text as="span" whiteSpace="nowrap">
+											{pillar.label}
+										</Text>
+									</Box>
+								</Tabs.Trigger>
+							))}
+							<Tabs.Indicator rounded="pill" />
+						</Tabs.List>
+					</Tabs.Root>
 				)}
 			</Flex>
 
@@ -196,8 +230,11 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 						gap={2}
 						cursor="pointer"
 						shadow="glass"
-						transition="all 0.2s"
-						_hover={{ transform: "translateY(-1px)", bg: "bg.muted" }}
+						transition="transform 0.15s ease-out"
+						_hover={{
+							transform: "translateY(-1px)",
+							bg: "bg.muted",
+						}}
 					>
 						<Link to="/financial/transactions">
 							<Spinner size="xs" color="mint.fg" />
@@ -216,7 +253,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 					cursor="pointer"
 					onClick={toggleColorMode}
 					title={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}
-					transition="all 0.22s cubic-bezier(0.16, 1, 0.3, 1)"
+					transition="transform 0.15s ease-out"
 					_hover={{
 						bg: "bg.panel",
 						shadow: "glass",
@@ -241,7 +278,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 					py={1}
 					shadow="glass"
 					gap={2}
-					transition="all 0.2s"
+					transition="box-shadow 0.15s ease-out"
 					_hover={{ shadow: "float" }}
 				>
 					<Avatar size="xs" name={user?.username} />
@@ -258,7 +295,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 						cursor="pointer"
 						title="Sign out"
 						onClick={logout}
-						transition="all 0.2s"
+						transition="transform 0.15s ease-out"
 						_hover={{
 							color: "red.fg",
 							bg: "red.subtle",

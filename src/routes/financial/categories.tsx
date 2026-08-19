@@ -203,7 +203,7 @@ export const FinancialCategories: React.FC = () => {
 					</DialogHeader>
 					<DialogCloseTrigger />
 					<DialogBody p={0}>
-						<Box as="form" onSubmit={handleSubmit(onSubmit)}>
+						<form noValidate onSubmit={handleSubmit(onSubmit)}>
 							<Stack gap={4}>
 								<Field.Root invalid={!!errors.name} required>
 									<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
@@ -269,7 +269,7 @@ export const FinancialCategories: React.FC = () => {
 									</Button>
 								</HStack>
 							</Stack>
-						</Box>
+						</form>
 					</DialogBody>
 				</DialogContent>
 			</DialogRoot>

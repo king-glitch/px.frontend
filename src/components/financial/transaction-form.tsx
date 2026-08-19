@@ -1,4 +1,5 @@
 import {
+	Badge,
 	Box,
 	Button,
 	Field,
@@ -26,6 +27,8 @@ import {
 	LuTag,
 } from "react-icons/lu";
 import {
+	useAccounts,
+	useBanks,
 	useCategories,
 	useCreateTransaction,
 	useUpdateTransaction,
@@ -34,7 +37,7 @@ import {
 	createTransactionSchema,
 	type CreateTransactionFormData,
 } from "@/api/schemas";
-import type { BankTransaction } from "@/api/types";
+import type { BankAccount, BankTransaction } from "@/api/types";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
 
@@ -71,6 +74,8 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 
 	const { data: categories = [], isLoading: isCategoriesLoading } =
 		useCategories();
+	const { data: banks = [], isLoading: isBanksLoading } = useBanks();
+	const { data: accounts = [], isLoading: isAccountsLoading } = useAccounts();
 	const createMutation = useCreateTransaction();
 	const updateMutation = useUpdateTransaction();
 
@@ -91,12 +96,11 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 			fee: transaction?.fee || 0,
 			currency: transaction?.currency || "THB",
 			occurred_at: toLocalDatetimeInput(transaction?.occurred_at),
+			from_bank_id: transaction?.from_bank_id || "",
+			to_bank_id: transaction?.to_bank_id || "",
 			from_account: transaction?.from_account || "",
+			to_account: transaction?.to_account || "",
 			bank_code: "MANUAL",
-			counterparty_type: "promptpay",
-			counterparty_name: "",
-			counterparty_account: "",
-			counterparty_bank: "",
 			category_id: transaction?.category_id || "",
 			note: transaction?.note || "",
 		},
@@ -112,12 +116,11 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 				fee: transaction.fee || 0,
 				currency: transaction.currency || "THB",
 				occurred_at: toLocalDatetimeInput(transaction.occurred_at),
+				from_bank_id: transaction.from_bank_id || "",
+				to_bank_id: transaction.to_bank_id || "",
 				from_account: transaction.from_account || "",
+				to_account: transaction.to_account || "",
 				bank_code: "MANUAL",
-				counterparty_type: "promptpay",
-				counterparty_name: "",
-				counterparty_account: "",
-				counterparty_bank: "",
 				category_id: transaction.category_id || "",
 				note: transaction.note || "",
 			});
@@ -138,7 +141,10 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 						fee: Number(data.fee) || 0,
 						direction: data.direction,
 						occurred_at: occurredAtIso,
+						from_bank_id: data.from_bank_id || undefined,
+						to_bank_id: data.to_bank_id || undefined,
 						from_account: data.from_account || undefined,
+						to_account: data.to_account || undefined,
 						note: data.note || "",
 						category_id: data.category_id || "",
 					},
@@ -155,12 +161,11 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 					fee: Number(data.fee) || 0,
 					currency: data.currency || "THB",
 					occurred_at: occurredAtIso,
+					from_bank_id: data.from_bank_id || undefined,
+					to_bank_id: data.to_bank_id || undefined,
 					from_account: data.from_account || undefined,
+					to_account: data.to_account || undefined,
 					bank_code: data.bank_code || "MANUAL",
-					counterparty_type: data.counterparty_type || undefined,
-					counterparty_name: data.counterparty_name || undefined,
-					counterparty_account: data.counterparty_account || undefined,
-					counterparty_bank: data.counterparty_bank || undefined,
 					category_id: data.category_id || undefined,
 					note: data.note || undefined,
 				});
@@ -180,7 +185,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 	};
 
 	return (
-		<Box as="form" onSubmit={handleSubmit(onSubmit)}>
+		<form noValidate onSubmit={handleSubmit(onSubmit)}>
 			<Stack gap={4}>
 				{/* Direction Selector */}
 				<Field.Root invalid={!!errors.direction}>
@@ -284,6 +289,168 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 					</HStack>
 				</Field.Root>
 
+				{/* From Bank & Account */}
+				<Box>
+					{accounts.length > 0 && (
+						<HStack gap={1.5} wrap="wrap" mb={2}>
+							<Text fontSize="10px" color="fg.muted" fontWeight="medium">
+								From Account Preset:
+							</Text>
+							{accounts.map((acc: BankAccount) => {
+								const b = banks.find((bk) => bk.id === acc.bank_id);
+								return (
+									<Badge
+										key={acc.id}
+										size="xs"
+										variant="outline"
+										cursor="pointer"
+										_hover={{ bg: "bg.muted", borderColor: "border.emphasized" }}
+										onClick={() => {
+											setValue("from_bank_id", acc.bank_id, {
+												shouldValidate: true,
+												shouldDirty: true,
+											});
+											setValue("from_account", acc.account_number, {
+												shouldValidate: true,
+												shouldDirty: true,
+											});
+										}}
+									>
+										{b?.code || "Bank"} · {acc.name} ({acc.account_number.slice(-4)})
+									</Badge>
+								);
+							})}
+						</HStack>
+					)}
+					<Grid templateColumns={{ base: "1fr", sm: "1fr 1fr" }} gap={3}>
+						<Field.Root invalid={!!errors.from_bank_id}>
+							<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
+								From Bank
+							</Field.Label>
+							<SearchableSelect
+								items={banks.map((b) => ({
+									label: `${b.code} - ${b.name}`,
+									value: b.id,
+								}))}
+								value={watch("from_bank_id") || ""}
+								placeholder={
+									isBanksLoading
+										? "Loading banks..."
+										: "Select source bank..."
+								}
+								clearLabel="(None)"
+								searchPlaceholder="Search bank..."
+								width="100%"
+								portalled={false}
+								onValueChange={(val) =>
+									setValue("from_bank_id", val, {
+										shouldValidate: true,
+										shouldDirty: true,
+									})
+								}
+							/>
+						</Field.Root>
+
+						<Field.Root invalid={!!errors.from_account}>
+							<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
+								From Account
+							</Field.Label>
+							<HStack bg="bg.muted" px={3} py={1} rounded="pill" borderWidth="1px">
+								<Icon as={LuCreditCard} color="fg.muted" boxSize={4} />
+								<Input
+									placeholder="e.g. xxx-x-x1234-x"
+									border="none"
+									bg="transparent"
+									outline="none"
+									fontSize="sm"
+									{...register("from_account")}
+								/>
+							</HStack>
+						</Field.Root>
+					</Grid>
+				</Box>
+
+				{/* To Bank & Account */}
+				<Box>
+					{accounts.length > 0 && (
+						<HStack gap={1.5} wrap="wrap" mb={2}>
+							<Text fontSize="10px" color="fg.muted" fontWeight="medium">
+								To Account Preset:
+							</Text>
+							{accounts.map((acc: BankAccount) => {
+								const b = banks.find((bk) => bk.id === acc.bank_id);
+								return (
+									<Badge
+										key={acc.id}
+										size="xs"
+										variant="outline"
+										cursor="pointer"
+										_hover={{ bg: "bg.muted", borderColor: "border.emphasized" }}
+										onClick={() => {
+											setValue("to_bank_id", acc.bank_id, {
+												shouldValidate: true,
+												shouldDirty: true,
+											});
+											setValue("to_account", acc.account_number, {
+												shouldValidate: true,
+												shouldDirty: true,
+											});
+										}}
+									>
+										{b?.code || "Bank"} · {acc.name} ({acc.account_number.slice(-4)})
+									</Badge>
+								);
+							})}
+						</HStack>
+					)}
+					<Grid templateColumns={{ base: "1fr", sm: "1fr 1fr" }} gap={3}>
+						<Field.Root invalid={!!errors.to_bank_id}>
+							<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
+								To Bank / Destination
+							</Field.Label>
+							<SearchableSelect
+								items={banks.map((b) => ({
+									label: `${b.code} - ${b.name}`,
+									value: b.id,
+								}))}
+								value={watch("to_bank_id") || ""}
+								placeholder={
+									isBanksLoading
+										? "Loading banks..."
+										: "Select destination bank..."
+								}
+								clearLabel="(None)"
+								searchPlaceholder="Search bank..."
+								width="100%"
+								portalled={false}
+								onValueChange={(val) =>
+									setValue("to_bank_id", val, {
+										shouldValidate: true,
+										shouldDirty: true,
+									})
+								}
+							/>
+						</Field.Root>
+
+						<Field.Root invalid={!!errors.to_account}>
+							<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
+								To Account
+							</Field.Label>
+							<HStack bg="bg.muted" px={3} py={1} rounded="pill" borderWidth="1px">
+								<Icon as={LuCreditCard} color="fg.muted" boxSize={4} />
+								<Input
+									placeholder="e.g. 668-0-57282-0"
+									border="none"
+									bg="transparent"
+									outline="none"
+									fontSize="sm"
+									{...register("to_account")}
+								/>
+							</HStack>
+						</Field.Root>
+					</Grid>
+				</Box>
+
 				{/* Category */}
 				<Field.Root invalid={!!errors.category_id}>
 					<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
@@ -315,53 +482,6 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 						}
 					/>
 				</Field.Root>
-
-				{/* Counterparty Fields (for Create mode or additional info) */}
-				{!isEdit && (
-					<Box bg="bg.muted" p={3} rounded="card" borderWidth="1px">
-						<Text fontSize="xs" fontWeight="semibold" color="fg.muted" mb={2}>
-							Payee / Counterparty (Optional)
-						</Text>
-						<Stack gap={2}>
-							<Input
-								placeholder="Counterparty Name (e.g. Starbucks, Somchai)"
-								size="sm"
-								rounded="pill"
-								bg="bg.panel"
-								{...register("counterparty_name")}
-							/>
-							<Grid templateColumns="1fr 1fr" gap={2}>
-								<SearchableSelect
-									items={[
-										{ label: "PromptPay", value: "promptpay" },
-										{ label: "Bank Account", value: "account" },
-										{ label: "Company", value: "company" },
-										{ label: "Card", value: "card" },
-									]}
-									value={watch("counterparty_type") || "promptpay"}
-									allowClear={false}
-									searchPlaceholder="Filter type..."
-									width="100%"
-									portalled={false}
-									onValueChange={(val) =>
-										setValue(
-											"counterparty_type",
-											val as "account" | "promptpay" | "company" | "card",
-											{ shouldValidate: true, shouldDirty: true },
-										)
-									}
-								/>
-								<Input
-									placeholder="Account / Phone / Tax ID"
-									size="sm"
-									rounded="pill"
-									bg="bg.panel"
-									{...register("counterparty_account")}
-								/>
-							</Grid>
-						</Stack>
-					</Box>
-				)}
 
 				{/* Note */}
 				<Field.Root invalid={!!errors.note}>
@@ -403,7 +523,7 @@ export const TransactionForm: React.FC<TransactionFormProps> = ({
 					</Button>
 				</HStack>
 			</Stack>
-		</Box>
+		</form>
 	);
 };
 

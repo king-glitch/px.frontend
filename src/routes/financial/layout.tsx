@@ -5,17 +5,18 @@ import {
 	HStack,
 	Heading,
 	Icon,
+	Tabs,
 	Text,
 	VStack,
 } from "@chakra-ui/react";
 import React from "react";
 import {
+	LuBuilding2,
 	LuFolder,
 	LuReceipt,
-	LuUsers,
 	LuWallet,
 } from "react-icons/lu";
-import { Link, Outlet, useLocation } from "react-router";
+import { Link, Outlet, useLocation, useNavigate } from "react-router";
 
 export const glassCard = {
 	bg: "bg.glass",
@@ -23,7 +24,7 @@ export const glassCard = {
 	borderColor: "border.glass",
 	rounded: "card",
 	shadow: "glass",
-	backdropFilter: "blur(30px) saturate(1.4)",
+	backdropFilter: "blur(20px)",
 } as const;
 
 interface NavItem {
@@ -35,6 +36,7 @@ interface NavItem {
 
 export const FinancialLayout: React.FC = () => {
 	const location = useLocation();
+	const navigate = useNavigate();
 
 	const isDashboardPrefix = location.pathname.startsWith("/dashboard/financial");
 	const basePath = isDashboardPrefix ? "/dashboard/financial" : "/financial";
@@ -43,8 +45,16 @@ export const FinancialLayout: React.FC = () => {
 		{ label: "Overview", to: basePath, icon: LuWallet, exact: true },
 		{ label: "Transactions", to: `${basePath}/transactions`, icon: LuReceipt },
 		{ label: "Categories", to: `${basePath}/categories`, icon: LuFolder },
-		{ label: "Counterparties", to: `${basePath}/counterparties`, icon: LuUsers },
+		{ label: "Banks", to: `${basePath}/banks`, icon: LuBuilding2 },
 	];
+
+	// Determine active tab value
+	const currentTab =
+		navItems.find((item) =>
+			item.exact
+				? location.pathname === item.to || location.pathname === `${item.to}/`
+				: location.pathname.startsWith(item.to)
+		)?.to || basePath;
 
 	return (
 		<Box>
@@ -73,47 +83,67 @@ export const FinancialLayout: React.FC = () => {
 					</Text>
 				</VStack>
 
-				{/* Navigation Sub-Pill Menu */}
-				<HStack
-					bg="bg.panel"
-					borderWidth="1px"
-					borderColor="border.glass"
-					rounded="pill"
-					p={1}
-					shadow="glass"
-					gap={1}
-					overflowX="auto"
-					maxW="full"
+				{/* Navigation Sub-Tabs using Chakra Tabs */}
+				<Tabs.Root
+					value={currentTab}
+					onValueChange={(details) => {
+						if (details.value && details.value !== location.pathname) {
+							navigate(details.value);
+						}
+					}}
+					variant="plain"
+					size="sm"
+					css={{
+						"--tabs-indicator-bg": "colors.bg.solid",
+						"--tabs-indicator-shadow": "shadows.glass",
+						"--tabs-trigger-radius": "radii.full",
+					}}
 				>
-					{navItems.map((item) => {
-						const isActive = item.exact
-							? location.pathname === item.to || location.pathname === `${item.to}/`
-							: location.pathname.startsWith(item.to);
+					<Tabs.List
+						bg="bg.panel"
+						borderWidth="1px"
+						borderColor="border.glass"
+						rounded="pill"
+						p={1}
+						shadow="glass"
+						gap={1}
+						position="relative"
+					>
+						{navItems.map((item) => {
+							const isActive = item.to === currentTab;
 
-						return (
-							<HStack
-								key={item.to}
-								asChild
-								px={3.5}
-								py={1.5}
-								rounded="pill"
-								bg={isActive ? "bg.solid" : "transparent"}
-								color={isActive ? "fg.inverted" : "fg.muted"}
-								fontSize="xs"
-								fontWeight="semibold"
-								cursor="pointer"
-								whiteSpace="nowrap"
-								transition="all 0.2s ease"
-								_hover={{ color: isActive ? "fg.inverted" : "fg" }}
-							>
-								<Link to={item.to}>
-									<Icon as={item.icon} boxSize={3.5} />
-									<Text>{item.label}</Text>
-								</Link>
-							</HStack>
-						);
-					})}
-				</HStack>
+							return (
+								<Tabs.Trigger
+									key={item.to}
+									value={item.to}
+									px={3.5}
+									py={1.5}
+									cursor="pointer"
+									fontWeight="semibold"
+									fontSize="xs"
+									color={isActive ? "fg.inverted" : "fg.muted"}
+									_selected={{
+										color: "fg.inverted",
+										fontWeight: "bold",
+									}}
+									_hover={{
+										color: isActive ? "fg.inverted" : "fg",
+									}}
+									zIndex={1}
+									transition="color 0.15s ease-out"
+								>
+									<Box as="span" display="inline-flex" alignItems="center" gap={2}>
+										<Icon as={item.icon} boxSize={3.5} />
+										<Text as="span" whiteSpace="nowrap">
+											{item.label}
+										</Text>
+									</Box>
+								</Tabs.Trigger>
+							);
+						})}
+						<Tabs.Indicator rounded="pill" />
+					</Tabs.List>
+				</Tabs.Root>
 			</Flex>
 
 			{/* Outlet / Page Content */}
