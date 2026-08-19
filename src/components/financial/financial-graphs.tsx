@@ -159,7 +159,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 	return (
 		<Stack gap={6}>
 			{/* 1. 6-Month Cash Flow Trend Graph Card */}
-			<Box {...glassCard} p={{ base: 4, md: 6 }} position="relative">
+			<Box bg="bg.panel" borderWidth="1px" borderColor="border" rounded="2xl" p={{ base: 4, md: 6 }} position="relative">
 				<Flex
 					justify="space-between"
 					align={{ base: "flex-start", sm: "center" }}
@@ -421,7 +421,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 			{/* 2. Redesigned Visual Intelligence Section: Donut Breakdown + Financial Velocity */}
 			<Grid templateColumns={{ base: "1fr", lg: "1.4fr 1fr" }} gap={6}>
 				{/* Category Visual Breakdown with Interactive SVG Donut */}
-				<Box {...glassCard} p={{ base: 4, md: 5 }}>
+				<Box bg="bg.panel" borderWidth="1px" borderColor="border" rounded="2xl" p={{ base: 4, md: 5 }}>
 					<Flex justify="space-between" align="center" mb={4}>
 						<HStack gap={2}>
 							<Icon as={LuChartPie} color="mint.fg" />
@@ -618,7 +618,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 				</Box>
 
 				{/* Financial Velocity & Health Intelligence Card */}
-				<Box {...glassCard} p={{ base: 4, md: 5 }}>
+				<Box bg="bg.panel" borderWidth="1px" borderColor="border" rounded="2xl" p={{ base: 4, md: 5 }}>
 					<HStack gap={2} mb={4}>
 						<Icon as={LuSparkles} color="mint.fg" />
 						<Heading fontSize="sm" fontWeight="bold">

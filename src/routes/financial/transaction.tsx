@@ -260,7 +260,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 
 						{/* Key Details Grid */}
 						<Stack gap={4}>
-							<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+							<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 								<HStack gap={2} color="fg.muted">
 									<Icon as={LuCalendar} boxSize={4} />
 									<Text fontSize="xs">Occurred At</Text>
@@ -275,7 +275,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 								</Text>
 							</Flex>
 
-							<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+							<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 								<HStack gap={2} color="fg.muted">
 									<Icon as={LuReceipt} boxSize={4} />
 									<Text fontSize="xs">Category</Text>
@@ -295,7 +295,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 							</Flex>
 
 							{transaction.fee > 0 && (
-								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuCreditCard} boxSize={4} />
 										<Text fontSize="xs">Transfer Fee</Text>
@@ -311,7 +311,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 							)}
 
 							{fromBank && (
-								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuCreditCard} boxSize={4} />
 										<Text fontSize="xs">From Bank</Text>
@@ -323,7 +323,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 							)}
 
 							{transaction.from_account && (
-								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuCreditCard} boxSize={4} />
 										<Text fontSize="xs">From Account</Text>
@@ -337,7 +337,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 							)}
 
 							{toBank && (
-								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuCreditCard} boxSize={4} />
 										<Text fontSize="xs">To Bank / Destination</Text>
@@ -349,7 +349,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 							)}
 
 							{transaction.to_account && (
-								<Flex justify="space-between" py={2} borderBottomWidth="1px" borderColor="border">
+								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuCreditCard} boxSize={4} />
 										<Text fontSize="xs">To Account</Text>
@@ -363,7 +363,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 							)}
 
 							{transaction.note && (
-								<Stack gap={1} py={2} borderBottomWidth="1px" borderColor="border">
+								<Stack gap={1} py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuFileText} boxSize={4} />
 										<Text fontSize="xs">Note / Remarks</Text>

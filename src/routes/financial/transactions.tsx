@@ -242,7 +242,7 @@ export const FinancialTransactions: React.FC = () => {
 			</DialogRoot>
 
 			{/* Main Transactions Table Card */}
-			<Box {...glassCard} p={{ base: 4, md: 6 }}>
+			<Box {...glassCard} p={{ base: 4, md: 6 }} overflow="hidden">
 				<Flex justify="space-between" align="center" mb={4} wrap="wrap" gap={2}>
 					<VStack align="flex-start" gap={0}>
 						<Heading fontSize="md" fontWeight="bold">
@@ -272,21 +272,22 @@ export const FinancialTransactions: React.FC = () => {
 						<Text fontSize="sm" fontWeight="medium">
 							No transactions found for this date range.
 						</Text>
-						<Button
+						<PillButton
 							size="xs"
-							rounded="pill"
+							variant="dark"
+							icon={LuPlus}
 							mt={2}
 							onClick={() => setIsCreateOpen(true)}
 						>
 							Add Transaction
-						</Button>
+						</PillButton>
 					</VStack>
 				) : (
 					<Stack gap={4}>
 						<Table.ScrollArea>
 							<Table.Root size="sm" variant="line">
 								<Table.Header>
-									<Table.Row>
+									<Table.Row bg="bg.muted">
 										<Table.ColumnHeader fontSize="xs" w="130px">
 											Date
 										</Table.ColumnHeader>

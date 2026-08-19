@@ -124,154 +124,63 @@ export const FinancialOverview: React.FC = () => {
 				</DialogContent>
 			</DialogRoot>
 
-			{/* Current Period Stat Cards Grid */}
-			<SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={4}>
-				{/* Total In */}
-				<Box {...glassCard} p={5} position="relative" overflow="hidden">
-					<Stat.Root>
-						<HStack justify="space-between" align="flex-start">
-							<Stat.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
-								Total Income (In)
-							</Stat.Label>
-							<Circle size="7" bg="green.muted" color="green.fg">
-								<Icon as={LuArrowDownLeft} boxSize={3.5} />
-							</Circle>
-						</HStack>
-						{isSummaryLoading ? (
-							<Skeleton h="8" mt={2} rounded="pill" />
-						) : (
-							<Stat.ValueText
-								fontSize={{ base: "xl", md: "2xl" }}
-								fontWeight="bold"
-								color="green.fg"
-								mt={1}
-							>
-								<FormatNumber
-									value={summary?.total_in || 0}
-									style="currency"
-									currency="THB"
-								/>
-							</Stat.ValueText>
-						)}
-						<Text fontSize="11px" color="fg.muted" mt={1}>
-							{summary?.count || 0} recorded transactions
+			{/* Current Period Stat Summary - Ultra Minimal Redesign */}
+			<VStack align="center" gap={8} py={8} mb={4}>
+				<VStack gap={0} align="center">
+					<Text fontSize="sm" color="fg.muted" fontWeight="medium" mb={2}>
+						Net Cash Flow
+					</Text>
+					{isSummaryLoading ? (
+						<Skeleton h="16" w="240px" rounded="pill" />
+					) : (
+						<Text
+							fontSize={{ base: "5xl", md: "6xl" }}
+							fontWeight="normal"
+							letterSpacing="-0.04em"
+							lineHeight="1"
+							color="fg"
+						>
+							<FormatNumber value={summary?.net || 0} style="currency" currency="THB" />
 						</Text>
-					</Stat.Root>
-				</Box>
+					)}
+				</VStack>
 
-				{/* Total Out */}
-				<Box {...glassCard} p={5} position="relative" overflow="hidden">
-					<Stat.Root>
-						<HStack justify="space-between" align="flex-start">
-							<Stat.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
-								Total Expenses (Out)
-							</Stat.Label>
-							<Circle size="7" bg="red.muted" color="red.fg">
-								<Icon as={LuArrowUpRight} boxSize={3.5} />
-							</Circle>
-						</HStack>
-						{isSummaryLoading ? (
-							<Skeleton h="8" mt={2} rounded="pill" />
-						) : (
-							<Stat.ValueText
-								fontSize={{ base: "xl", md: "2xl" }}
-								fontWeight="bold"
-								color="red.fg"
-								mt={1}
-							>
-								<FormatNumber
-									value={summary?.total_out || 0}
-									style="currency"
-									currency="THB"
-								/>
-							</Stat.ValueText>
-						)}
-						<Text fontSize="11px" color="fg.muted" mt={1}>
-							Excluding fees
+				<HStack gap={{ base: 6, md: 12 }} justify="center" wrap="wrap">
+					<VStack gap={0} align="center">
+						<Text fontSize="xs" color="fg.muted" mb={1}>
+							In
 						</Text>
-					</Stat.Root>
-				</Box>
+						<Text fontSize="lg" fontWeight="medium" color="green.fg">
+							<FormatNumber value={summary?.total_in || 0} style="currency" currency="THB" />
+						</Text>
+					</VStack>
 
-				{/* Total Fees */}
-				<Box {...glassCard} p={5} position="relative" overflow="hidden">
-					<Stat.Root>
-						<HStack justify="space-between" align="flex-start">
-							<Stat.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
-								Total Transfer Fees
-							</Stat.Label>
-							<Circle size="7" bg="bg.muted" color="fg.muted">
-								<Icon as={LuCreditCard} boxSize={3.5} />
-							</Circle>
-						</HStack>
-						{isSummaryLoading ? (
-							<Skeleton h="8" mt={2} rounded="pill" />
-						) : (
-							<Stat.ValueText
-								fontSize={{ base: "xl", md: "2xl" }}
-								fontWeight="bold"
-								mt={1}
-							>
-								<FormatNumber
-									value={summary?.total_fee || 0}
-									style="currency"
-									currency="THB"
-								/>
-							</Stat.ValueText>
-						)}
-						<Text fontSize="11px" color="fg.muted" mt={1}>
-							Bank / promptpay processing
-						</Text>
-					</Stat.Root>
-				</Box>
+					<Box w="1px" h="8" bg="border" />
 
-				{/* Net Balance */}
-				<Box
-					{...glassCard}
-					p={5}
-					position="relative"
-					overflow="hidden"
-					borderColor={
-						(summary?.net || 0) >= 0 ? "mint.solid" : "red.500"
-					}
-				>
-					<Stat.Root>
-						<HStack justify="space-between" align="flex-start">
-							<Stat.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
-								Net Cash Flow
-							</Stat.Label>
-							<Circle
-								size="7"
-								bg={(summary?.net || 0) >= 0 ? "mint.solid" : "red.solid"}
-								color={(summary?.net || 0) >= 0 ? "mint.contrast" : "fg.inverted"}
-							>
-								<Icon
-									as={(summary?.net || 0) >= 0 ? LuTrendingUp : LuTrendingDown}
-									boxSize={3.5}
-								/>
-							</Circle>
-						</HStack>
-						{isSummaryLoading ? (
-							<Skeleton h="8" mt={2} rounded="pill" />
-						) : (
-							<Stat.ValueText
-								fontSize={{ base: "xl", md: "2xl" }}
-								fontWeight="bold"
-								color={(summary?.net || 0) >= 0 ? "mint.fg" : "red.fg"}
-								mt={1}
-							>
-								<FormatNumber
-									value={summary?.net || 0}
-									style="currency"
-									currency="THB"
-								/>
-							</Stat.ValueText>
-						)}
-						<Text fontSize="11px" color="fg.muted" mt={1}>
-							Income − Expenses − Fees
+					<VStack gap={0} align="center">
+						<Text fontSize="xs" color="fg.muted" mb={1}>
+							Out
 						</Text>
-					</Stat.Root>
-				</Box>
-			</SimpleGrid>
+						<Text fontSize="lg" fontWeight="medium" color="fg">
+							<FormatNumber value={summary?.total_out || 0} style="currency" currency="THB" />
+						</Text>
+					</VStack>
+
+					{((summary?.total_fee || 0) > 0) && (
+						<>
+							<Box w="1px" h="8" bg="border" />
+							<VStack gap={0} align="center">
+								<Text fontSize="xs" color="fg.muted" mb={1}>
+									Fees
+								</Text>
+								<Text fontSize="lg" fontWeight="medium" color="fg.muted">
+									<FormatNumber value={summary?.total_fee || 0} style="currency" currency="THB" />
+								</Text>
+							</VStack>
+						</>
+					)}
+				</HStack>
+			</VStack>
 
 			{/* Comprehensive Multi-Month Graphs & Distribution Breakdown */}
 			<FinancialGraphs
@@ -280,7 +189,7 @@ export const FinancialOverview: React.FC = () => {
 			/>
 
 			{/* Recent 5 Transactions Peek Card */}
-			<Box {...glassCard} p={5}>
+			<Box bg="bg.panel" borderWidth="1px" borderColor="border" rounded="2xl" p={{ base: 5, md: 6 }} overflow="hidden">
 				<Flex justify="space-between" align="center" mb={4}>
 					<HStack gap={2}>
 						<Icon as={LuReceipt} color="mint.fg" />
@@ -333,7 +242,7 @@ export const FinancialOverview: React.FC = () => {
 					<Table.ScrollArea>
 						<Table.Root size="sm" variant="line">
 							<Table.Header>
-								<Table.Row>
+								<Table.Row bg="bg.muted">
 									<Table.ColumnHeader fontSize="xs" w="40px"></Table.ColumnHeader>
 									<Table.ColumnHeader fontSize="xs">Date</Table.ColumnHeader>
 									<Table.ColumnHeader fontSize="xs">Payee / Description</Table.ColumnHeader>

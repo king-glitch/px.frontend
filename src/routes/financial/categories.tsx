@@ -318,83 +318,87 @@ export const FinancialCategories: React.FC = () => {
 			</DialogRoot>
 
 			{/* Categories Grid */}
-			{isLoading ? (
-				<SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={4}>
-					<Skeleton h="28" rounded="card" />
-					<Skeleton h="28" rounded="card" />
-					<Skeleton h="28" rounded="card" />
-					<Skeleton h="28" rounded="card" />
-				</SimpleGrid>
-			) : categories.length === 0 ? (
-				<Box {...glassCard} p={12} textAlign="center">
-					<VStack gap={3}>
+			<Box {...glassCard} p={{ base: 4, md: 6 }}>
+				{isLoading ? (
+					<SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={4}>
+						<Skeleton h="28" rounded="xl" />
+						<Skeleton h="28" rounded="xl" />
+						<Skeleton h="28" rounded="xl" />
+						<Skeleton h="28" rounded="xl" />
+					</SimpleGrid>
+				) : categories.length === 0 ? (
+					<VStack py={12} textAlign="center" gap={3}>
 						<Icon as={LuFolder} boxSize={10} color="fg.muted" />
 						<Text fontSize="sm" fontWeight="medium">
 							No categories created yet.
 						</Text>
-						<Button
+						<PillButton
 							size="xs"
-							rounded="pill"
+							variant="dark"
+							icon={LuPlus}
 							onClick={handleOpenCreate}
 						>
 							Create First Category
-						</Button>
+						</PillButton>
 					</VStack>
-				</Box>
-			) : (
-				<SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={4}>
-					{categories.map((category) => (
-						<Box
-							key={category.id}
-							{...glassCard}
-							p={4}
-							position="relative"
-							transition="all 0.2s ease"
-							_hover={{ transform: "translateY(-2px)", shadow: "float" }}
-						>
-							<Flex justify="space-between" align="flex-start">
-								<HStack gap={2.5}>
-									<Circle size="8" bg={category.color || "blue.500"} color="white">
-										<Icon as={LuTag} boxSize={3.5} />
-									</Circle>
-									<VStack align="flex-start" gap={0}>
-										<Text fontSize="sm" fontWeight="bold">
-											{category.name}
-										</Text>
-										<Text fontSize="10px" color="fg.muted">
-											ID: {category.id.slice(-6)}
-										</Text>
-									</VStack>
-								</HStack>
+				) : (
+					<SimpleGrid columns={{ base: 1, sm: 2, md: 3, lg: 4 }} gap={4}>
+						{categories.map((category) => (
+							<Box
+								key={category.id}
+								bg="bg.muted"
+								borderWidth="1px"
+								borderColor="border"
+								rounded="xl"
+								p={4}
+								position="relative"
+								transition="all 0.2s ease"
+								_hover={{ transform: "translateY(-2px)", shadow: "float" }}
+							>
+								<Flex justify="space-between" align="flex-start">
+									<HStack gap={2.5}>
+										<Circle size="8" bg={category.color || "blue.500"} color="white">
+											<Icon as={LuTag} boxSize={3.5} />
+										</Circle>
+										<VStack align="flex-start" gap={0}>
+											<Text fontSize="sm" fontWeight="bold">
+												{category.name}
+											</Text>
+											<Text fontSize="10px" color="fg.muted">
+												ID: {category.id.slice(-6)}
+											</Text>
+										</VStack>
+									</HStack>
 
-								<HStack gap={1}>
-									<IconButton
-										size="xs"
-										variant="ghost"
-										aria-label="Edit category"
-										title="Edit"
-										rounded="full"
-										onClick={() => handleOpenEdit(category)}
-									>
-										<Icon as={LuPencil} boxSize={3.5} />
-									</IconButton>
-									<IconButton
-										size="xs"
-										variant="ghost"
-										colorPalette="red"
-										aria-label="Delete category"
-										title="Delete"
-										rounded="full"
-										onClick={() => setDeletingCategory(category)}
-									>
-										<Icon as={LuTrash2} boxSize={3.5} />
-									</IconButton>
-								</HStack>
-							</Flex>
-						</Box>
-					))}
-				</SimpleGrid>
-			)}
+									<HStack gap={1}>
+										<IconButton
+											size="xs"
+											variant="ghost"
+											aria-label="Edit category"
+											title="Edit"
+											rounded="full"
+											onClick={() => handleOpenEdit(category)}
+										>
+											<Icon as={LuPencil} boxSize={3.5} />
+										</IconButton>
+										<IconButton
+											size="xs"
+											variant="ghost"
+											colorPalette="red"
+											aria-label="Delete category"
+											title="Delete"
+											rounded="full"
+											onClick={() => setDeletingCategory(category)}
+										>
+											<Icon as={LuTrash2} boxSize={3.5} />
+										</IconButton>
+									</HStack>
+								</Flex>
+							</Box>
+						))}
+					</SimpleGrid>
+				)}
+			</Box>
 		</Stack>
 	);
 };
