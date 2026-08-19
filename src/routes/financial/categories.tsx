@@ -4,6 +4,7 @@ import {
 	Box,
 	Button,
 	Circle,
+	ColorPicker,
 	Dialog,
 	Field,
 	Flex,
@@ -13,6 +14,8 @@ import {
 	Icon,
 	IconButton,
 	Input,
+	parseColor,
+	Portal,
 	SimpleGrid,
 	Skeleton,
 	Stack,
@@ -55,16 +58,27 @@ import { toaster } from "@/components/ui/toaster";
 import { glassCard } from "@/routes/financial/layout";
 
 const presetColors = [
+	// Project accents (mint + holo palette from theme.ts)
+	"#7FC91F", // Mint 600
+	"#63A017", // Mint 700
+	"#A5F3FC", // Holo Cyan
+	"#DDD6FE", // Holo Lavender
+	"#FBCFE8", // Holo Blush
+	"#FEF08A", // Holo Butter
+	// General accent spectrum
 	"#3B82F6", // Blue
+	"#0EA5E9", // Sky
 	"#10B981", // Emerald
 	"#F59E0B", // Amber
+	"#F97316", // Orange
 	"#EF4444", // Red
-	"#8B5CF6", // Purple
 	"#EC4899", // Pink
-	"#06B6D4", // Cyan
-	"#84CC16", // Lime
+	"#D946EF", // Fuchsia
+	"#8B5CF6", // Purple
 	"#6366F1", // Indigo
 	"#14B8A6", // Teal
+	"#84CC16", // Lime
+	"#64748B", // Slate
 ];
 
 export const FinancialCategories: React.FC = () => {
@@ -243,6 +257,56 @@ export const FinancialCategories: React.FC = () => {
 												onClick={() => setValue("color", color)}
 											/>
 										))}
+
+										{/* Custom color via full Chakra color picker */}
+										<ColorPicker.Root
+											value={parseColor(currentColor || presetColors[0])}
+											onValueChange={(details) =>
+												setValue("color", details.value.toString("hex"))
+											}
+											maxW="none"
+										>
+											<ColorPicker.HiddenInput />
+											<ColorPicker.Control>
+												<ColorPicker.Trigger asChild>
+													<Circle
+														size="6"
+														cursor="pointer"
+														borderWidth="1px"
+														borderColor="border"
+														bg="bg.muted"
+														color="fg.muted"
+														fontSize="xs"
+														transition="transform 0.15s ease"
+														_hover={{ transform: "scale(1.15)" }}
+													>
+														+
+													</Circle>
+												</ColorPicker.Trigger>
+											</ColorPicker.Control>
+											<Portal>
+												<ColorPicker.Positioner>
+													<ColorPicker.Content {...glassCard} bg="bg.panel" p={3}>
+														<ColorPicker.Area />
+														<HStack mt={3} gap={3}>
+															<ColorPicker.EyeDropper size="xs" variant="outline" />
+															<Stack flex="1" gap={2}>
+																<ColorPicker.ChannelSlider channel="hue" />
+																<ColorPicker.ChannelSlider channel="alpha" />
+															</Stack>
+														</HStack>
+														<ColorPicker.ChannelInput channel="hex" mt={3} />
+														<ColorPicker.SwatchGroup mt={3}>
+															{presetColors.map((color) => (
+																<ColorPicker.SwatchTrigger key={color} value={color}>
+																	<ColorPicker.Swatch value={color} boxSize="5" />
+																</ColorPicker.SwatchTrigger>
+															))}
+														</ColorPicker.SwatchGroup>
+													</ColorPicker.Content>
+												</ColorPicker.Positioner>
+											</Portal>
+										</ColorPicker.Root>
 									</HStack>
 								</Field.Root>
 

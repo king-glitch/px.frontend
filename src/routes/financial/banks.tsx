@@ -34,6 +34,7 @@ import {
 import {
 	useAccounts,
 	useBanks,
+	useCategories,
 	useCreateAccount,
 	useCreateBank,
 	useDeleteAccount,
@@ -71,6 +72,10 @@ export const FinancialBanks: React.FC = () => {
 	const createBankMutation = useCreateBank();
 	const updateBankMutation = useUpdateBank();
 	const deleteBankMutation = useDeleteBank();
+
+	// Categories data
+	const { data: categories = [] } = useCategories();
+	const categoriesMap = new Map(categories.map((c) => [c.id, c]));
 
 	// Accounts data & mutations
 	const { data: accounts = [], isLoading: isAccountsLoading } = useAccounts();
@@ -114,6 +119,8 @@ export const FinancialBanks: React.FC = () => {
 			bank_id: "",
 			account_number: "",
 			name: "",
+			is_third_party: false,
+			default_category_id: "",
 			note: "",
 		},
 	});
@@ -176,6 +183,8 @@ export const FinancialBanks: React.FC = () => {
 			bank_id: banks[0]?.id || "",
 			account_number: "",
 			name: "",
+			is_third_party: false,
+			default_category_id: "",
 			note: "",
 		});
 		setIsAccountModalOpen(true);
@@ -187,6 +196,8 @@ export const FinancialBanks: React.FC = () => {
 			bank_id: account.bank_id,
 			account_number: account.account_number,
 			name: account.name,
+			is_third_party: account.is_third_party || false,
+			default_category_id: account.default_category_id || "",
 			note: account.note || "",
 		});
 		setIsAccountModalOpen(true);
@@ -201,6 +212,8 @@ export const FinancialBanks: React.FC = () => {
 						bank_id: data.bank_id,
 						account_number: data.account_number,
 						name: data.name,
+						is_third_party: data.is_third_party || false,
+						default_category_id: data.default_category_id || undefined,
 						note: data.note || undefined,
 					},
 				});
@@ -210,6 +223,8 @@ export const FinancialBanks: React.FC = () => {
 					bank_id: data.bank_id,
 					account_number: data.account_number,
 					name: data.name,
+					is_third_party: data.is_third_party || false,
+					default_category_id: data.default_category_id || undefined,
 					note: data.note || undefined,
 				});
 				toaster.create({ title: "Bank account created", type: "success" });
@@ -460,11 +475,18 @@ export const FinancialBanks: React.FC = () => {
 														{bank.code}
 													</Badge>
 												)}
+												<Badge
+													size="xs"
+													variant="outline"
+													colorPalette={account.is_third_party ? "orange" : "blue"}
+												>
+													{account.is_third_party ? "Contact" : "Personal"}
+												</Badge>
 											</HStack>
 
 											<HStack gap={1}>
 												<IconButton
-													size="2xs"
+													size="xs"
 													variant="ghost"
 													aria-label="Edit account"
 													onClick={() => handleOpenEditAccount(account)}
@@ -472,7 +494,7 @@ export const FinancialBanks: React.FC = () => {
 													<Icon as={LuPencil} boxSize={3} />
 												</IconButton>
 												<IconButton
-													size="2xs"
+													size="xs"
 													variant="ghost"
 													colorPalette="red"
 													aria-label="Delete account"
@@ -493,6 +515,16 @@ export const FinancialBanks: React.FC = () => {
 											<Text fontSize="10px" color="fg.muted" mt={1} lineClamp={1}>
 												{bank.name}
 											</Text>
+										)}
+										{account.default_category_id && (
+											<HStack gap={1} mt={1.5}>
+												<Text fontSize="10px" color="fg.muted">
+													Default:
+												</Text>
+												<Badge size="xs" variant="surface" colorPalette="purple">
+													{categoriesMap.get(account.default_category_id)?.name || "Category"}
+												</Badge>
+											</HStack>
 										)}
 										{account.note && (
 											<Text fontSize="10px" color="fg.subtle" mt={1} lineClamp={1}>
@@ -566,7 +598,7 @@ export const FinancialBanks: React.FC = () => {
 
 										<HStack gap={1}>
 											<IconButton
-												size="2xs"
+												size="xs"
 												variant="ghost"
 												aria-label="Edit bank"
 												onClick={() => handleOpenEditBank(bank)}
@@ -574,7 +606,7 @@ export const FinancialBanks: React.FC = () => {
 												<Icon as={LuPencil} boxSize={3} />
 											</IconButton>
 											<IconButton
-												size="2xs"
+												size="xs"
 												variant="ghost"
 												colorPalette="red"
 												aria-label="Delete bank"
@@ -693,6 +725,35 @@ export const FinancialBanks: React.FC = () => {
 
 					<form noValidate onSubmit={handleSubmitAccount(onSubmitAccount)}>
 						<Stack gap={4}>
+							{/* Account Type / Ownership */}
+							<Field.Root>
+								<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
+									Account Ownership
+								</Field.Label>
+								<HStack gap={2} w="full">
+									<Button
+										type="button"
+										flex="1"
+										size="sm"
+										rounded="pill"
+										variant={!watchAccount("is_third_party") ? "solid" : "outline"}
+										onClick={() => setAccountValue("is_third_party", false, { shouldDirty: true })}
+									>
+										My Account
+									</Button>
+									<Button
+										type="button"
+										flex="1"
+										size="sm"
+										rounded="pill"
+										variant={watchAccount("is_third_party") ? "solid" : "outline"}
+										onClick={() => setAccountValue("is_third_party", true, { shouldDirty: true })}
+									>
+										Contact / Third Party
+									</Button>
+								</HStack>
+							</Field.Root>
+
 							<Field.Root invalid={!!accountErrors.bank_id} required>
 								<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
 									Bank
@@ -706,7 +767,6 @@ export const FinancialBanks: React.FC = () => {
 									placeholder="Select bank..."
 									searchPlaceholder="Search bank..."
 									width="100%"
-									portalled={false}
 									onValueChange={(val) =>
 										setAccountValue("bank_id", val, {
 											shouldValidate: true,
@@ -723,7 +783,7 @@ export const FinancialBanks: React.FC = () => {
 
 							<Field.Root invalid={!!accountErrors.name} required>
 								<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
-									Account Nickname / Name (e.g. Main Savings, Salary, Business Ops)
+									Account Nickname / Name (e.g. Main Savings, Landlord, Salary)
 								</Field.Label>
 								<HStack bg="bg.muted" px={3} py={1} rounded="pill" borderWidth="1px">
 									<Input
@@ -761,6 +821,31 @@ export const FinancialBanks: React.FC = () => {
 										{accountErrors.account_number.message}
 									</Field.ErrorText>
 								)}
+							</Field.Root>
+
+							{/* Default Category for Auto-Categorization */}
+							<Field.Root invalid={!!accountErrors.default_category_id}>
+								<Field.Label fontSize="xs" fontWeight="semibold" color="fg.muted">
+									Default Category (Auto-categorize transactions)
+								</Field.Label>
+								<SearchableSelect
+									items={categories.map((cat) => ({
+										label: cat.name,
+										value: cat.id,
+										color: cat.color,
+									}))}
+									value={watchAccount("default_category_id") || ""}
+									placeholder="Select default category (optional)..."
+									clearLabel="(No default category)"
+									searchPlaceholder="Search category..."
+									width="100%"
+									onValueChange={(val) =>
+										setAccountValue("default_category_id", val, {
+											shouldValidate: true,
+											shouldDirty: true,
+										})
+									}
+								/>
 							</Field.Root>
 
 							<Field.Root invalid={!!accountErrors.note}>

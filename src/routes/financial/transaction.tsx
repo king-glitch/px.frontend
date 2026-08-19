@@ -65,28 +65,20 @@ export const FinancialTransactionDetail: React.FC = () => {
 		? categories.find((c) => c.id === transaction.category_id)
 		: undefined;
 
-	const fromBank = transaction?.from_bank_id
-		? banks.find((b) => b.id === transaction.from_bank_id)
+	const fromAccount = transaction?.from_bank_account_id
+		? accounts.find((a: BankAccount) => a.id === transaction.from_bank_account_id)
 		: undefined;
 
-	const toBank = transaction?.to_bank_id
-		? banks.find((b) => b.id === transaction.to_bank_id)
+	const toAccount = transaction?.to_bank_account_id
+		? accounts.find((a: BankAccount) => a.id === transaction.to_bank_account_id)
 		: undefined;
 
-	const fromAccountObj = transaction?.from_account
-		? accounts.find((a: BankAccount) => {
-				if (transaction.from_bank_id && a.bank_id !== transaction.from_bank_id) return false;
-				const fromAcc = transaction.from_account || "";
-				return a.account_number === fromAcc || fromAcc.endsWith(a.account_number.slice(-4));
-		  })
+	const fromBank = fromAccount
+		? banks.find((b) => b.id === fromAccount.bank_id)
 		: undefined;
 
-	const toAccountObj = transaction?.to_account
-		? accounts.find((a: BankAccount) => {
-				if (transaction.to_bank_id && a.bank_id !== transaction.to_bank_id) return false;
-				const toAcc = transaction.to_account || "";
-				return a.account_number === toAcc || toAcc.endsWith(a.account_number.slice(-4));
-		  })
+	const toBank = toAccount
+		? banks.find((b) => b.id === toAccount.bank_id)
 		: undefined;
 
 	const handleDelete = async () => {
@@ -237,7 +229,7 @@ export const FinancialTransactionDetail: React.FC = () => {
 								<Text
 									fontSize={{ base: "2xl", md: "3xl" }}
 									fontWeight="bold"
-									color={isExpense ? "red.fg" : "green.fg"}
+									color="fg"
 								>
 									{isExpense ? "-" : "+"}
 									<FormatNumber
@@ -250,11 +242,21 @@ export const FinancialTransactionDetail: React.FC = () => {
 							<Badge
 								size="md"
 								rounded="pill"
-								colorPalette={isExpense ? "red" : "green"}
+								colorPalette={
+									transaction.direction === "transfer"
+										? "purple"
+										: isExpense
+											? "red"
+											: "green"
+								}
 								px={3}
 								py={1}
 							>
-								{isExpense ? "Expense (Out)" : "Income (In)"}
+								{transaction.direction === "transfer"
+									? "Transfer"
+									: isExpense
+										? "Expense (Out)"
+										: "Income (In)"}
 							</Badge>
 						</Flex>
 
@@ -310,55 +312,51 @@ export const FinancialTransactionDetail: React.FC = () => {
 								</Flex>
 							)}
 
-							{fromBank && (
-								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
-									<HStack gap={2} color="fg.muted">
-										<Icon as={LuCreditCard} boxSize={4} />
-										<Text fontSize="xs">From Bank</Text>
-									</HStack>
-									<Text fontSize="xs" fontWeight="semibold">
-										{fromBank.name} ({fromBank.code})
-									</Text>
-								</Flex>
-							)}
-
-							{transaction.from_account && (
+							{fromAccount && (
 								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuCreditCard} boxSize={4} />
 										<Text fontSize="xs">From Account</Text>
 									</HStack>
-									<Text fontSize="xs" fontWeight="semibold">
-										{fromAccountObj
-											? `${fromAccountObj.name} (${transaction.from_account})`
-											: transaction.from_account}
-									</Text>
+									<VStack align="flex-end" gap={0}>
+										<HStack gap={1.5}>
+											{fromBank && (
+												<Badge size="xs" variant="surface">
+													{fromBank.code}
+												</Badge>
+											)}
+											<Text fontSize="xs" fontWeight="semibold">
+												{fromAccount.name} ({fromAccount.account_number})
+											</Text>
+										</HStack>
+										<Text fontSize="10px" color="fg.muted">
+											{fromAccount.is_third_party ? "Contact / Third Party" : "Personal Account"}
+										</Text>
+									</VStack>
 								</Flex>
 							)}
 
-							{toBank && (
+							{toAccount && (
 								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
 									<HStack gap={2} color="fg.muted">
 										<Icon as={LuCreditCard} boxSize={4} />
-										<Text fontSize="xs">To Bank / Destination</Text>
+										<Text fontSize="xs">To Account / Destination</Text>
 									</HStack>
-									<Text fontSize="xs" fontWeight="semibold">
-										{toBank.name} ({toBank.code})
-									</Text>
-								</Flex>
-							)}
-
-							{transaction.to_account && (
-								<Flex justify="space-between" py={3} px={4} bg="bg.muted" rounded="xl">
-									<HStack gap={2} color="fg.muted">
-										<Icon as={LuCreditCard} boxSize={4} />
-										<Text fontSize="xs">To Account</Text>
-									</HStack>
-									<Text fontSize="xs" fontWeight="semibold">
-										{toAccountObj
-											? `${toAccountObj.name} (${transaction.to_account})`
-											: transaction.to_account}
-									</Text>
+									<VStack align="flex-end" gap={0}>
+										<HStack gap={1.5}>
+											{toBank && (
+												<Badge size="xs" variant="surface">
+													{toBank.code}
+												</Badge>
+											)}
+											<Text fontSize="xs" fontWeight="semibold">
+												{toAccount.name} ({toAccount.account_number})
+											</Text>
+										</HStack>
+										<Text fontSize="10px" color="fg.muted">
+											{toAccount.is_third_party ? "Contact / Third Party" : "Personal Account"}
+										</Text>
+									</VStack>
 								</Flex>
 							)}
 

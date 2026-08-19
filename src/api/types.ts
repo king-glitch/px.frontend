@@ -34,7 +34,7 @@ export interface UserSession {
 // 3. Bank Domain Enums & Models
 // ---------------------------------------------------------------------------
 
-export type BankTransactionDirection = "in" | "out";
+export type BankTransactionDirection = "in" | "out" | "transfer";
 
 export type QueueItemStatus =
 	| "unknown"
@@ -57,6 +57,8 @@ export interface BankAccount extends ModelBase {
 	bank_id: ObjectID;
 	account_number: string;
 	name: string;
+	is_third_party: boolean;
+	default_category_id?: ObjectID;
 	color?: string;
 	note?: string;
 }
@@ -70,13 +72,10 @@ export interface BankCategory extends ModelBase {
 
 export interface BankTransaction extends ModelBase {
 	user_id: ObjectID;
-	bank_id: ObjectID;
-	from_bank_id?: ObjectID;
-	to_bank_id?: ObjectID;
+	from_bank_account_id?: ObjectID;
+	to_bank_account_id?: ObjectID;
 	transaction_number: string;
 	direction: BankTransactionDirection;
-	from_account?: string;
-	to_account?: string;
 	amount: number;
 	fee: number;
 	currency: string;
@@ -169,6 +168,8 @@ export interface CreateBankAccountRequest {
 	bank_id: ObjectID;
 	account_number: string;
 	name: string;
+	is_third_party?: boolean;
+	default_category_id?: ObjectID;
 	color?: string;
 	note?: string;
 }
@@ -177,8 +178,14 @@ export interface UpdateBankAccountRequest {
 	bank_id?: ObjectID;
 	account_number?: string;
 	name?: string;
+	is_third_party?: boolean;
+	default_category_id?: ObjectID;
 	color?: string;
 	note?: string;
+}
+
+export interface ListAccountsParams {
+	is_third_party?: boolean;
 }
 
 // Bank Categories
@@ -227,6 +234,42 @@ export interface BankSummary {
 	by_category: BankCategorySummary[];
 }
 
+export type BankTimeSeriesGranularity = "day" | "week" | "month";
+
+export interface BankTimeSeriesPoint {
+	bucket: ISO8601String;
+	in: number;
+	out: number;
+	fee: number;
+	net: number;
+	count: number;
+}
+
+export interface TimeSeriesParams extends DateRangeParams {
+	granularity?: BankTimeSeriesGranularity;
+}
+
+export type BankDimension = "account" | "weekday" | "reference";
+
+export interface BankDimensionBucket {
+	key: string;
+	label: string;
+	color?: string;
+	amount: number;
+	count: number;
+}
+
+export interface BankDimensionBreakdown {
+	dimension: BankDimension;
+	from?: ISO8601String;
+	to?: ISO8601String;
+	buckets: BankDimensionBucket[];
+}
+
+export interface DimensionBreakdownParams extends DateRangeParams {
+	dimension: BankDimension;
+}
+
 export interface CreateTransactionRequest {
 	direction: BankTransactionDirection;
 	amount: number;
@@ -234,11 +277,8 @@ export interface CreateTransactionRequest {
 	currency?: string;
 	occurred_at?: ISO8601String;
 	transaction_number?: string;
-	from_bank_id?: ObjectID;
-	to_bank_id?: ObjectID;
-	from_account?: string;
-	to_account?: string;
-	bank_code?: string;
+	from_bank_account_id?: ObjectID;
+	to_bank_account_id?: ObjectID;
 	category_id?: ObjectID;
 	note?: string;
 }
@@ -247,10 +287,8 @@ export interface UpdateTransactionRequest {
 	amount?: number;
 	fee?: number;
 	occurred_at?: ISO8601String;
-	from_bank_id?: ObjectID;
-	to_bank_id?: ObjectID;
-	from_account?: string;
-	to_account?: string;
+	from_bank_account_id?: ObjectID;
+	to_bank_account_id?: ObjectID;
 	note?: string;
 	category_id?: ObjectID; // empty string "" clears assigned category
 	direction?: BankTransactionDirection;

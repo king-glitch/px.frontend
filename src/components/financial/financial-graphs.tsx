@@ -36,24 +36,60 @@ import {
 	LuZap,
 } from "react-icons/lu";
 import { Link } from "react-router";
-import {
-	type MonthSummaryPoint,
-	usePastMonthsSummary,
-} from "@/api/hooks/use-summary";
+import { useTimeSeries } from "@/api/hooks/use-summary";
 import type { BankSummary } from "@/api/types";
+import { SpendByAccountChart } from "@/components/financial/spend-by-account-chart";
+import { TopReferencesChart } from "@/components/financial/top-references-chart";
+import { WeekdaySpendingChart } from "@/components/financial/weekday-spending-chart";
 import { glassCard } from "@/routes/financial/layout";
 
 export interface FinancialGraphsProps {
 	currentSummary?: BankSummary;
 	isLoading?: boolean;
+	from?: string;
+	to?: string;
+}
+
+interface MonthPoint {
+	monthKey: string;
+	monthLabel: string;
+	totalIn: number;
+	totalOut: number;
+	net: number;
+	count: number;
 }
 
 export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 	currentSummary,
 	isLoading = false,
+	from,
+	to,
 }) => {
-	const { data: past6Months, isLoading: isPastMonthsLoading } =
-		usePastMonthsSummary(6);
+	// Always the trailing 6 calendar months, independent of the page's
+	// selected month range.
+	const trailingRange = useMemo(() => {
+		const now = new Date();
+		const start = new Date(now.getFullYear(), now.getMonth() - 5, 1);
+		const end = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+		return { from: start.toISOString(), to: end.toISOString() };
+	}, []);
+
+	const { data: timeSeriesPoints = [], isLoading: isPastMonthsLoading } =
+		useTimeSeries({ ...trailingRange, granularity: "month" });
+
+	const past6Months: MonthPoint[] = useMemo(() => {
+		return timeSeriesPoints.map((point) => {
+			const d = new Date(point.bucket);
+			return {
+				monthKey: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`,
+				monthLabel: d.toLocaleString("default", { month: "short" }),
+				totalIn: point.in,
+				totalOut: point.out,
+				net: point.net,
+				count: point.count,
+			};
+		});
+	}, [timeSeriesPoints]);
 
 	const [hoveredMonthIndex, setHoveredMonthIndex] = useState<number | null>(
 		null,
@@ -99,6 +135,11 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 		if (currentIn === 0) return 0;
 		return Math.round((currentNet / currentIn) * 100);
 	}, [currentIn, currentNet]);
+
+	const inflowPct = useMemo(() => {
+		if (currentIn + currentOut === 0) return 50;
+		return Math.round((currentIn / (currentIn + currentOut)) * 100);
+	}, [currentIn, currentOut]);
 
 	const categories = useMemo(() => {
 		return currentSummary?.by_category || [];
@@ -231,7 +272,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 									{past6Months[hoveredMonthIndex].count} tx)
 								</Text>
 								<HStack gap={2} fontSize="xs">
-									<Text color="green.fg" fontWeight="semibold">
+									<Text color="fg" fontWeight="semibold">
 										+
 										<FormatNumber
 											value={past6Months[hoveredMonthIndex].totalIn}
@@ -247,14 +288,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 											currency="THB"
 										/>
 									</Text>
-									<Text
-										color={
-											past6Months[hoveredMonthIndex].net >= 0
-												? "mint.fg"
-												: "red.fg"
-										}
-										fontWeight="bold"
-									>
+									<Text color="fg" fontWeight="bold">
 										Net:{" "}
 										<FormatNumber
 											value={past6Months[hoveredMonthIndex].net}
@@ -351,14 +385,14 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 				>
 					<HStack justify="space-between" bg="bg.panel" p={3} rounded="pill">
 						<HStack gap={2}>
-							<Circle size="6" bg="green.muted" color="green.fg">
+							<Circle size="6" bg="bg.muted" color="fg">
 								<Icon as={LuArrowDownLeft} boxSize={3} />
 							</Circle>
 							<Text fontSize="xs" color="fg.muted">
 								6-Mo Total Income
 							</Text>
 						</HStack>
-						<Text fontSize="xs" fontWeight="bold" color="green.fg">
+						<Text fontSize="xs" fontWeight="bold">
 							<FormatNumber
 								value={total6MonthIn}
 								style="currency"
@@ -387,11 +421,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 
 					<HStack justify="space-between" bg="bg.panel" p={3} rounded="pill">
 						<HStack gap={2}>
-							<Circle
-								size="6"
-								bg={total6MonthNet >= 0 ? "mint.solid" : "red.solid"}
-								color={total6MonthNet >= 0 ? "mint.contrast" : "fg.inverted"}
-							>
+							<Circle size="6" bg="bg.muted" color="fg">
 								<Icon as={LuPiggyBank} boxSize={3} />
 							</Circle>
 							<Text fontSize="xs" color="fg.muted">
@@ -399,11 +429,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 							</Text>
 						</HStack>
 						<HStack gap={1}>
-							<Text
-								fontSize="xs"
-								fontWeight="bold"
-								color={total6MonthNet >= 0 ? "mint.fg" : "red.fg"}
-							>
+							<Text fontSize="xs" fontWeight="bold">
 								<FormatNumber
 									value={total6MonthNet}
 									style="currency"
@@ -637,7 +663,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 								borderColor="border"
 							>
 								<HStack gap={1.5} color="fg.muted" mb={1}>
-									<Icon as={LuFlame} boxSize={3.5} color="red.fg" />
+									<Icon as={LuFlame} boxSize={3.5} color="fg.muted" />
 									<Text fontSize="10px" fontWeight="medium">
 										Daily Burn Rate
 									</Text>
@@ -662,7 +688,7 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 								borderColor="border"
 							>
 								<HStack gap={1.5} color="fg.muted" mb={1}>
-									<Icon as={LuReceipt} boxSize={3.5} color="mint.fg" />
+									<Icon as={LuReceipt} boxSize={3.5} color="fg.muted" />
 									<Text fontSize="10px" fontWeight="medium">
 										Avg Ticket Size
 									</Text>
@@ -690,62 +716,23 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 						>
 							<Flex justify="space-between" fontSize="xs" mb={1.5}>
 								<HStack gap={1}>
-									<Circle size="2" bg="green.solid" />
-									<Text color="green.fg" fontWeight="semibold" fontSize="11px">
-										Inflow (
-										{currentIn + currentOut > 0
-											? Math.round(
-													(currentIn / (currentIn + currentOut)) * 100,
-												)
-											: 0}
-										%)
+									<Circle size="2" bg="fg" />
+									<Text color="fg" fontWeight="semibold" fontSize="11px">
+										Inflow ({currentIn + currentOut > 0 ? inflowPct : 0}%)
 									</Text>
 								</HStack>
 								<HStack gap={1}>
-									<Circle size="2" bg="fg" />
-									<Text fontWeight="semibold" fontSize="11px">
-										Outflow (
-										{currentIn + currentOut > 0
-											? Math.round(
-													(currentOut / (currentIn + currentOut)) * 100,
-												)
-											: 0}
-										%)
+									<Circle size="2" bg="fg.muted" />
+									<Text color="fg.muted" fontWeight="semibold" fontSize="11px">
+										Outflow ({currentIn + currentOut > 0 ? 100 - inflowPct : 0}%)
 									</Text>
 								</HStack>
 							</Flex>
-							<Box
-								h="2.5"
-								rounded="pill"
-								overflow="hidden"
-								bg="bg.muted"
-								display="flex"
-							>
-								<Box
-									h="full"
-									w={`${
-										currentIn + currentOut > 0
-											? Math.round(
-													(currentIn / (currentIn + currentOut)) * 100,
-												)
-											: 50
-									}%`}
-									bg="green.solid"
-									transition="width 0.3s ease"
-								/>
-								<Box
-									h="full"
-									w={`${
-										currentIn + currentOut > 0
-											? Math.round(
-													(currentOut / (currentIn + currentOut)) * 100,
-												)
-											: 50
-									}%`}
-									bg="fg"
-									transition="width 0.3s ease"
-								/>
-							</Box>
+							<Progress.Root value={inflowPct} max={100} size="sm">
+								<Progress.Track bg="fg" rounded="pill">
+									<Progress.Range bg="fg" rounded="pill" transition="width 0.3s ease" />
+								</Progress.Track>
+							</Progress.Root>
 						</Box>
 
 						{/* Cashflow Efficiency Status */}
@@ -789,6 +776,15 @@ export const FinancialGraphs: React.FC<FinancialGraphsProps> = ({
 					</Stack>
 				</Box>
 			</Grid>
+
+			{/* 3. Spend-by-Account & Spend-by-Weekday */}
+			<Grid templateColumns={{ base: "1fr", lg: "1fr 1fr" }} gap={6}>
+				<SpendByAccountChart from={from} to={to} />
+				<WeekdaySpendingChart from={from} to={to} />
+			</Grid>
+
+			{/* 4. Top References */}
+			<TopReferencesChart from={from} to={to} />
 		</Stack>
 	);
 };

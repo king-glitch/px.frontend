@@ -3,7 +3,9 @@ import type {
 	Bank,
 	BankAccount,
 	BankCategory,
+	BankDimensionBreakdown,
 	BankSummary,
+	BankTimeSeriesPoint,
 	BankTransaction,
 	Collection,
 	CreateBankAccountRequest,
@@ -11,12 +13,15 @@ import type {
 	CreateCategoryRequest,
 	CreateTransactionRequest,
 	DateRangeParams,
+	DimensionBreakdownParams,
+	ListAccountsParams,
 	ListQueuesParams,
 	ListQueuesResponse,
 	ListTransactionsParams,
 	MailInboxResponse,
 	ObjectID,
 	QueueItem,
+	TimeSeriesParams,
 	UpdateBankAccountRequest,
 	UpdateBankRequest,
 	UpdateCategoryRequest,
@@ -105,6 +110,32 @@ export const bankService = {
 		return apiGet<{ summary: BankSummary }>("/bank/transactions/summary", {
 			params,
 		});
+	},
+
+	/**
+	 * Time-bucketed totals (day/week/month) for a date range.
+	 * Path: GET /api/v1/bank/transactions/timeseries
+	 */
+	async getTimeSeries(
+		params?: TimeSeriesParams,
+	): Promise<{ points: BankTimeSeriesPoint[] }> {
+		return apiGet<{ points: BankTimeSeriesPoint[] }>(
+			"/bank/transactions/timeseries",
+			{ params },
+		);
+	},
+
+	/**
+	 * Ranked spend breakdown by account, weekday, or reference.
+	 * Path: GET /api/v1/bank/transactions/breakdown
+	 */
+	async getBreakdown(
+		params: DimensionBreakdownParams,
+	): Promise<{ breakdown: BankDimensionBreakdown }> {
+		return apiGet<{ breakdown: BankDimensionBreakdown }>(
+			"/bank/transactions/breakdown",
+			{ params },
+		);
 	},
 
 	/**
@@ -217,8 +248,12 @@ export const bankService = {
 	 * List all bank accounts for the authenticated user.
 	 * Path: GET /api/v1/bank/accounts
 	 */
-	async listAccounts(): Promise<{ accounts: BankAccount[] }> {
-		return apiGet<{ accounts: BankAccount[] }>("/bank/accounts");
+	async listAccounts(
+		params?: ListAccountsParams,
+	): Promise<{ accounts: BankAccount[] }> {
+		return apiGet<{ accounts: BankAccount[] }>("/bank/accounts", {
+			params,
+		});
 	},
 
 	/**

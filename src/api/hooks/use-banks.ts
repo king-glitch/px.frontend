@@ -4,6 +4,7 @@ import { bankService } from "@/api/services/bank-service";
 import type {
 	Bank,
 	CreateBankRequest,
+	ListAccountsParams,
 	ObjectID,
 	UpdateBankRequest,
 } from "@/api/types";
@@ -115,13 +116,16 @@ export function useDeleteBank() {
 // ---------------------------------------------------------------------------
 
 /**
- * Hook to fetch all bank accounts for the user.
+ * Hook to fetch all bank accounts for the user with optional filtering.
  */
-export function useAccounts(options?: { enabled?: boolean }) {
+export function useAccounts(
+	params?: ListAccountsParams,
+	options?: { enabled?: boolean },
+) {
 	return useQuery({
-		queryKey: queryKeys.accounts.lists(),
+		queryKey: queryKeys.accounts.list(params),
 		queryFn: async () => {
-			const res = await bankService.listAccounts();
+			const res = await bankService.listAccounts(params);
 			return res.accounts;
 		},
 		enabled: options?.enabled,

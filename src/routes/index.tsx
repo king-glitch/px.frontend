@@ -62,7 +62,8 @@ const holoGlassCard = {
 		base: "0 16px 40px -10px rgba(15, 23, 42, 0.06), inset 0 1px 2px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.6)",
 		_dark: "0 16px 40px -10px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.08)",
 	},
-	transition: "transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+	transition:
+		"transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
 	_hover: {
 		transform: "translateY(-2px)",
 		shadow: {
@@ -89,8 +90,10 @@ function useMouseParallax() {
 
 		const animate = () => {
 			const k = 0.075;
-			currentRef.current.x += (targetRef.current.x - currentRef.current.x) * k;
-			currentRef.current.y += (targetRef.current.y - currentRef.current.y) * k;
+			currentRef.current.x +=
+				(targetRef.current.x - currentRef.current.x) * k;
+			currentRef.current.y +=
+				(targetRef.current.y - currentRef.current.y) * k;
 
 			setOffset({
 				x: Math.round(currentRef.current.x * 1000) / 1000,
@@ -100,7 +103,9 @@ function useMouseParallax() {
 			rafRef.current = requestAnimationFrame(animate);
 		};
 
-		window.addEventListener("mousemove", handleMouseMove, { passive: true });
+		window.addEventListener("mousemove", handleMouseMove, {
+			passive: true,
+		});
 		rafRef.current = requestAnimationFrame(animate);
 
 		return () => {
@@ -115,28 +120,40 @@ function useMouseParallax() {
 // Organic Starfall cascading floating keyframes
 const starfallHero = keyframes({
 	"0%, 100%": { transform: "translate3d(0, 0, 0) scale(1) rotate(0deg)" },
-	"33%": { transform: "translate3d(8px, -14px, 0) scale(1.02) rotate(1.5deg)" },
-	"66%": { transform: "translate3d(-8px, -20px, 0) scale(0.99) rotate(-1.5deg)" },
+	"33%": {
+		transform: "translate3d(8px, -14px, 0) scale(1.02) rotate(1.5deg)",
+	},
+	"66%": {
+		transform: "translate3d(-8px, -20px, 0) scale(0.99) rotate(-1.5deg)",
+	},
 });
 
 const starfallDrift1 = keyframes({
 	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
-	"50%": { transform: "translate3d(14px, -18px, 0) scale(1.03) rotate(3deg)" },
+	"50%": {
+		transform: "translate3d(14px, -18px, 0) scale(1.03) rotate(3deg)",
+	},
 });
 
 const starfallDrift2 = keyframes({
 	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
-	"50%": { transform: "translate3d(-12px, -15px, 0) scale(0.97) rotate(-2.5deg)" },
+	"50%": {
+		transform: "translate3d(-12px, -15px, 0) scale(0.97) rotate(-2.5deg)",
+	},
 });
 
 const starfallDrift3 = keyframes({
 	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
-	"50%": { transform: "translate3d(10px, -22px, 0) scale(1.04) rotate(2deg)" },
+	"50%": {
+		transform: "translate3d(10px, -22px, 0) scale(1.04) rotate(2deg)",
+	},
 });
 
 const starfallDrift4 = keyframes({
 	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
-	"50%": { transform: "translate3d(-14px, -20px, 0) scale(1.03) rotate(-2deg)" },
+	"50%": {
+		transform: "translate3d(-14px, -20px, 0) scale(1.03) rotate(-2deg)",
+	},
 });
 
 interface FloatingCreatureConfig {
@@ -279,7 +296,9 @@ const FloatingCreaturesScene: React.FC = () => {
 
 	const renderCreature = (creature: FloatingCreatureConfig) => {
 		const isCenter = creature.id === "starelly";
-		const baseTransform = isCenter ? "translate3d(-50%, 0, 0)" : "translate3d(0, 0, 0)";
+		const baseTransform = isCenter
+			? "translate3d(-50%, 0, 0)"
+			: "translate3d(0, 0, 0)";
 		const parallaxTransform = `translate3d(${mouse.x * creature.depth}px, ${mouse.y * creature.depth}px, 0)`;
 
 		return (
@@ -291,7 +310,10 @@ const FloatingCreaturesScene: React.FC = () => {
 				style={{
 					...creature.style,
 					transform: `${baseTransform} ${parallaxTransform}`,
-					filter: creature.blur !== "0px" ? `blur(${creature.blur})` : undefined,
+					filter:
+						creature.blur !== "0px"
+							? `blur(${creature.blur})`
+							: undefined,
 					opacity: creature.opacity,
 					willChange: "transform, filter",
 				}}
@@ -382,7 +404,12 @@ const FloatingCreaturesScene: React.FC = () => {
 				}}
 			>
 				<Text
-					fontSize={{ base: "4.5rem", md: "6.5rem", lg: "8.5rem", xl: "11rem" }}
+					fontSize={{
+						base: "4.5rem",
+						md: "6.5rem",
+						lg: "8.5rem",
+						xl: "11rem",
+					}}
 					fontWeight="900"
 					letterSpacing="-0.07em"
 					lineHeight="0.85"
@@ -486,21 +513,32 @@ export const Index: React.FC = () => {
 										asChild
 										title={item.label}
 										aria-label={item.label}
-										aria-current={active ? "page" : undefined}
+										aria-current={
+											active ? "page" : undefined
+										}
 										size="11"
 										bg={active ? "bg.solid" : "transparent"}
-										color={active ? "fg.inverted" : "fg.muted"}
+										color={
+											active ? "fg.inverted" : "fg.muted"
+										}
 										shadow={active ? "glass" : "none"}
 										cursor="pointer"
 										transition="all 0.15s ease-out"
 										_hover={{
-											color: active ? "fg.inverted" : "fg",
-											bg: active ? "bg.solid" : "bg.panel",
+											color: active
+												? "fg.inverted"
+												: "fg",
+											bg: active
+												? "bg.solid"
+												: "bg.panel",
 											transform: "scale(1.08)",
 										}}
 									>
 										<Link to={item.to}>
-											<Icon as={item.icon} boxSize={4.5} />
+											<Icon
+												as={item.icon}
+												boxSize={4.5}
+											/>
 										</Link>
 									</Circle>
 								);
@@ -516,7 +554,10 @@ export const Index: React.FC = () => {
 									color="fg.muted"
 									cursor="pointer"
 									transition="all 0.15s ease-out"
-									_hover={{ color: "fg", transform: "scale(1.08)" }}
+									_hover={{
+										color: "fg",
+										transform: "scale(1.08)",
+									}}
 								>
 									<Icon as={item.icon} boxSize={4.5} />
 								</Circle>
@@ -572,7 +613,11 @@ export const Index: React.FC = () => {
 								minH={{ base: "140px", xl: "155px" }}
 								position="relative"
 							>
-								<Text fontSize="sm" fontWeight="semibold" color="fg.muted">
+								<Text
+									fontSize="sm"
+									fontWeight="semibold"
+									color="fg.muted"
+								>
 									To do
 								</Text>
 								<Circle
@@ -590,14 +635,21 @@ export const Index: React.FC = () => {
 								</Circle>
 								<HStack align="baseline" gap={2} mt={4}>
 									<Text
-										fontSize={{ base: "2.6rem", xl: "3.2rem" }}
+										fontSize={{
+											base: "2.6rem",
+											xl: "3.2rem",
+										}}
 										fontWeight="bold"
 										letterSpacing="-0.04em"
 										lineHeight="1"
 									>
 										158
 									</Text>
-									<Text fontSize="sm" color="fg.muted" fontWeight="medium">
+									<Text
+										fontSize="sm"
+										color="fg.muted"
+										fontWeight="medium"
+									>
 										tasks
 									</Text>
 								</HStack>
@@ -610,7 +662,11 @@ export const Index: React.FC = () => {
 								minH={{ base: "140px", xl: "155px" }}
 								position="relative"
 							>
-								<Text fontSize="sm" fontWeight="semibold" color="fg.muted">
+								<Text
+									fontSize="sm"
+									fontWeight="semibold"
+									color="fg.muted"
+								>
 									On going
 								</Text>
 								<Circle
@@ -628,14 +684,21 @@ export const Index: React.FC = () => {
 								</Circle>
 								<HStack align="baseline" gap={2} mt={4}>
 									<Text
-										fontSize={{ base: "2.6rem", xl: "3.2rem" }}
+										fontSize={{
+											base: "2.6rem",
+											xl: "3.2rem",
+										}}
 										fontWeight="bold"
 										letterSpacing="-0.04em"
 										lineHeight="1"
 									>
 										28
 									</Text>
-									<Text fontSize="sm" color="fg.muted" fontWeight="medium">
+									<Text
+										fontSize="sm"
+										color="fg.muted"
+										fontWeight="medium"
+									>
 										tasks
 									</Text>
 								</HStack>
@@ -648,7 +711,11 @@ export const Index: React.FC = () => {
 								minH={{ base: "140px", xl: "155px" }}
 								position="relative"
 							>
-								<Text fontSize="sm" fontWeight="semibold" color="fg.muted">
+								<Text
+									fontSize="sm"
+									fontWeight="semibold"
+									color="fg.muted"
+								>
 									Complete
 								</Text>
 								<HStack
@@ -675,7 +742,10 @@ export const Index: React.FC = () => {
 									gap={4}
 									cursor="pointer"
 									transition="all 0.15s ease-out"
-									_hover={{ transform: "translateY(-1px)", shadow: "float" }}
+									_hover={{
+										transform: "translateY(-1px)",
+										shadow: "float",
+									}}
 								>
 									<HStack align="baseline" gap={2}>
 										<Text
@@ -686,12 +756,19 @@ export const Index: React.FC = () => {
 										>
 											02
 										</Text>
-										<Text fontSize="sm" color="fg.muted" fontWeight="medium">
+										<Text
+											fontSize="sm"
+											color="fg.muted"
+											fontWeight="medium"
+										>
 											tasks
 										</Text>
 									</HStack>
 									<Circle size="7" bg="bg.muted" color="fg">
-										<Icon as={LuArrowUpRight} boxSize={3.5} />
+										<Icon
+											as={LuArrowUpRight}
+											boxSize={3.5}
+										/>
 									</Circle>
 								</HStack>
 							</Box>
@@ -717,7 +794,11 @@ export const Index: React.FC = () => {
 								>
 									$2,932.07
 								</Text>
-								<Text fontSize="sm" color="fg.muted" fontWeight="medium">
+								<Text
+									fontSize="sm"
+									color="fg.muted"
+									fontWeight="medium"
+								>
 									02 tasks
 								</Text>
 								<Circle
@@ -795,7 +876,10 @@ export const Index: React.FC = () => {
 												? "none"
 												: "0 2px 8px -2px rgba(15, 23, 42, 0.04)"
 										}
-										_hover={{ transform: "translateY(-1px)", shadow: "glass" }}
+										_hover={{
+											transform: "translateY(-1px)",
+											shadow: "glass",
+										}}
 									>
 										<Circle
 											size="2.5"
@@ -805,7 +889,11 @@ export const Index: React.FC = () => {
 													: "fg.muted"
 											}
 										/>
-										<Text fontSize="sm" fontWeight="medium" whiteSpace="nowrap">
+										<Text
+											fontSize="sm"
+											fontWeight="medium"
+											whiteSpace="nowrap"
+										>
 											{row.label}
 										</Text>
 									</HStack>
@@ -813,80 +901,14 @@ export const Index: React.FC = () => {
 							</Flex>
 						</Box>
 
-						{/* Focus Flow & Studio Companion Action Card */}
-						<Box {...holoGlassCard} p={{ base: 5, xl: 6 }}>
-							<Flex justify="space-between" align="center" mb={2.5}>
-								<HStack gap={2}>
-									<Circle size="2" bg="mint.solid" />
-									<Text
-										fontSize="xs"
-										fontWeight="bold"
-										textTransform="uppercase"
-										letterSpacing="0.08em"
-										color="fg.muted"
-									>
-										Focus Momentum
-									</Text>
-								</HStack>
-								<Text
-									fontSize="xs"
-									fontWeight="semibold"
-									color="mint.fg"
-									bg="mint.subtle"
-									px={2.5}
-									py={0.5}
-									rounded="pill"
-								>
-									94% Flow
-								</Text>
-							</Flex>
-
-							<HStack justify="space-between" align="center" mb={3.5}>
-								<VStack align="flex-start" gap={0}>
-									<Heading
-										fontSize="2xl"
-										fontWeight="bold"
-										letterSpacing="-0.03em"
-									>
-										45:00
-									</Heading>
-									<Text fontSize="xs" color="fg.muted">
-										Deep Work & Cognitive Sync
-									</Text>
-								</VStack>
-								<Circle
-									size="10"
-									bg="bg.solid"
-									color="fg.inverted"
-									shadow="glass"
-								>
-									<Icon as={LuSparkles} boxSize={5} />
-								</Circle>
-							</HStack>
-
-							<HStack gap={2}>
-								<PillButton
-									size="xs"
-									variant="dark"
-									flex="1"
-									icon={LuArrowUpRight}
-								>
-									FOCUS SPRINT
-								</PillButton>
-								<PillButton
-									size="xs"
-									variant="outline"
-									flex="1"
-									icon={LuMessageSquare}
-								>
-									CHAT CREW
-								</PillButton>
-							</HStack>
-						</Box>
-
 						{/* Performance Stats Card */}
 						<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
-							<Text fontSize="sm" fontWeight="bold" textTransform="uppercase" letterSpacing="0.08em">
+							<Text
+								fontSize="sm"
+								fontWeight="bold"
+								textTransform="uppercase"
+								letterSpacing="0.08em"
+							>
 								Performance
 							</Text>
 							<Stack gap={2.5} mt={4}>

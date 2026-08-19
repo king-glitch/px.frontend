@@ -53,6 +53,8 @@ export const createBankAccountSchema = z.object({
   bank_id: z.string().min(1, "Bank is required"),
   account_number: z.string().min(1, "Account number is required"),
   name: z.string().min(1, "Account name / nickname is required"),
+  is_third_party: z.boolean().optional(),
+  default_category_id: z.string().optional(),
   color: z.string().optional(),
   note: z.string().optional(),
 });
@@ -63,6 +65,8 @@ export const updateBankAccountSchema = z.object({
   bank_id: z.string().min(1, "Bank is required").optional(),
   account_number: z.string().min(1, "Account number is required").optional(),
   name: z.string().min(1, "Account name is required").optional(),
+  is_third_party: z.boolean().optional(),
+  default_category_id: z.string().optional(),
   color: z.string().optional(),
   note: z.string().optional(),
 });
@@ -92,17 +96,14 @@ export type UpdateCategoryFormData = z.infer<typeof updateCategorySchema>;
  * Transaction Schemas
  */
 export const createTransactionSchema = z.object({
-  direction: z.enum(["in", "out"]),
+  direction: z.enum(["in", "out", "transfer"]),
   amount: z.number().positive("Amount must be greater than 0"),
   fee: z.number().min(0).optional(),
   currency: z.string().optional(),
   occurred_at: z.string().optional(),
   transaction_number: z.string().optional(),
-  from_bank_id: z.string().optional(),
-  to_bank_id: z.string().optional(),
-  from_account: z.string().optional(),
-  to_account: z.string().optional(),
-  bank_code: z.string().optional(),
+  from_bank_account_id: z.string().optional(),
+  to_bank_account_id: z.string().optional(),
   category_id: z.string().optional(),
   note: z.string().optional(),
 });
@@ -113,13 +114,11 @@ export const updateTransactionSchema = z.object({
   amount: z.number().positive("Amount must be greater than 0").optional(),
   fee: z.number().min(0).optional(),
   occurred_at: z.string().optional(),
-  from_bank_id: z.string().optional(),
-  to_bank_id: z.string().optional(),
-  from_account: z.string().optional(),
-  to_account: z.string().optional(),
+  from_bank_account_id: z.string().optional(),
+  to_bank_account_id: z.string().optional(),
   note: z.string().optional(),
   category_id: z.string().optional(),
-  direction: z.enum(["in", "out"]).optional(),
+  direction: z.enum(["in", "out", "transfer"]).optional(),
 });
 
 export type UpdateTransactionFormData = z.infer<typeof updateTransactionSchema>;

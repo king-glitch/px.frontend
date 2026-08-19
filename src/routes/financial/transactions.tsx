@@ -1,4 +1,5 @@
 import { PillButton } from "@/components/ui/pill-button";
+import { Avatar } from "@/components/ui/avatar";
 import {
 	Badge,
 	Box,
@@ -30,8 +31,10 @@ import {
 	LuCloudUpload,
 	LuEye,
 	LuFilter,
+	LuList,
 	LuPlus,
 	LuReceipt,
+	LuTable,
 	LuTrash2,
 } from "react-icons/lu";
 import { Link, useSearchParams } from "react-router";
@@ -60,6 +63,7 @@ import {
 } from "@/components/ui/dialog";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
+import { Tooltip } from "@/components/ui/tooltip";
 import { glassCard } from "@/routes/financial/layout";
 
 export const FinancialTransactions: React.FC = () => {
@@ -78,6 +82,7 @@ export const FinancialTransactions: React.FC = () => {
 	const [isDropzoneOpen, setIsDropzoneOpen] = useState(false);
 	const [deletingTransactionId, setDeletingTransactionId] =
 		useState<string | null>(null);
+	const [viewMode, setViewMode] = useState<"list" | "table">("list");
 
 	const isDropzoneVisible = isDropzoneOpen || hasActiveQueues;
 
@@ -96,6 +101,7 @@ export const FinancialTransactions: React.FC = () => {
 
 	const categoriesMap = new Map(categories.map((c) => [c.id, c]));
 	const banksMap = new Map(banks.map((b) => [b.id, b]));
+	const accountsMap = new Map(accounts.map((a) => [a.id, a]));
 
 	const findAccountName = (bankId?: string, accNum?: string) => {
 		if (!accNum) return undefined;
@@ -186,7 +192,7 @@ export const FinancialTransactions: React.FC = () => {
 				onOpenChange={(details) => setIsCreateOpen(details.open)}
 				size="lg"
 			>
-				<DialogContent {...glassCard} bg="bg.panel" p={6}>
+				<DialogContent {...glassCard}  p={6}>
 					<DialogHeader p={0} mb={4}>
 						<DialogTitle fontSize="lg" fontWeight="bold">
 							Add Transaction
@@ -210,7 +216,7 @@ export const FinancialTransactions: React.FC = () => {
 				}}
 				size="sm"
 			>
-				<DialogContent {...glassCard} bg="bg.panel" p={6}>
+				<DialogContent {...glassCard}  p={6}>
 					<DialogHeader p={0} mb={2}>
 						<DialogTitle fontSize="md" fontWeight="bold">
 							Delete Transaction
@@ -253,9 +259,31 @@ export const FinancialTransactions: React.FC = () => {
 						</Text>
 					</VStack>
 
-					<Text fontSize="xs" color="fg.muted" display={{ base: "none", md: "inline" }}>
-						💡 Click on Note or Payee to edit inline
-					</Text>
+					<HStack>
+						<Text fontSize="xs" color="fg.muted" display={{ base: "none", md: "inline" }} mr={2}>
+							💡 Click on Note or Payee to edit inline
+						</Text>
+						<HStack bg="bg.muted" p={1} rounded="pill">
+							<IconButton
+								size="xs"
+								variant={viewMode === "list" ? "surface" : "ghost"}
+								rounded="pill"
+								onClick={() => setViewMode("list")}
+								aria-label="List View"
+							>
+								<Icon as={LuList} />
+							</IconButton>
+							<IconButton
+								size="xs"
+								variant={viewMode === "table" ? "surface" : "ghost"}
+								rounded="pill"
+								onClick={() => setViewMode("table")}
+								aria-label="Table View"
+							>
+								<Icon as={LuTable} />
+							</IconButton>
+						</HStack>
+					</HStack>
 				</Flex>
 
 				{isLoading ? (
@@ -284,240 +312,276 @@ export const FinancialTransactions: React.FC = () => {
 					</VStack>
 				) : (
 					<Stack gap={4}>
-						<Table.ScrollArea>
-							<Table.Root size="sm" variant="line">
-								<Table.Header>
-									<Table.Row bg="bg.muted">
-										<Table.ColumnHeader fontSize="xs" w="130px">
-											Date
-										</Table.ColumnHeader>
-										<Table.ColumnHeader fontSize="xs" w="80px">
-											Type
-										</Table.ColumnHeader>
-										<Table.ColumnHeader fontSize="xs" minW="180px">
-											Transaction / Ref
-										</Table.ColumnHeader>
-										<Table.ColumnHeader fontSize="xs" minW="180px">
-											Note / Description
-										</Table.ColumnHeader>
-										<Table.ColumnHeader fontSize="xs" w="160px">
-											Category
-										</Table.ColumnHeader>
-										<Table.ColumnHeader fontSize="xs" textAlign="right" w="120px">
-											Amount
-										</Table.ColumnHeader>
-										<Table.ColumnHeader fontSize="xs" textAlign="center" w="80px">
-											Actions
-										</Table.ColumnHeader>
-									</Table.Row>
-								</Table.Header>
-								<Table.Body>
-									{transactions.map((tx) => {
-										const category = tx.category_id
-											? categoriesMap.get(tx.category_id)
-											: undefined;
-										const isExpense = tx.direction === "out";
+						{viewMode === "table" ? (
+							<Box overflowX="auto" borderWidth={1} borderColor="border.subtle" rounded="xl">
+								<Table.Root size="sm" variant="line" interactive>
+									<Table.Header>
+										<Table.Row bg="bg.muted">
+											<Table.ColumnHeader py={3} px={4}>Date</Table.ColumnHeader>
+											<Table.ColumnHeader py={3} px={4}>Transaction</Table.ColumnHeader>
+											<Table.ColumnHeader py={3} px={4}>Note</Table.ColumnHeader>
+											<Table.ColumnHeader py={3} px={4}>Category</Table.ColumnHeader>
+											<Table.ColumnHeader py={3} px={4} textAlign="right">Amount</Table.ColumnHeader>
+											<Table.ColumnHeader py={3} px={4} w="4"></Table.ColumnHeader>
+										</Table.Row>
+									</Table.Header>
+									<Table.Body>
+										{transactions.map((tx) => {
+											const category = tx.category_id ? categoriesMap.get(tx.category_id) : undefined;
+											const isExpense = tx.direction === "out";
+											const isTransfer = tx.direction === "transfer";
+											const dateLabel = tx.occurred_at ? new Date(tx.occurred_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "-";
+											const fromAccount = tx.from_bank_account_id ? accountsMap.get(tx.from_bank_account_id) : undefined;
+											const toAccount = tx.to_bank_account_id ? accountsMap.get(tx.to_bank_account_id) : undefined;
 
-										const dateLabel = tx.occurred_at
-											? new Date(tx.occurred_at).toLocaleDateString("en-US", {
-													month: "short",
-													day: "numeric",
-													year: "numeric",
-													hour: "2-digit",
-													minute: "2-digit",
-												})
-											: "-";
+											return (
+												<Table.Row key={tx.id}>
+													<Table.Cell px={4} color="fg.muted" fontSize="sm" whiteSpace="nowrap">{dateLabel}</Table.Cell>
+													<Table.Cell px={4}>
+														<HStack gap={2}>
+															<Badge size="xs" variant="surface" colorPalette={isTransfer ? "purple" : isExpense ? "gray" : "green"}>
+																{isTransfer ? "Transfer" : isExpense ? "Out" : "In"}
+															</Badge>
+															<Link to={`/financial/transactions/${tx.id}`}>
+																<Text fontSize="sm" fontWeight="bold" color="fg">{tx.transaction_number || "Tx"}</Text>
+															</Link>
+														</HStack>
+														{(fromAccount || toAccount) && (
+															<HStack gap={1} fontSize="xs" color="fg.muted" mt={1}>
+																{fromAccount && <Text>{fromAccount.name}</Text>}
+																{fromAccount && toAccount && <Text>→</Text>}
+																{toAccount && <Text>{toAccount.name}</Text>}
+															</HStack>
+														)}
+													</Table.Cell>
+													<Table.Cell px={4} minW="200px">
+														<Editable.Root
+															key={tx.id + (tx.note || "")}
+															defaultValue={tx.note || ""}
+															placeholder="Add note..."
+															onValueCommit={(details) => {
+																if (details.value !== (tx.note || "")) {
+																	updateTxMutation.mutate({ id: tx.id, payload: { note: details.value } });
+																}
+															}}
+														>
+															<Editable.Area>
+																<Editable.Preview fontSize="sm" _hover={{ bg: "bg.muted", rounded: "sm", px: 1, ml: -1 }} cursor="pointer" />
+																<Editable.Input fontSize="sm" bg="bg.muted" px={2} py={1} rounded="md" />
+															</Editable.Area>
+														</Editable.Root>
+													</Table.Cell>
+													<Table.Cell px={4}>
+														<Box w="140px">
+															<SearchableSelect
+																size="sm"
+																items={categories.map((c) => ({ label: c.name, value: c.id, color: c.color }))}
+																value={tx.category_id || ""}
+																placeholder="Category..."
+																clearLabel="Clear"
+																searchPlaceholder="Search..."
+																onValueChange={(newCategoryId) => {
+																	updateTxMutation.mutate({ id: tx.id, payload: { category_id: newCategoryId } });
+																}}
+															/>
+														</Box>
+													</Table.Cell>
+													<Table.Cell px={4} textAlign="right" whiteSpace="nowrap">
+														<Text fontSize="sm" fontWeight="bold" color="fg">
+															{isTransfer ? "⇄ " : isExpense ? "-" : "+"}
+															<FormatNumber value={tx.amount} style="currency" currency={tx.currency || "THB"} />
+														</Text>
+														{tx.fee > 0 && <Text fontSize="xs" color="fg.muted">Fee: {tx.fee}</Text>}
+													</Table.Cell>
+													<Table.Cell px={4}>
+														<IconButton size="xs" variant="ghost" colorPalette="red" aria-label="Delete" rounded="full" onClick={() => setDeletingTransactionId(tx.id)}>
+															<Icon as={LuTrash2} />
+														</IconButton>
+													</Table.Cell>
+												</Table.Row>
+											);
+										})}
+									</Table.Body>
+								</Table.Root>
+							</Box>
+						) : (
+							<Stack gap={3}>
+								{transactions.map((tx) => {
+								const category = tx.category_id
+									? categoriesMap.get(tx.category_id)
+									: undefined;
+								const isExpense = tx.direction === "out";
+								const isTransfer = tx.direction === "transfer";
 
-										return (
-											<Table.Row
-												key={tx.id}
-												_hover={{ bg: "bg.muted" }}
-												transition="background 0.15s ease"
-											>
-												{/* Date */}
-												<Table.Cell fontSize="xs" color="fg.muted">
-													{dateLabel}
-												</Table.Cell>
+								const dateLabel = tx.occurred_at
+									? new Date(tx.occurred_at).toLocaleDateString("en-US", {
+											month: "short",
+											day: "numeric",
+											year: "numeric",
+											hour: "2-digit",
+											minute: "2-digit",
+										})
+									: "-";
 
-												{/* Direction Badge */}
-												<Table.Cell>
+								const fromAccount = tx.from_bank_account_id
+									? accountsMap.get(tx.from_bank_account_id)
+									: undefined;
+								const toAccount = tx.to_bank_account_id
+									? accountsMap.get(tx.to_bank_account_id)
+									: undefined;
+
+								return (
+									<Flex
+										key={tx.id}
+										justify="space-between"
+										align="center"
+										wrap="wrap"
+										gap={4}
+										
+										_hover={{ bg: "bg.muted" }}
+										p={4}
+										rounded="2xl"
+										
+										
+										transition="all 0.2s"
+									>
+										{/* Left Side: Avatar & Details */}
+										<HStack gap={4} flex="1" minW="300px">
+											<Avatar
+												name={tx.note || "Transaction"}
+												size="md"
+												shape="full"
+												src={isExpense || isTransfer ? undefined : "https://i.pravatar.cc/150?u=" + tx.id}
+												colorPalette={isTransfer ? "purple" : isExpense ? "gray" : "mint"}
+											/>
+											<VStack align="flex-start" gap={1} flex="1">
+												<HStack gap={2} wrap="wrap">
+													<Text fontSize="sm" fontWeight="bold" color="fg">
+														<Link to={`/financial/transactions/${tx.id}`}>
+															{tx.transaction_number || "Transaction"}
+														</Link>
+													</Text>
 													<Badge
 														size="xs"
 														rounded="pill"
-														colorPalette={isExpense ? "red" : "green"}
+														variant="surface"
+														colorPalette={isTransfer ? "purple" : isExpense ? "gray" : "green"}
 													>
-														<Icon
-															as={isExpense ? LuArrowUpRight : LuArrowDownLeft}
-															boxSize={3}
-														/>
-														{isExpense ? "Out" : "In"}
+														{isTransfer ? "Transfer" : isExpense ? "Out" : "In"}
 													</Badge>
-												</Table.Cell>
+													<Text fontSize="10px" color="fg.muted" fontWeight="medium">
+														• {dateLabel}
+													</Text>
+												</HStack>
 
-												{/* Transaction Number, Bank & Account */}
-												<Table.Cell>
-													{(() => {
-														const fromBank = tx.from_bank_id
-															? banksMap.get(tx.from_bank_id)
-															: undefined;
-														const toBank = tx.to_bank_id
-															? banksMap.get(tx.to_bank_id)
-															: undefined;
-
-														const fromAccName = findAccountName(tx.from_bank_id, tx.from_account);
-														const toAccName = findAccountName(tx.to_bank_id, tx.to_account);
-
-														return (
-															<VStack align="flex-start" gap={0.5}>
-																<Text fontSize="xs" fontWeight="semibold">
-																	<Link to={`/financial/transactions/${tx.id}`}>
-																		{tx.transaction_number || "Transaction"}
-																	</Link>
-																</Text>
-																<HStack gap={1} fontSize="10px" color="fg.muted" flexWrap="wrap">
-																	{fromBank && (
-																		<Badge size="xs" variant="surface">
-																			{fromBank.code}
-																		</Badge>
-																	)}
-																	{tx.from_account && (
-																		<Text>
-																			{fromAccName ? `${fromAccName} (${tx.from_account})` : tx.from_account}
-																		</Text>
-																	)}
-																	{(toBank || tx.to_account) && (
-																		<>
-																			<Text>→</Text>
-																			{toBank && (
-																				<Badge size="xs" variant="surface">
-																					{toBank.code}
-																				</Badge>
-																			)}
-																			{tx.to_account && (
-																				<Text>
-																					{toAccName ? `${toAccName} (${tx.to_account})` : tx.to_account}
-																				</Text>
-																			)}
-																		</>
-																	)}
-																</HStack>
-															</VStack>
-														);
-													})()}
-												</Table.Cell>
-
-												{/* Note Editable */}
-												<Table.Cell>
-													<Editable.Root
-														key={tx.id + (tx.note || "")}
-														defaultValue={tx.note || ""}
-														placeholder="Click to add note..."
-														onValueCommit={(details) => {
-															if (details.value !== (tx.note || "")) {
-																updateTxMutation.mutate({
-																	id: tx.id,
-																	payload: { note: details.value },
-																});
-															}
-														}}
-													>
-														<Editable.Preview
-															fontSize="xs"
-															cursor="pointer"
-															_hover={{
-																bg: "bg.panel",
-																rounded: "sm",
-																px: 1,
+												<HStack gap={3} w="full" wrap="wrap">
+													{/* Editable Note */}
+													<Tooltip content={tx.note ? "Click to edit note" : "Click to add note"} showArrow positioning={{ placement: "top-start" }}>
+														<Editable.Root
+															key={tx.id + (tx.note || "")}
+															defaultValue={tx.note || ""}
+															placeholder="Click to add note..."
+															onValueCommit={(details) => {
+																if (details.value !== (tx.note || "")) {
+																	updateTxMutation.mutate({
+																		id: tx.id,
+																		payload: { note: details.value },
+																	});
+																}
 															}}
-														/>
-														<Editable.Input
-															fontSize="xs"
-															rounded="pill"
-															bg="bg.panel"
-															px={2}
-															py={1}
-														/>
-													</Editable.Root>
-												</Table.Cell>
+														>
+															<Editable.Area>
+																<Editable.Preview
+																	fontSize="sm"
+																	color="fg.muted"
+																	fontWeight="medium"
+																	cursor="pointer"
+																	_hover={{ bg: "bg.muted", rounded: "sm", px: 1, ml: -1 }}
+																/>
+																<Editable.Input fontSize="sm" rounded="pill" bg="bg.muted" px={3} py={1} />
+															</Editable.Area>
+														</Editable.Root>
+													</Tooltip>
+												</HStack>
 
-												{/* Category Searchable Dropdown */}
-												<Table.Cell>
-													<SearchableSelect
-														size="xs"
-														width="150px"
-														items={categories.map((c) => ({
-															label: c.name,
-															value: c.id,
-															color: c.color,
-														}))}
-														value={tx.category_id || ""}
-														placeholder="(Uncategorized)"
-														clearLabel="(Uncategorized)"
-														searchPlaceholder="Search category..."
-														onValueChange={(newCategoryId) => {
+												{/* Accounts Flow */}
+												{(fromAccount || toAccount) && (
+													<HStack gap={1} fontSize="10px" color="fg.muted" flexWrap="wrap" mt={1}>
+														{fromAccount && (
+															<Text>
+																{fromAccount.name} ({fromAccount.account_number.slice(-4)})
+															</Text>
+														)}
+														{fromAccount && toAccount && <Text>→</Text>}
+														{toAccount && (
+															<Text>
+																{toAccount.name} ({toAccount.account_number.slice(-4)})
+															</Text>
+														)}
+													</HStack>
+												)}
+											</VStack>
+										</HStack>
+
+										{/* Right Side: Category, Amount, Actions */}
+										<HStack gap={{ base: 4, md: 8 }} align="center" flexWrap="wrap">
+											{/* Category Dropdown */}
+											<Box w="140px">
+												<SearchableSelect
+													size="sm"
+													items={categories.map((c) => ({
+														label: c.name,
+														value: c.id,
+														color: c.color,
+													}))}
+													value={tx.category_id || ""}
+													placeholder="Category..."
+													clearLabel="Clear"
+													searchPlaceholder="Search..."
+													onValueChange={(newCategoryId) => {
 															updateTxMutation.mutate({
 																id: tx.id,
 																payload: { category_id: newCategoryId },
 															});
-														}}
-													/>
-												</Table.Cell>
+													}}
+												/>
+											</Box>
 
-												{/* Amount */}
-												<Table.Cell textAlign="right">
-													<Text
-														fontSize="xs"
-														fontWeight="bold"
-														color={isExpense ? "red.fg" : "green.fg"}
-													>
-														{isExpense ? "-" : "+"}
-														<FormatNumber
-															value={tx.amount}
-															style="currency"
-															currency={tx.currency || "THB"}
-														/>
+											{/* Amount */}
+											<VStack align="flex-end" gap={0} minW="100px">
+												<Text
+													fontSize="md"
+													fontWeight="bold"
+													color="fg"
+												>
+													{isTransfer ? "⇄ " : isExpense ? "-" : "+"}
+													<FormatNumber value={tx.amount} style="currency" currency={tx.currency || "THB"} />
+												</Text>
+												{tx.fee > 0 && (
+													<Text fontSize="10px" color="fg.muted" fontWeight="medium">
+														Fee: {tx.fee}
 													</Text>
-													{tx.fee > 0 && (
-														<Text fontSize="10px" color="fg.muted">
-															Fee: {tx.fee}
-														</Text>
-													)}
-												</Table.Cell>
+												)}
+											</VStack>
 
-												{/* Actions */}
-												<Table.Cell textAlign="center">
-													<HStack justify="center" gap={1}>
-														<IconButton
-															asChild
-															size="xs"
-															variant="ghost"
-															aria-label="View details"
-															title="View details"
-															rounded="full"
-														>
-															<Link to={`/financial/transactions/${tx.id}`}>
-																<Icon as={LuEye} boxSize={3.5} />
-															</Link>
-														</IconButton>
-														<IconButton
-															size="xs"
-															variant="ghost"
-															colorPalette="red"
-															aria-label="Delete transaction"
-															title="Delete"
-															rounded="full"
-															onClick={() => setDeletingTransactionId(tx.id)}
-														>
-															<Icon as={LuTrash2} boxSize={3.5} />
-														</IconButton>
-													</HStack>
-												</Table.Cell>
-											</Table.Row>
-										);
-									})}
-								</Table.Body>
-							</Table.Root>
-						</Table.ScrollArea>
+											{/* Actions */}
+											<IconButton
+												size="sm"
+												variant="ghost"
+												colorPalette="red"
+												aria-label="Delete transaction"
+												title="Delete"
+												rounded="full"
+												onClick={() => setDeletingTransactionId(tx.id)}
+											>
+												<Icon as={LuTrash2} boxSize={4} />
+											</IconButton>
+										</HStack>
+									</Flex>
+								);
+							})}
+						</Stack>
+						)}
 
 						{/* Pagination Controls */}
 						{totalPages > 1 && (

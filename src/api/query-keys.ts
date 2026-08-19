@@ -1,7 +1,10 @@
 import type {
 	DateRangeParams,
+	DimensionBreakdownParams,
+	ListAccountsParams,
 	ListTransactionsParams,
 	ObjectID,
+	TimeSeriesParams,
 } from "@/api/types";
 
 /**
@@ -40,6 +43,8 @@ export const queryKeys = {
 	accounts: {
 		all: ["accounts"] as const,
 		lists: () => [...queryKeys.accounts.all, "list"] as const,
+		list: (params?: ListAccountsParams) =>
+			[...queryKeys.accounts.lists(), params ?? {}] as const,
 		detail: (id: ObjectID) =>
 			[...queryKeys.accounts.all, "detail", id] as const,
 	},
@@ -47,6 +52,10 @@ export const queryKeys = {
 		all: ["summary"] as const,
 		range: (params?: DateRangeParams) =>
 			[...queryKeys.summary.all, "range", params ?? {}] as const,
+		timeseries: (params?: TimeSeriesParams) =>
+			[...queryKeys.summary.all, "timeseries", params ?? {}] as const,
+		breakdown: (params: DimensionBreakdownParams) =>
+			[...queryKeys.summary.all, "breakdown", params] as const,
 	},
 	queue: {
 		all: ["queue"] as const,

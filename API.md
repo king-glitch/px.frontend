@@ -82,7 +82,7 @@ export interface UserSession {
 }
 
 // Bank Enums
-export type BankTransactionDirection = 'in' | 'out';
+export type BankTransactionDirection = 'in' | 'out' | 'transfer';
 
 export type QueueItemStatus =
   | 'unknown'
@@ -107,6 +107,8 @@ export interface BankAccount extends ModelBase {
   bank_id: ObjectID;
   account_number: string;
   name: string;
+  is_third_party: boolean;
+  default_category_id?: ObjectID;
   color?: string;
   note?: string;
 }
@@ -122,13 +124,10 @@ export interface BankCategory extends ModelBase {
 // Bank Transaction
 export interface BankTransaction extends ModelBase {
   user_id: ObjectID;
-  bank_id: ObjectID;
-  from_bank_id?: ObjectID;
-  to_bank_id?: ObjectID;
+  from_bank_account_id?: ObjectID;
+  to_bank_account_id?: ObjectID;
   transaction_number: string;
   direction: BankTransactionDirection;
-  from_account?: string;
-  to_account?: string;
   amount: number;
   fee: number;
   currency: string;
@@ -484,6 +483,8 @@ export interface Collection<T> {
   "bank_id": "664880001b0e35fa8f01b100",
   "account_number": "xxx-x-x1456-x",
   "name": "Main Savings",
+  "is_third_party": false,
+  "default_category_id": "664880501b0e35fa8f01b102",
   "note": "Primary savings account"
 }
 ```
@@ -501,6 +502,8 @@ export interface Collection<T> {
 ```json
 {
   "name": "Personal Savings",
+  "is_third_party": false,
+  "default_category_id": "664880501b0e35fa8f01b102",
   "note": "Updated notes"
 }
 ```
@@ -532,10 +535,10 @@ export interface Collection<T> {
         {
           "id": "664882001b0e35fa8f01b104",
           "user_id": "66487e411b0e35fa8f01b101",
-          "bank_id": "664880001b0e35fa8f01b100",
+          "from_bank_account_id": "664880501b0e35fa8f01b108",
+          "to_bank_account_id": "664880501b0e35fa8f01b109",
           "transaction_number": "TX-20260818-001",
           "direction": "out",
-          "from_account": "xxx-x-x1234-x",
           "amount": 350.0,
           "fee": 0.0,
           "currency": "THB",
@@ -558,7 +561,7 @@ export interface Collection<T> {
 }
 ```
 
-#### 3.4.2 Create Manual Transaction
+#### 3.6.2 Create Manual Transaction
 - **Method:** `POST`
 - **Path:** `/api/v1/bank/transactions`
 - **Auth Required:** Yes
@@ -572,18 +575,19 @@ export interface Collection<T> {
   "currency": "THB",
   "occurred_at": "2026-08-18T10:00:00Z",
   "transaction_number": "TX-MANUAL-001",
-  "from_account": "xxx-x-x1234-x",
-  "bank_code": "KBANK",
+  "from_bank_account_id": "664880501b0e35fa8f01b108",
+  "to_bank_account_id": "664880501b0e35fa8f01b109",
   "category_id": "664880501b0e35fa8f01b102",
   "note": "Coffee and dessert"
 }
 ```
 > **Validation & Defaults:**
-> - `direction`: `"in"` | `"out"`, required.
+> - `direction`: `"in"` | `"out"` | `"transfer"`, required.
 > - `amount`: number `> 0`, required.
 > - `fee`: number `>= 0` (optional, default `0`).
 > - `currency`: string (optional, default `"THB"`).
-> - `bank_code`: string (optional, default `"MANUAL"`).
+> - `from_bank_account_id`: ObjectID hex string (optional).
+> - `to_bank_account_id`: ObjectID hex string (optional).
 > - `category_id`: ObjectID hex string (optional).
 > - `transaction_number`: string (optional, defaults to generated `TX-<object_id>`).
 
@@ -594,10 +598,10 @@ export interface Collection<T> {
     "transaction": {
       "id": "664883001b0e35fa8f01b106",
       "user_id": "66487e411b0e35fa8f01b101",
-      "bank_id": "664880001b0e35fa8f01b100",
+      "from_bank_account_id": "664880501b0e35fa8f01b108",
+      "to_bank_account_id": "664880501b0e35fa8f01b109",
       "transaction_number": "TX-MANUAL-001",
       "direction": "out",
-      "from_account": "xxx-x-x1234-x",
       "amount": 150.0,
       "fee": 0.0,
       "currency": "THB",
@@ -700,7 +704,8 @@ export interface Collection<T> {
 - **Query Parameters:** same optional `from` / `to` half-open range as List Transactions. Omit both for an all-time summary.
 - **Notes:** `net` is `total_in - total_out - total_fee`. `by_category` includes an
   entry with no `category_id` (named `Uncategorized`) when uncategorized
-  transactions fall in the range.
+  transactions fall in the range. Transfers between the user's own accounts are
+  excluded from `total_in`/`total_out`/`by_category` — they aren't spend.
 - **Response (200 OK):**
 ```json
 {
@@ -727,6 +732,62 @@ export interface Collection<T> {
           "in": 2000.0,
           "out": 610.5,
           "count": 4
+        }
+      ]
+    }
+  }
+}
+```
+
+#### 3.4.7 Summarize Transactions Time Series
+- **Method:** `GET`
+- **Path:** `/api/v1/bank/transactions/timeseries`
+- **Auth Required:** Yes
+- **Query Parameters:**
+  - `granularity` (optional, one of `day`/`week`/`month`, default `month`)
+  - `from` / `to` (optional, same half-open range as List Transactions)
+- **Notes:** One bucket per `granularity` unit spanning the range, sorted ascending by `bucket`. `net` is `in - out - fee`. Transfers are excluded from `in`/`out`, same as Summarize Transactions.
+- **Response (200 OK):**
+```json
+{
+  "data": {
+    "points": [
+      {
+        "bucket": "2026-07-01T00:00:00Z",
+        "in": 52000.0,
+        "out": 18430.5,
+        "fee": 25.0,
+        "net": 33544.5,
+        "count": 42
+      }
+    ]
+  }
+}
+```
+
+#### 3.4.8 Summarize Transactions Breakdown
+- **Method:** `GET`
+- **Path:** `/api/v1/bank/transactions/breakdown`
+- **Auth Required:** Yes
+- **Query Parameters:**
+  - `dimension` (required, one of `account`/`weekday`/`reference`)
+  - `from` / `to` (optional, same half-open range as List Transactions)
+- **Notes:** Spend-only (`direction: out`) ranked breakdown, top 20 buckets by amount descending. `account` resolves `key`/`label`/`color` from the user's bank accounts (`key: "unknown"` for transactions with no `from_bank_account_id`). `weekday` keys are ISO weekday numbers (`"1"`=Monday..`"7"`=Sunday) with English day-name labels. `reference` groups case-insensitively, keeping the first-seen casing as `label`, and skips transactions with an empty reference.
+- **Response (200 OK):**
+```json
+{
+  "data": {
+    "breakdown": {
+      "dimension": "account",
+      "from": "2026-08-01T00:00:00Z",
+      "to": "2026-09-01T00:00:00Z",
+      "buckets": [
+        {
+          "key": "664880501b0e35fa8f01b105",
+          "label": "Main Account",
+          "color": "#3B82F6",
+          "amount": 18430.5,
+          "count": 25
         }
       ]
     }
