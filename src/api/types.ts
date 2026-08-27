@@ -31,74 +31,19 @@ export interface UserSession {
 }
 
 // ---------------------------------------------------------------------------
-// 3. Bank Domain Enums & Models
+// 3. Duolingo Domain Models
 // ---------------------------------------------------------------------------
 
-export type BankTransactionDirection = "in" | "out" | "transfer";
-
-export type QueueItemStatus =
-	| "unknown"
-	| "pending"
-	| "dequeued"
-	| "completed"
-	| "failed"
-	| "canceled"
-	| "retry";
-
-export type Priority = 0 | 1 | 2 | 3 | 4; // 0=Lowest, 2=Normal, 4=Highest
-
-export interface Bank extends ModelBase {
-	code: string;
-	name: string;
+export interface DuolingoLink extends ModelBase {
+	bot_username: string;
+	duolingo_account_id: string;
 }
 
-export interface BankAccount extends ModelBase {
-	user_id: ObjectID;
-	bank_id: ObjectID;
-	account_number: string;
-	name: string;
-	is_third_party: boolean;
-	default_category_id?: ObjectID;
-	color?: string;
-	note?: string;
-}
-
-export interface BankCategory extends ModelBase {
-	user_id: ObjectID;
-	name: string;
-	color?: string;
-	icon?: string;
-}
-
-export interface BankTransaction extends ModelBase {
-	user_id: ObjectID;
-	from_bank_account_id?: ObjectID;
-	to_bank_account_id?: ObjectID;
-	transaction_number: string;
-	direction: BankTransactionDirection;
-	amount: number;
-	fee: number;
-	currency: string;
-	reference?: string;
-	occurred_at: ISO8601String;
-	raw_text: string;
-	note?: string;
-	category_id?: ObjectID;
-}
-
-export interface BankMailInbox extends ModelBase {
-	user_id: ObjectID;
-	token: string;
-}
-
-export interface QueueItem {
-	id: ObjectID;
-	action_type: string;
-	data: Record<string, unknown>;
-	status: QueueItemStatus;
-	message?: string;
-	priority: Priority;
-	scheduled_at: ISO8601String | null;
+export interface DuolingoStatus {
+	xp: number;
+	rank: number;
+	streak: number;
+	longest_streak: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -153,166 +98,8 @@ export interface LoginRequest {
 	password: string;
 }
 
-// Bank Entities
-export interface CreateBankRequest {
-	code: string;
-	name: string;
-}
-
-export interface UpdateBankRequest {
-	code?: string;
-	name?: string;
-}
-
-export interface CreateBankAccountRequest {
-	bank_id: ObjectID;
-	account_number: string;
-	name: string;
-	is_third_party?: boolean;
-	default_category_id?: ObjectID;
-	color?: string;
-	note?: string;
-}
-
-export interface UpdateBankAccountRequest {
-	bank_id?: ObjectID;
-	account_number?: string;
-	name?: string;
-	is_third_party?: boolean;
-	default_category_id?: ObjectID;
-	color?: string;
-	note?: string;
-}
-
-export interface ListAccountsParams {
-	is_third_party?: boolean;
-}
-
-// Bank Categories
-export interface CreateCategoryRequest {
-	name: string;
-	color?: string;
-	icon?: string;
-}
-
-export interface UpdateCategoryRequest {
-	name?: string;
-	color?: string;
-	icon?: string;
-}
-
-// Bank Transactions
-export interface DateRangeParams {
-	from?: string;
-	to?: string;
-}
-
-export interface ListTransactionsParams {
-	page?: number;
-	amount?: number;
-	from?: string;
-	to?: string;
-}
-
-export interface BankCategorySummary {
-	category_id?: ObjectID;
-	name: string;
-	color?: string;
-	in: number;
-	out: number;
-	count: number;
-}
-
-export interface BankSummary {
-	from?: ISO8601String;
-	to?: ISO8601String;
-	total_in: number;
-	total_out: number;
-	total_fee: number;
-	net: number;
-	count: number;
-	by_category: BankCategorySummary[];
-}
-
-export type BankTimeSeriesGranularity = "day" | "week" | "month";
-
-export interface BankTimeSeriesPoint {
-	bucket: ISO8601String;
-	in: number;
-	out: number;
-	fee: number;
-	net: number;
-	count: number;
-}
-
-export interface TimeSeriesParams extends DateRangeParams {
-	granularity?: BankTimeSeriesGranularity;
-}
-
-export type BankDimension = "account" | "weekday" | "reference";
-
-export interface BankDimensionBucket {
-	key: string;
-	label: string;
-	color?: string;
-	amount: number;
-	count: number;
-}
-
-export interface BankDimensionBreakdown {
-	dimension: BankDimension;
-	from?: ISO8601String;
-	to?: ISO8601String;
-	buckets: BankDimensionBucket[];
-}
-
-export interface DimensionBreakdownParams extends DateRangeParams {
-	dimension: BankDimension;
-}
-
-export interface CreateTransactionRequest {
-	direction: BankTransactionDirection;
-	amount: number;
-	fee?: number;
-	currency?: string;
-	occurred_at?: ISO8601String;
-	transaction_number?: string;
-	from_bank_account_id?: ObjectID;
-	to_bank_account_id?: ObjectID;
-	category_id?: ObjectID;
-	note?: string;
-}
-
-export interface UpdateTransactionRequest {
-	amount?: number;
-	fee?: number;
-	occurred_at?: ISO8601String;
-	from_bank_account_id?: ObjectID;
-	to_bank_account_id?: ObjectID;
-	note?: string;
-	category_id?: ObjectID; // empty string "" clears assigned category
-	direction?: BankTransactionDirection;
-}
-
-// Slip Ingestion
-export interface UploadSlipResponse {
-	queue_id: ObjectID;
-	status: QueueItemStatus;
-}
-
-export interface ListQueuesParams {
-	tag?: string;
-	type?: string;
-	action_type?: string;
-	status?: string;
-	limit?: number;
-}
-
-export interface ListQueuesResponse {
-	queues: QueueItem[];
-}
-
-export interface MailInboxResponse {
-	address: string;
-	inbox: BankMailInbox;
+// Duolingo
+export interface ConnectDuolingoRequest {
+	bot_username: string;
+	bot_password: string;
 }

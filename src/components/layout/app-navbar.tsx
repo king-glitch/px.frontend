@@ -1,7 +1,6 @@
 import { Avatar } from "@/components/ui/avatar";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useAuthContext } from "@/contexts/auth-context";
-import { useActiveQueues } from "@/api";
 import {
 	Badge,
 	Box,
@@ -10,7 +9,6 @@ import {
 	HStack,
 	Heading,
 	Icon,
-	Spinner,
 	Tabs,
 	Text,
 } from "@chakra-ui/react";
@@ -21,9 +19,9 @@ import {
 	LuLayoutDashboard,
 	LuLogOut,
 	LuMoon,
+	LuSettings,
 	LuSparkles,
 	LuSun,
-	LuWallet,
 } from "react-icons/lu";
 import { Link, useLocation, useNavigate } from "react-router";
 
@@ -38,27 +36,23 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 	const navigate = useNavigate();
 	const { colorMode, toggleColorMode } = useColorMode();
 
-	const { activeQueues, hasActiveQueues } = useActiveQueues({
-		tag: "bank.slip",
-	});
-
 	const isOverview =
 		pathname === "/" ||
 		pathname === "/dashboard" ||
 		(pathname.startsWith("/dashboard") &&
-			!pathname.includes("/financial") &&
 			!pathname.includes("/tasks") &&
-			!pathname.includes("/health"));
-	const isFinancial = pathname.startsWith("/financial");
+			!pathname.includes("/health") &&
+			!pathname.includes("/settings"));
 	const isTasks = pathname.startsWith("/tasks");
 	const isHealth = pathname.startsWith("/health");
+	const isSettings = pathname.startsWith("/settings");
 
-	const currentPillarValue = isFinancial
-		? "/financial"
-		: isTasks
-			? "/tasks"
-			: isHealth
-				? "/health"
+	const currentPillarValue = isTasks
+		? "/tasks"
+		: isHealth
+			? "/health"
+			: isSettings
+				? "/settings"
 				: "/dashboard";
 
 	const navPillars = [
@@ -67,12 +61,6 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			to: "/dashboard",
 			icon: LuLayoutDashboard,
 			active: isOverview,
-		},
-		{
-			label: "Financials",
-			to: "/financial",
-			icon: LuWallet,
-			active: isFinancial,
 		},
 		{
 			label: "Tasks & Habits",
@@ -85,6 +73,12 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			to: "/health",
 			icon: LuActivity,
 			active: isHealth,
+		},
+		{
+			label: "Settings",
+			to: "/settings",
+			icon: LuSettings,
+			active: isSettings,
 		},
 	];
 
@@ -199,7 +193,12 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 									zIndex={1}
 									transition="color 0.15s ease-out"
 								>
-									<Box as="span" display="inline-flex" alignItems="center" gap={2}>
+									<Box
+										as="span"
+										display="inline-flex"
+										alignItems="center"
+										gap={2}
+									>
 										<Icon as={pillar.icon} boxSize={3.5} />
 										<Text as="span" whiteSpace="nowrap">
 											{pillar.label}
@@ -213,39 +212,8 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 				)}
 			</Flex>
 
-			{/* Right: Background Queues Status, Color Mode, User Profile */}
+			{/* Right: Color Mode, User Profile */}
 			<HStack gap={2.5} flexShrink={0}>
-				{/* Background Queues Ingestion Status Badge */}
-				{hasActiveQueues && (
-					<HStack
-						asChild
-						bg="bg.panel"
-						borderWidth="1px"
-						borderColor="mint.solid"
-						px={3}
-						py={1.5}
-						rounded="pill"
-						fontSize="xs"
-						fontWeight="semibold"
-						gap={2}
-						cursor="pointer"
-						shadow="glass"
-						transition="transform 0.15s ease-out"
-						_hover={{
-							transform: "translateY(-1px)",
-							bg: "bg.muted",
-						}}
-					>
-						<Link to="/financial/transactions">
-							<Spinner size="xs" color="mint.fg" />
-							<Text display={{ base: "none", sm: "inline" }}>
-								{activeQueues.length} slip
-								{activeQueues.length > 1 ? "s" : ""} processing
-							</Text>
-						</Link>
-					</HStack>
-				)}
-
 				{/* Color Mode Switcher */}
 				<Circle
 					size="9"

@@ -17,22 +17,25 @@ import { keyframes } from "@emotion/react";
 import React from "react";
 import {
 	LuActivity,
-	LuArrowUpRight,
 	LuCalendarDays,
 	LuCircleCheck,
+	LuFlame,
 	LuLayoutDashboard,
 	LuMessageSquare,
+	LuSettings,
 	LuSparkles,
 	LuTarget,
-	LuWallet,
+	LuTrendingUp,
+	LuTrophy,
 } from "react-icons/lu";
 import { Link, useLocation } from "react-router";
+import { useDuolingoStatus } from "@/api";
 
 const railItems = [
 	{ icon: LuLayoutDashboard, label: "Dashboard", to: "/dashboard" },
-	{ icon: LuWallet, label: "Financial", to: "/financial" },
 	{ icon: LuCircleCheck, label: "Tasks & Habits", to: "/tasks" },
 	{ icon: LuActivity, label: "Health", to: "/health" },
+	{ icon: LuSettings, label: "Settings", to: "/settings" },
 	{ icon: LuCalendarDays, label: "Calendar" },
 	{ icon: LuTarget, label: "Goals" },
 ];
@@ -449,6 +452,94 @@ const OutlinePill: React.FC<OutlinePillProps> = ({ children }) => (
 	</Flex>
 );
 
+const DUOLINGO_STAT_CARDS = [
+	{ key: "xp", label: "XP", icon: LuTrendingUp, suffix: "" },
+	{ key: "rank", label: "Rank", icon: LuTrophy, prefix: "#" },
+	{ key: "streak", label: "Streak", icon: LuFlame, suffix: "d" },
+	{
+		key: "longest_streak",
+		label: "Longest streak",
+		icon: LuFlame,
+		suffix: "d",
+	},
+] as const;
+
+const DuolingoStatsDock: React.FC = () => {
+	const { data: status, isLoading } = useDuolingoStatus();
+
+	if (isLoading) {
+		return (
+			<Box {...holoGlassCard} p={{ base: 5, xl: 6 }}>
+				<Text color="fg.muted">Loading Duolingo stats...</Text>
+			</Box>
+		);
+	}
+
+	if (!status) {
+		return (
+			<Box
+				{...holoGlassCard}
+				p={{ base: 5, xl: 6 }}
+				asChild
+				cursor="pointer"
+			>
+				<Link to="/settings">
+					<HStack justify="space-between">
+						<Stack gap={0.5}>
+							<Text fontWeight="semibold">
+								Connect your Duolingo account
+							</Text>
+							<Text fontSize="sm" color="fg.muted">
+								Track XP, rank, and streaks right here.
+							</Text>
+						</Stack>
+						<Icon as={LuSettings} boxSize={5} />
+					</HStack>
+				</Link>
+			</Box>
+		);
+	}
+
+	return (
+		<Grid
+			gap={{ base: 3, xl: 4 }}
+			templateColumns={{
+				base: "1fr",
+				sm: "repeat(2, 1fr)",
+				xl: "repeat(4, 1fr)",
+			}}
+		>
+			{DUOLINGO_STAT_CARDS.map((card) => (
+				<Box
+					key={card.key}
+					{...holoGlassCard}
+					p={{ base: 5, xl: 6 }}
+					minH={{ base: "140px", xl: "155px" }}
+					position="relative"
+				>
+					<HStack gap={2} color="fg.muted">
+						<Icon as={card.icon} boxSize={4.5} />
+						<Text fontSize="sm" fontWeight="semibold">
+							{card.label}
+						</Text>
+					</HStack>
+					<Text
+						fontSize={{ base: "2.6rem", xl: "3.2rem" }}
+						fontWeight="bold"
+						letterSpacing="-0.04em"
+						lineHeight="1"
+						mt={4}
+					>
+						{"prefix" in card ? card.prefix : ""}
+						{status[card.key]}
+						{"suffix" in card ? card.suffix : ""}
+					</Text>
+				</Box>
+			))}
+		</Grid>
+	);
+};
+
 export const Index: React.FC = () => {
 	const { pathname } = useLocation();
 
@@ -587,234 +678,18 @@ export const Index: React.FC = () => {
 						<FloatingCreaturesScene />
 					</Box>
 
-					{/* Bottom: Daily Summary Dock */}
+					{/* Bottom: Duolingo Stats Dock */}
 					<Stack gap={3.5} pb={3} position="relative" zIndex={2}>
 						<HStack gap={2.5}>
 							<Text fontSize="lg" fontWeight="bold">
-								Daily
+								Duolingo
 							</Text>
 							<Text fontSize="lg">
-								<OutlinePill>summary</OutlinePill>
+								<OutlinePill>progress</OutlinePill>
 							</Text>
 						</HStack>
 
-						<Grid
-							gap={{ base: 3, xl: 4 }}
-							templateColumns={{
-								base: "1fr",
-								sm: "repeat(2, 1fr)",
-								xl: "repeat(4, 1fr)",
-							}}
-						>
-							{/* 1. To do */}
-							<Box
-								{...holoGlassCard}
-								p={{ base: 5, xl: 6 }}
-								minH={{ base: "140px", xl: "155px" }}
-								position="relative"
-							>
-								<Text
-									fontSize="sm"
-									fontWeight="semibold"
-									color="fg.muted"
-								>
-									To do
-								</Text>
-								<Circle
-									size="9"
-									bg="mint.solid"
-									color="mint.contrast"
-									position="absolute"
-									top={4}
-									right={4}
-									shadow="glass"
-									transition="all 0.15s ease-out"
-									_hover={{ transform: "scale(1.1)" }}
-								>
-									<Icon as={LuArrowUpRight} boxSize={4.5} />
-								</Circle>
-								<HStack align="baseline" gap={2} mt={4}>
-									<Text
-										fontSize={{
-											base: "2.6rem",
-											xl: "3.2rem",
-										}}
-										fontWeight="bold"
-										letterSpacing="-0.04em"
-										lineHeight="1"
-									>
-										158
-									</Text>
-									<Text
-										fontSize="sm"
-										color="fg.muted"
-										fontWeight="medium"
-									>
-										tasks
-									</Text>
-								</HStack>
-							</Box>
-
-							{/* 2. On going */}
-							<Box
-								{...holoGlassCard}
-								p={{ base: 5, xl: 6 }}
-								minH={{ base: "140px", xl: "155px" }}
-								position="relative"
-							>
-								<Text
-									fontSize="sm"
-									fontWeight="semibold"
-									color="fg.muted"
-								>
-									On going
-								</Text>
-								<Circle
-									size="9"
-									bg="bg.solid"
-									color="fg.inverted"
-									position="absolute"
-									top={4}
-									right={4}
-									shadow="glass"
-									transition="all 0.15s ease-out"
-									_hover={{ transform: "scale(1.1)" }}
-								>
-									<Icon as={LuArrowUpRight} boxSize={4.5} />
-								</Circle>
-								<HStack align="baseline" gap={2} mt={4}>
-									<Text
-										fontSize={{
-											base: "2.6rem",
-											xl: "3.2rem",
-										}}
-										fontWeight="bold"
-										letterSpacing="-0.04em"
-										lineHeight="1"
-									>
-										28
-									</Text>
-									<Text
-										fontSize="sm"
-										color="fg.muted"
-										fontWeight="medium"
-									>
-										tasks
-									</Text>
-								</HStack>
-							</Box>
-
-							{/* 3. Complete */}
-							<Box
-								{...holoGlassCard}
-								p={{ base: 5, xl: 6 }}
-								minH={{ base: "140px", xl: "155px" }}
-								position="relative"
-							>
-								<Text
-									fontSize="sm"
-									fontWeight="semibold"
-									color="fg.muted"
-								>
-									Complete
-								</Text>
-								<HStack
-									bg={{
-										base: "rgba(255, 255, 255, 0.85)",
-										_dark: "rgba(25, 30, 45, 0.85)",
-									}}
-									backdropFilter="blur(24px) saturate(180%)"
-									borderWidth="1px"
-									borderColor={{
-										base: "rgba(255, 255, 255, 0.95)",
-										_dark: "rgba(255, 255, 255, 0.18)",
-									}}
-									rounded="pill"
-									px={5}
-									py={2.5}
-									shadow={{
-										base: "0 10px 24px -4px rgba(15, 23, 42, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.95)",
-										_dark: "0 10px 24px -4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
-									}}
-									justify="space-between"
-									mt={4}
-									w="fit-content"
-									gap={4}
-									cursor="pointer"
-									transition="all 0.15s ease-out"
-									_hover={{
-										transform: "translateY(-1px)",
-										shadow: "float",
-									}}
-								>
-									<HStack align="baseline" gap={2}>
-										<Text
-											fontSize="2.2rem"
-											fontWeight="bold"
-											letterSpacing="-0.04em"
-											lineHeight="1"
-										>
-											02
-										</Text>
-										<Text
-											fontSize="sm"
-											color="fg.muted"
-											fontWeight="medium"
-										>
-											tasks
-										</Text>
-									</HStack>
-									<Circle size="7" bg="bg.muted" color="fg">
-										<Icon
-											as={LuArrowUpRight}
-											boxSize={3.5}
-										/>
-									</Circle>
-								</HStack>
-							</Box>
-
-							{/* 4. Earnings */}
-							<Box
-								{...holoGlassCard}
-								p={{ base: 5, xl: 6 }}
-								minH={{ base: "140px", xl: "155px" }}
-								position="relative"
-							>
-								<HStack gap={2} color="fg.muted">
-									<Icon as={LuWallet} boxSize={4.5} />
-									<Text fontSize="sm" fontWeight="semibold">
-										Earnings
-									</Text>
-								</HStack>
-								<Text
-									fontSize={{ base: "1.8rem", xl: "2.2rem" }}
-									fontWeight="bold"
-									letterSpacing="-0.03em"
-									mt={3.5}
-								>
-									$2,932.07
-								</Text>
-								<Text
-									fontSize="sm"
-									color="fg.muted"
-									fontWeight="medium"
-								>
-									02 tasks
-								</Text>
-								<Circle
-									size="8"
-									bg="bg.panel"
-									position="absolute"
-									bottom={4}
-									right={4}
-									shadow="glass"
-									transition="all 0.15s ease-out"
-									_hover={{ transform: "scale(1.1)" }}
-								>
-									<Icon as={LuArrowUpRight} boxSize={4} />
-								</Circle>
-							</Box>
-						</Grid>
+						<DuolingoStatsDock />
 					</Stack>
 				</GridItem>
 

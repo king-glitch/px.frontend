@@ -9,17 +9,11 @@ export * from "@/api/query-keys";
 
 // API Services
 export * from "@/api/services/auth-service";
-export * from "@/api/services/bank-service";
+export * from "@/api/services/duolingo-service";
 
 // TanStack Query Hooks
 export * from "@/api/hooks/use-auth";
-export * from "@/api/hooks/use-banks";
-export * from "@/api/hooks/use-categories";
-export * from "@/api/hooks/use-transactions";
-export * from "@/api/hooks/use-slips";
-export * from "@/api/hooks/use-summary";
-export * from "@/api/hooks/use-active-queues";
-export * from "@/api/hooks/use-mail-inbox";
+export * from "@/api/hooks/use-duolingo";
 
 // Zod Validation Schemas
 export * from "@/api/schemas";
