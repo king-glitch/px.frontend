@@ -1,5 +1,12 @@
 import { Avatar } from "@/components/ui/avatar";
 import { useColorMode } from "@/components/ui/color-mode";
+import {
+	MenuContent,
+	MenuItem,
+	MenuRoot,
+	MenuSeparator,
+	MenuTrigger,
+} from "@/components/ui/menu";
 import { useAuthContext } from "@/contexts/auth-context";
 import {
 	Badge,
@@ -9,12 +16,14 @@ import {
 	HStack,
 	Heading,
 	Icon,
+	Stack,
 	Tabs,
 	Text,
 } from "@chakra-ui/react";
 import React from "react";
 import {
 	LuActivity,
+	LuChevronDown,
 	LuCircleCheck,
 	LuLayoutDashboard,
 	LuLogOut,
@@ -45,15 +54,14 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			!pathname.includes("/settings"));
 	const isTasks = pathname.startsWith("/tasks");
 	const isHealth = pathname.startsWith("/health");
-	const isSettings = pathname.startsWith("/settings");
 
 	const currentPillarValue = isTasks
 		? "/tasks"
 		: isHealth
 			? "/health"
-			: isSettings
-				? "/settings"
-				: "/dashboard";
+			: isOverview
+				? "/dashboard"
+				: "";
 
 	const navPillars = [
 		{
@@ -73,12 +81,6 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			to: "/health",
 			icon: LuActivity,
 			active: isHealth,
-		},
-		{
-			label: "Settings",
-			to: "/settings",
-			icon: LuSettings,
-			active: isSettings,
 		},
 	];
 
@@ -212,7 +214,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 				)}
 			</Flex>
 
-			{/* Right: Color Mode, User Profile */}
+			{/* Right: Color Mode, User Profile Dropdown */}
 			<HStack gap={2.5} flexShrink={0}>
 				{/* Color Mode Switcher */}
 				<Circle
@@ -235,45 +237,94 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 					/>
 				</Circle>
 
-				{/* User Profile Capsule */}
-				<HStack
-					bg="bg.panel"
-					borderWidth="1px"
-					borderColor="border.glass"
-					rounded="pill"
-					pl={1.5}
-					pr={2.5}
-					py={1}
-					shadow="glass"
-					gap={2}
-					transition="box-shadow 0.15s ease-out"
-					_hover={{ shadow: "float" }}
-				>
-					<Avatar size="xs" name={user?.username} />
-					<Text
-						fontSize="xs"
-						fontWeight="semibold"
-						display={{ base: "none", md: "inline" }}
+				{/* User Profile Dropdown */}
+				<MenuRoot positioning={{ placement: "bottom-end", offset: { mainAxis: 8 } }}>
+					<MenuTrigger asChild>
+						<HStack
+							as="button"
+							bg="bg.panel"
+							borderWidth="1px"
+							borderColor="border.glass"
+							rounded="pill"
+							pl={1.5}
+							pr={3}
+							py={1}
+							shadow="glass"
+							gap={2}
+							cursor="pointer"
+							transition="all 0.15s ease-out"
+							_hover={{ shadow: "float", transform: "translateY(-1px)" }}
+							_active={{ transform: "scale(0.98)" }}
+						>
+							<Avatar size="xs" name={user?.username} />
+							<Text
+								fontSize="xs"
+								fontWeight="semibold"
+								display={{ base: "none", md: "inline" }}
+							>
+								@{user?.username}
+							</Text>
+							<Icon
+								as={LuChevronDown}
+								boxSize={3}
+								color="fg.muted"
+								transition="transform 0.15s ease-out"
+							/>
+						</HStack>
+					</MenuTrigger>
+					<MenuContent
+						bg="bg.panel"
+						borderWidth="1px"
+						borderColor="border.glass"
+						rounded="2xl"
+						shadow="float"
+						p={1.5}
+						minW="200px"
+						backdropFilter="blur(20px)"
 					>
-						@{user?.username}
-					</Text>
-					<Circle
-						size="6"
-						bg="bg.muted"
-						cursor="pointer"
-						title="Sign out"
-						onClick={logout}
-						transition="transform 0.15s ease-out"
-						_hover={{
-							color: "red.fg",
-							bg: "red.subtle",
-							transform: "scale(1.1)",
-						}}
-						_active={{ transform: "scale(0.9)" }}
-					>
-						<Icon as={LuLogOut} boxSize={3} />
-					</Circle>
-				</HStack>
+						<Box px={3} py={2}>
+							<Stack gap={0.5}>
+								<Text fontSize="xs" fontWeight="bold">
+									{user?.username}
+								</Text>
+								<Text fontSize="11px" color="fg.muted">
+									Signed in
+								</Text>
+							</Stack>
+						</Box>
+						<MenuSeparator borderColor="border.glass" />
+						<MenuItem
+							value="settings"
+							cursor="pointer"
+							rounded="xl"
+							px={3}
+							py={2}
+							fontSize="xs"
+							fontWeight="medium"
+							onClick={() => navigate("/settings")}
+							_hover={{ bg: "bg.muted" }}
+						>
+							<Icon as={LuSettings} boxSize={4} mr={2} color="fg.muted" />
+							Settings
+						</MenuItem>
+						<MenuSeparator borderColor="border.glass" />
+						<MenuItem
+							value="logout"
+							cursor="pointer"
+							rounded="xl"
+							px={3}
+							py={2}
+							fontSize="xs"
+							fontWeight="medium"
+							color="red.500"
+							onClick={logout}
+							_hover={{ bg: "red.subtle", color: "red.fg" }}
+						>
+							<Icon as={LuLogOut} boxSize={4} mr={2} />
+							Sign out
+						</MenuItem>
+					</MenuContent>
+				</MenuRoot>
 			</HStack>
 		</Flex>
 	);

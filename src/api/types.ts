@@ -40,6 +40,7 @@ export interface DuolingoLink extends ModelBase {
 }
 
 export interface DuolingoStatus {
+	username?: string;
 	xp: number;
 	rank: number;
 	streak: number;
