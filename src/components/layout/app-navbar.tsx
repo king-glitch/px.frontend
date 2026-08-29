@@ -29,8 +29,11 @@ import {
 	LuLogOut,
 	LuMoon,
 	LuSettings,
+	LuShoppingBag,
 	LuSparkles,
 	LuSun,
+	LuSwords,
+	LuWallet,
 } from "react-icons/lu";
 import { Link, useLocation, useNavigate } from "react-router";
 
@@ -51,17 +54,21 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 		(pathname.startsWith("/dashboard") &&
 			!pathname.includes("/tasks") &&
 			!pathname.includes("/health") &&
+			!pathname.includes("/game") &&
 			!pathname.includes("/settings"));
 	const isTasks = pathname.startsWith("/tasks");
 	const isHealth = pathname.startsWith("/health");
+	const isFinance = pathname.startsWith("/game/finance");
 
 	const currentPillarValue = isTasks
 		? "/tasks"
 		: isHealth
 			? "/health"
-			: isOverview
-				? "/dashboard"
-				: "";
+			: isFinance
+				? "/game/finance"
+				: isOverview
+					? "/dashboard"
+					: "";
 
 	const navPillars = [
 		{
@@ -81,6 +88,12 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			to: "/health",
 			icon: LuActivity,
 			active: isHealth,
+		},
+		{
+			label: "Finance",
+			to: "/game/finance",
+			icon: LuWallet,
+			active: isFinance,
 		},
 	];
 
@@ -128,7 +141,6 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 							size="xs"
 							rounded="pill"
 							variant="subtle"
-							colorPalette="mint"
 							fontSize="9px"
 							px={1.5}
 							py={0.5}
@@ -238,7 +250,12 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 				</Circle>
 
 				{/* User Profile Dropdown */}
-				<MenuRoot positioning={{ placement: "bottom-end", offset: { mainAxis: 8 } }}>
+				<MenuRoot
+					positioning={{
+						placement: "bottom-end",
+						offset: { mainAxis: 8 },
+					}}
+				>
 					<MenuTrigger asChild>
 						<HStack
 							as="button"
@@ -253,7 +270,10 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 							gap={2}
 							cursor="pointer"
 							transition="all 0.15s ease-out"
-							_hover={{ shadow: "float", transform: "translateY(-1px)" }}
+							_hover={{
+								shadow: "float",
+								transform: "translateY(-1px)",
+							}}
 							_active={{ transform: "scale(0.98)" }}
 						>
 							<Avatar size="xs" name={user?.username} />
@@ -294,6 +314,25 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 						</Box>
 						<MenuSeparator borderColor="border.glass" />
 						<MenuItem
+							value="heroes"
+							cursor="pointer"
+							rounded="xl"
+							px={3}
+							py={2}
+							fontSize="xs"
+							fontWeight="medium"
+							onClick={() => navigate("/game/heroes")}
+							_hover={{ bg: "bg.muted" }}
+						>
+							<Icon
+								as={LuSwords}
+								boxSize={4}
+								mr={2}
+								color="mint.fg"
+							/>
+							Heroes Command Hub
+						</MenuItem>
+						<MenuItem
 							value="settings"
 							cursor="pointer"
 							rounded="xl"
@@ -304,7 +343,12 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 							onClick={() => navigate("/settings")}
 							_hover={{ bg: "bg.muted" }}
 						>
-							<Icon as={LuSettings} boxSize={4} mr={2} color="fg.muted" />
+							<Icon
+								as={LuSettings}
+								boxSize={4}
+								mr={2}
+								color="fg.muted"
+							/>
 							Settings
 						</MenuItem>
 						<MenuSeparator borderColor="border.glass" />

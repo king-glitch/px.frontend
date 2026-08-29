@@ -1,19 +1,18 @@
-// Domain types & envelope definitions
-export * from "@/api/types";
+export * from "./client";
+export * from "./types";
+export * from "./query-keys";
+export * from "./schemas";
 
-// Axios client & error classes
-export * from "@/api/client";
+// Services
+export * from "./services/auth-service";
+export * from "./services/duolingo-service";
+export * from "./services/currency-service";
+export * from "./services/game-service";
+export * from "./services/finance-service";
 
-// Centralized Query keys
-export * from "@/api/query-keys";
-
-// API Services
-export * from "@/api/services/auth-service";
-export * from "@/api/services/duolingo-service";
-
-// TanStack Query Hooks
-export * from "@/api/hooks/use-auth";
-export * from "@/api/hooks/use-duolingo";
-
-// Zod Validation Schemas
-export * from "@/api/schemas";
+// Hooks
+export * from "./hooks/use-auth";
+export * from "./hooks/use-duolingo";
+export * from "./hooks/use-currency";
+export * from "./hooks/use-game";
+export * from "./hooks/use-finance";

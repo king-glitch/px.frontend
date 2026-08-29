@@ -8,6 +8,7 @@ import {
 	HStack,
 	Heading,
 	Icon,
+	Skeleton,
 	Stack,
 	Text,
 } from "@chakra-ui/react";
@@ -68,13 +69,19 @@ export const Settings: React.FC = () => {
 				<Stack gap={1}>
 					<Heading size="2xl">Settings</Heading>
 					<Text color="fg.muted">
-						Manage integrations, connected accounts, and preferences.
+						Manage integrations, connected accounts, and
+						preferences.
 					</Text>
 				</Stack>
 
 				{/* Account Profile Card */}
 				<Box {...glassCard} p={{ base: 5, md: 6 }}>
-					<Flex align="center" justify="space-between" wrap="wrap" gap={4}>
+					<Flex
+						align="center"
+						justify="space-between"
+						wrap="wrap"
+						gap={4}
+					>
 						<HStack gap={3.5}>
 							<Box
 								p={3}
@@ -83,7 +90,11 @@ export const Settings: React.FC = () => {
 								borderWidth="1px"
 								borderColor="border.glass"
 							>
-								<Icon as={LuUser} boxSize={5} color="fg.muted" />
+								<Icon
+									as={LuUser}
+									boxSize={5}
+									color="fg.muted"
+								/>
 							</Box>
 							<Stack gap={0.5}>
 								<HStack gap={2}>
@@ -94,7 +105,6 @@ export const Settings: React.FC = () => {
 										size="xs"
 										rounded="pill"
 										variant="subtle"
-										colorPalette="mint"
 									>
 										Active
 									</Badge>
@@ -109,18 +119,30 @@ export const Settings: React.FC = () => {
 
 				{/* Integrations Section */}
 				<Stack gap={3}>
-					<Heading size="md" color="fg.muted" textTransform="uppercase" letterSpacing="0.05em" fontSize="xs">
+					<Heading
+						size="md"
+						color="fg.muted"
+						textTransform="uppercase"
+						letterSpacing="0.05em"
+						fontSize="xs"
+					>
 						Integrations
 					</Heading>
 
 					<Box {...glassCard} p={{ base: 5, md: 7 }}>
-						<Flex align="flex-start" justify="space-between" wrap="wrap" gap={3} mb={4}>
+						<Flex
+							align="flex-start"
+							justify="space-between"
+							wrap="wrap"
+							gap={3}
+							mb={4}
+						>
 							<HStack gap={3}>
 								<Box
 									p={3}
 									rounded="2xl"
-									bg="mint.subtle"
-									color="mint.fg"
+									bg="bg.muted"
+									color="fg.muted"
 									borderWidth="1px"
 									borderColor="border.glass"
 								>
@@ -129,11 +151,7 @@ export const Settings: React.FC = () => {
 								<Stack gap={0.5}>
 									<HStack gap={2}>
 										<Heading size="sm">Duolingo</Heading>
-										<Badge
-											size="sm"
-											variant="subtle"
-											colorPalette={isConnected ? "mint" : "gray"}
-										>
+										<Badge size="sm" variant="subtle">
 											{isConnected
 												? status?.username
 													? `@${status.username}`
@@ -153,7 +171,9 @@ export const Settings: React.FC = () => {
 								<Button
 									size="sm"
 									variant="dark"
-									onClick={() => navigate("/settings/duolingo")}
+									onClick={() =>
+										navigate("/settings/duolingo")
+									}
 								>
 									Connect
 								</Button>
@@ -161,7 +181,20 @@ export const Settings: React.FC = () => {
 						</Flex>
 
 						{isLoading ? (
-							<Text color="fg.muted" fontSize="sm">Loading integration status...</Text>
+							<Grid
+								gap={3}
+								templateColumns={{
+									base: "1fr",
+									sm: "repeat(2, 1fr)",
+									md: "repeat(4, 1fr)",
+								}}
+								pt={2}
+							>
+								<Skeleton h="20" rounded="card" />
+								<Skeleton h="20" rounded="card" />
+								<Skeleton h="20" rounded="card" />
+								<Skeleton h="20" rounded="card" />
+							</Grid>
 						) : isConnected && status ? (
 							<Stack gap={5} pt={2}>
 								<Grid
@@ -173,7 +206,10 @@ export const Settings: React.FC = () => {
 									}}
 								>
 									<Box {...glassCard} p={3.5}>
-										<HStack justify="space-between" color="fg.muted">
+										<HStack
+											justify="space-between"
+											color="fg.muted"
+										>
 											<Text
 												fontSize="10px"
 												fontWeight="semibold"
@@ -184,7 +220,7 @@ export const Settings: React.FC = () => {
 											<Icon
 												as={LuTrendingUp}
 												boxSize={3.5}
-												color="mint.fg"
+												color="fg.muted"
 											/>
 										</HStack>
 										<Heading size="xl" mt={1}>
@@ -193,7 +229,10 @@ export const Settings: React.FC = () => {
 									</Box>
 
 									<Box {...glassCard} p={3.5}>
-										<HStack justify="space-between" color="fg.muted">
+										<HStack
+											justify="space-between"
+											color="fg.muted"
+										>
 											<Text
 												fontSize="10px"
 												fontWeight="semibold"
@@ -204,7 +243,7 @@ export const Settings: React.FC = () => {
 											<Icon
 												as={LuTrophy}
 												boxSize={3.5}
-												color="orange.fg"
+												color="fg.muted"
 											/>
 										</HStack>
 										<Heading size="xl" mt={1}>
@@ -215,7 +254,10 @@ export const Settings: React.FC = () => {
 									</Box>
 
 									<Box {...glassCard} p={3.5}>
-										<HStack justify="space-between" color="fg.muted">
+										<HStack
+											justify="space-between"
+											color="fg.muted"
+										>
 											<Text
 												fontSize="10px"
 												fontWeight="semibold"
@@ -226,7 +268,7 @@ export const Settings: React.FC = () => {
 											<Icon
 												as={LuFlame}
 												boxSize={3.5}
-												color="orange.fg"
+												color="fg.muted"
 											/>
 										</HStack>
 										<Heading size="xl" mt={1}>
@@ -235,7 +277,10 @@ export const Settings: React.FC = () => {
 									</Box>
 
 									<Box {...glassCard} p={3.5}>
-										<HStack justify="space-between" color="fg.muted">
+										<HStack
+											justify="space-between"
+											color="fg.muted"
+										>
 											<Text
 												fontSize="10px"
 												fontWeight="semibold"
@@ -260,9 +305,15 @@ export const Settings: React.FC = () => {
 										variant="outline"
 										size="sm"
 										rounded="pill"
-										onClick={() => navigate("/settings/duolingo")}
+										onClick={() =>
+											navigate("/settings/duolingo")
+										}
 									>
-										<Icon as={LuExternalLink} boxSize={3.5} mr={1} />
+										<Icon
+											as={LuExternalLink}
+											boxSize={3.5}
+											mr={1}
+										/>
 										Reconnect
 									</Button>
 									<Button
@@ -280,15 +331,24 @@ export const Settings: React.FC = () => {
 						) : (
 							<Stack gap={4} pt={2}>
 								<Text color="fg.muted" fontSize="sm">
-									Connect your Duolingo account to track daily language learning XP, league rankings, and streaks on your dashboard.
+									Connect your Duolingo account to track daily
+									language learning XP, league rankings, and
+									streaks on your dashboard.
 								</Text>
 								<Box pt={1}>
 									<Button
 										variant="outline"
 										rounded="pill"
-										onClick={() => navigate("/settings/duolingo")}
+										onClick={() =>
+											navigate("/settings/duolingo")
+										}
 									>
-										<Icon as={LuLeaf} boxSize={4} mr={1.5} color="mint.fg" />
+										<Icon
+											as={LuLeaf}
+											boxSize={4}
+											mr={1.5}
+											color="fg.muted"
+										/>
 										Connect Duolingo Account
 									</Button>
 								</Box>

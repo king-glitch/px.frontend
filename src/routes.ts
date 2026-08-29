@@ -14,6 +14,11 @@ export default [
 		route("health", "routes/health.tsx"),
 		route("settings", "routes/settings.tsx"),
 		route("settings/duolingo", "routes/settings/duolingo.tsx"),
+		...prefix("game", [
+			route("heroes", "routes/game/heroes.tsx"),
+			route("shop", "routes/game/shop.tsx"),
+			route("finance", "routes/game/finance.tsx"),
+		]),
 	]),
 	...prefix("authentication", [
 		route("login", "routes/authentication/login.tsx"),

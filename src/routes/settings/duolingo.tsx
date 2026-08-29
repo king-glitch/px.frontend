@@ -70,7 +70,13 @@ export const DuolingoConnectRoute: React.FC = () => {
 		<Container maxW="xl" py={{ base: 4, md: 8 }}>
 			<Stack gap={6}>
 				{/* Top Back Navigation Link */}
-				<HStack asChild gap={2} cursor="pointer" color="fg.muted" _hover={{ color: "fg" }}>
+				<HStack
+					asChild
+					gap={2}
+					cursor="pointer"
+					color="fg.muted"
+					_hover={{ color: "fg" }}
+				>
 					<Link to="/settings">
 						<Icon as={LuArrowLeft} boxSize={4} />
 						<Text fontSize="sm" fontWeight="semibold">
@@ -87,8 +93,8 @@ export const DuolingoConnectRoute: React.FC = () => {
 							<HStack gap={3}>
 								<Circle
 									size="12"
-									bg="mint.subtle"
-									color="mint.fg"
+									bg="bg.muted"
+									color="fg.muted"
 									borderWidth="1px"
 									borderColor="border.glass"
 									shadow="glass"
@@ -97,18 +103,20 @@ export const DuolingoConnectRoute: React.FC = () => {
 								</Circle>
 								<Stack gap={0.5}>
 									<HStack gap={2}>
-										<Heading size="lg">Connect Duolingo</Heading>
+										<Heading size="lg">
+											Connect Duolingo
+										</Heading>
 										<Badge
 											size="xs"
 											rounded="pill"
 											variant="subtle"
-											colorPalette="mint"
 										>
 											Integration
 										</Badge>
 									</HStack>
 									<Text color="fg.muted" fontSize="sm">
-										Link your account to track streaks, XP, and leagues
+										Link your account to track streaks, XP,
+										and leagues
 									</Text>
 								</Stack>
 							</HStack>
@@ -135,7 +143,9 @@ export const DuolingoConnectRoute: React.FC = () => {
 									<Input
 										placeholder="e.g. duousername"
 										value={botUsername}
-										onChange={(e) => setBotUsername(e.target.value)}
+										onChange={(e) =>
+											setBotUsername(e.target.value)
+										}
 										autoComplete="username"
 										autoFocus
 										rounded="xl"
@@ -146,7 +156,9 @@ export const DuolingoConnectRoute: React.FC = () => {
 									<PasswordInput
 										placeholder="Your Duolingo password"
 										value={botPassword}
-										onChange={(e) => setBotPassword(e.target.value)}
+										onChange={(e) =>
+											setBotPassword(e.target.value)
+										}
 										autoComplete="current-password"
 										rounded="xl"
 									/>
@@ -161,9 +173,16 @@ export const DuolingoConnectRoute: React.FC = () => {
 									gap={2.5}
 									align="flex-start"
 								>
-									<Icon as={LuShieldCheck} boxSize={4} color="fg.muted" mt={0.5} />
+									<Icon
+										as={LuShieldCheck}
+										boxSize={4}
+										color="fg.muted"
+										mt={0.5}
+									/>
 									<Text fontSize="xs" color="fg.muted">
-										Your credentials are used solely to establish a secure synchronization session with Duolingo.
+										Your credentials are used solely to
+										establish a secure synchronization
+										session with Duolingo.
 									</Text>
 								</HStack>
 
