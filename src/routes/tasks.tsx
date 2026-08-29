@@ -228,10 +228,7 @@ const EFFORT_OPTIONS: SearchableSelectItem[] = [
 	},
 ];
 
-function formatScheduleBadge(
-	cadence: string,
-	scheduleDays?: number[],
-): string {
+function formatScheduleBadge(cadence: string, scheduleDays?: number[]): string {
 	if (
 		!scheduleDays ||
 		scheduleDays.length === 0 ||
@@ -1123,8 +1120,14 @@ export const TasksRoute: React.FC = () => {
 								{/* Active Schedule & Flexible Recurrence */}
 								<Field label="Active Schedule & Recurrence">
 									<Stack gap={2}>
-										<HStack justify="space-between" wrap="wrap">
-											<Text fontSize="xs" color="fg.muted">
+										<HStack
+											justify="space-between"
+											wrap="wrap"
+										>
+											<Text
+												fontSize="xs"
+												color="fg.muted"
+											>
 												{cadence === "daily"
 													? "Select specific days or run every day"
 													: cadence === "weekly"
@@ -1159,12 +1162,11 @@ export const TasksRoute: React.FC = () => {
 													variant={
 														scheduleDays.length ===
 															5 &&
-														[
-															1, 2, 3, 4, 5,
-														].every((d) =>
-															scheduleDays.includes(
-																d,
-															),
+														[1, 2, 3, 4, 5].every(
+															(d) =>
+																scheduleDays.includes(
+																	d,
+																),
 														)
 															? "solid"
 															: "outline"
