@@ -10,6 +10,7 @@ import {
 	HStack,
 	Heading,
 	Icon,
+	IconButton,
 	Input,
 	SimpleGrid,
 	Skeleton,
@@ -25,8 +26,10 @@ import {
 	LuCircle,
 	LuCircleCheck,
 	LuCoins,
+	LuEllipsisVertical,
 	LuFlame,
 	LuLayers,
+	LuPencil,
 	LuPlus,
 	LuRepeat,
 	LuSparkles,
@@ -49,6 +52,12 @@ import {
 	DialogRoot,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import {
+	MenuContent,
+	MenuItem,
+	MenuRoot,
+	MenuTrigger,
+} from "@/components/ui/menu";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/field";
 import {
@@ -65,6 +74,8 @@ import {
 	useQuestPricePreview,
 	useTodayQuests,
 	useUndoCompleteQuest,
+	useUpdateQuest,
+	type Quest,
 	type QuestCadence,
 	type QuestCategory,
 	type QuestEffort,
@@ -215,6 +226,7 @@ export const TasksRoute: React.FC = () => {
 	const completeMutation = useCompleteQuest();
 	const undoMutation = useUndoCompleteQuest();
 	const createMutation = useCreateQuest();
+	const updateMutation = useUpdateQuest();
 	const deleteMutation = useDeleteQuest();
 
 	const confirmDelete = useConfirm<string>();
@@ -228,15 +240,13 @@ export const TasksRoute: React.FC = () => {
 
 	// Dialog & Form State
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
+	const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
 	const [title, setTitle] = useState("");
 	const [notes, setNotes] = useState("");
 	const [category, setCategory] = useState<string>("work");
 	const [cadence, setCadence] = useState<QuestCadence>("daily");
 	const [effort, setEffort] = useState<QuestEffort>("moderate");
 	const [minutes, setMinutes] = useState<number>(30);
-	const [isCustomReward, setIsCustomReward] = useState(false);
-	const [customExp, setCustomExp] = useState<string>("50");
-	const [customPx, setCustomPx] = useState<string>("25");
 	const [isScored, setIsScored] = useState(true);
 	const [selectedTab, setSelectedTab] = useState<string>("All");
 
@@ -264,6 +274,30 @@ export const TasksRoute: React.FC = () => {
 			(q) => q.quest.category.toLowerCase() === selectedTab.toLowerCase(),
 		);
 	}, [todayQuests, selectedTab]);
+
+	const handleOpenCreate = () => {
+		setEditingQuest(null);
+		setTitle("");
+		setNotes("");
+		setCategory("work");
+		setCadence("daily");
+		setEffort("moderate");
+		setMinutes(30);
+		setIsScored(true);
+		setIsCreateOpen(true);
+	};
+
+	const handleOpenEdit = (quest: Quest) => {
+		setEditingQuest(quest);
+		setTitle(quest.title);
+		setNotes(quest.notes || "");
+		setCategory(quest.category);
+		setCadence(quest.cadence);
+		setEffort(quest.effort);
+		setMinutes(quest.minutes || 30);
+		setIsScored(quest.scored);
+		setIsCreateOpen(true);
+	};
 
 	const handleToggleTask = async (tq: TodayQuest, el: HTMLElement) => {
 		if (tq.completed) {
@@ -311,7 +345,7 @@ export const TasksRoute: React.FC = () => {
 		}
 	};
 
-	const handleAddTask = async (e: React.FormEvent) => {
+	const handleSubmitTask = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!title.trim()) {
 			toaster.create({
@@ -323,34 +357,56 @@ export const TasksRoute: React.FC = () => {
 		}
 
 		try {
-			await createMutation.mutateAsync({
-				title: title.trim(),
-				notes: notes.trim() || undefined,
-				category: (category || "work") as QuestCategory,
-				cadence,
-				effort,
-				minutes,
-				scored: isScored,
-				custom_exp: isCustomReward ? Number(customExp) || 0 : undefined,
-				custom_px: isCustomReward ? Number(customPx) || 0 : undefined,
-			});
+			if (editingQuest) {
+				await updateMutation.mutateAsync({
+					id: editingQuest.id,
+					payload: {
+						title: title.trim(),
+						notes: notes.trim() || undefined,
+						category: (category || "work") as QuestCategory,
+						cadence,
+						effort,
+						minutes,
+						scored: isScored,
+					},
+				});
 
-			toaster.create({
-				title: "Quest Created",
-				description: `"${title.trim()}" added to your ${cadence} quest board.`,
-				type: "success",
-			});
+				toaster.create({
+					title: "Quest Updated",
+					description: `"${title.trim()}" updated successfully.`,
+					type: "success",
+				});
+			} else {
+				await createMutation.mutateAsync({
+					title: title.trim(),
+					notes: notes.trim() || undefined,
+					category: (category || "work") as QuestCategory,
+					cadence,
+					effort,
+					minutes,
+					scored: isScored,
+				});
+
+				toaster.create({
+					title: "Quest Created",
+					description: `"${title.trim()}" added to your ${cadence} quest board.`,
+					type: "success",
+				});
+			}
 
 			setTitle("");
 			setNotes("");
+			setEditingQuest(null);
 			setIsCreateOpen(false);
 		} catch (err) {
 			toaster.create({
-				title: "Failed to create quest",
+				title: editingQuest
+					? "Failed to update quest"
+					: "Failed to create quest",
 				description:
 					err instanceof ApiError
 						? err.message
-						: "Error creating quest",
+						: "Error saving quest",
 				type: "error",
 			});
 		}
@@ -394,11 +450,8 @@ export const TasksRoute: React.FC = () => {
 					templateColumns={{
 						base: "1fr",
 						sm: "repeat(2, 1fr)",
-						lg: "repeat(4, 1fr)",
 					}}
 				>
-					<Skeleton h="24" rounded="card" />
-					<Skeleton h="24" rounded="card" />
 					<Skeleton h="24" rounded="card" />
 					<Skeleton h="24" rounded="card" />
 				</Grid>
@@ -408,7 +461,6 @@ export const TasksRoute: React.FC = () => {
 					templateColumns={{
 						base: "1fr",
 						sm: "repeat(2, 1fr)",
-						lg: "repeat(4, 1fr)",
 					}}
 				>
 					<Box {...glassCard} p={4}>
@@ -454,52 +506,6 @@ export const TasksRoute: React.FC = () => {
 							</Text>
 						</HStack>
 					</Box>
-
-					<Box {...glassCard} p={4} ref={targetRef}>
-						<HStack justify="space-between" color="fg.muted">
-							<Text
-								fontSize="xs"
-								fontWeight="semibold"
-								textTransform="uppercase"
-							>
-								PX Points
-							</Text>
-							<Icon as={LuCoins} boxSize={4} color="fg.muted" />
-						</HStack>
-						<HStack align="baseline" gap={2} mt={2}>
-							<Heading size="2xl">
-								{(summary?.player?.px ?? 0).toLocaleString()}
-							</Heading>
-							<Text fontSize="xs" color="fg.muted">
-								available balance
-							</Text>
-						</HStack>
-					</Box>
-
-					<Box {...glassCard} p={4}>
-						<HStack justify="space-between" color="fg.muted">
-							<Text
-								fontSize="xs"
-								fontWeight="semibold"
-								textTransform="uppercase"
-							>
-								Hero Rank
-							</Text>
-							<Icon
-								as={LuTrendingUp}
-								boxSize={4}
-								color="fg.muted"
-							/>
-						</HStack>
-						<HStack align="baseline" gap={2} mt={2}>
-							<Heading size="2xl">
-								Lv {summary?.player?.level ?? 1}
-							</Heading>
-							<Text fontSize="xs" color="fg.muted">
-								{summary?.exp_to_next ?? 0} EXP to next
-							</Text>
-						</HStack>
-					</Box>
 				</Grid>
 			)}
 
@@ -538,11 +544,11 @@ export const TasksRoute: React.FC = () => {
 							/>
 						</Box>
 
-						{/* Bottom Dialog Trigger Button */}
+						{/* Centered Dialog Trigger Button */}
 						<PillButton
 							variant="dark"
 							icon={LuPlus}
-							onClick={() => setIsCreateOpen(true)}
+							onClick={handleOpenCreate}
 						>
 							New Quest
 						</PillButton>
@@ -709,19 +715,78 @@ export const TasksRoute: React.FC = () => {
 										>
 											{tq.quest.category}
 										</Badge>
-										<Button
-											size="xs"
-											variant="ghost"
-											onClick={() =>
-												confirmDelete.ask(tq.quest.id)
-											}
+
+										{/* 3-Dots Action Menu */}
+										<MenuRoot
+											positioning={{
+												placement: "bottom-end",
+											}}
 										>
-											<Icon
-												as={LuTrash2}
-												boxSize={3.5}
-												color="fg.muted"
-											/>
-										</Button>
+											<MenuTrigger asChild>
+												<IconButton
+													size="xs"
+													variant="ghost"
+													rounded="pill"
+													aria-label="Quest actions"
+												>
+													<Icon
+														as={LuEllipsisVertical}
+														boxSize={4}
+														color="fg.muted"
+													/>
+												</IconButton>
+											</MenuTrigger>
+											<MenuContent
+												bg="bg.panel"
+												rounded="card"
+												p={1}
+												minW="140px"
+												shadow="float"
+												borderWidth="1px"
+												borderColor="border.glass"
+											>
+												<MenuItem
+													value="edit"
+													cursor="pointer"
+													rounded="pill"
+													px={3}
+													py={1.5}
+													fontSize="xs"
+													onClick={() =>
+														handleOpenEdit(tq.quest)
+													}
+												>
+													<Icon
+														as={LuPencil}
+														boxSize={3.5}
+														mr={2}
+														color="mint.fg"
+													/>
+													Edit Quest
+												</MenuItem>
+												<MenuItem
+													value="delete"
+													cursor="pointer"
+													rounded="pill"
+													px={3}
+													py={1.5}
+													fontSize="xs"
+													color="red.500"
+													onClick={() =>
+														confirmDelete.ask(
+															tq.quest.id,
+														)
+													}
+												>
+													<Icon
+														as={LuTrash2}
+														boxSize={3.5}
+														mr={2}
+													/>
+													Delete Quest
+												</MenuItem>
+											</MenuContent>
+										</MenuRoot>
 									</HStack>
 								</Flex>
 							);
@@ -730,16 +795,15 @@ export const TasksRoute: React.FC = () => {
 				)}
 			</Box>
 
-			{/* Chakra Bottom Dialog for Quest Creation */}
+			{/* Chakra Centered Dialog for Quest Creation / Editing */}
 			<DialogRoot
 				open={isCreateOpen}
 				onOpenChange={(details) => setIsCreateOpen(details.open)}
-				placement="bottom"
+				placement="center"
 			>
 				<DialogContent
 					maxW="2xl"
-					roundedTop="2xl"
-					roundedBottom="none"
+					rounded="card"
 					bg="bg.panel"
 					borderWidth="1px"
 					borderColor="border.glass"
@@ -749,11 +813,14 @@ export const TasksRoute: React.FC = () => {
 					<DialogHeader pb={2}>
 						<Stack gap={0.5}>
 							<DialogTitle fontSize="lg">
-								Create New Quest
+								{editingQuest
+									? "Edit Quest"
+									: "Create New Quest"}
 							</DialogTitle>
 							<DialogDescription fontSize="xs" color="fg.muted">
-								Configure cadence, category, and reward point
-								calculation.
+								{editingQuest
+									? "Update cadence, effort, duration or checklist notes."
+									: "Configure cadence, category, and reward point calculation."}
 							</DialogDescription>
 						</Stack>
 					</DialogHeader>
@@ -762,7 +829,7 @@ export const TasksRoute: React.FC = () => {
 						<form
 							id="create-quest-form"
 							noValidate
-							onSubmit={handleAddTask}
+							onSubmit={handleSubmitTask}
 						>
 							<Stack gap={3.5}>
 								<Field label="Quest Title" required>
@@ -924,111 +991,61 @@ export const TasksRoute: React.FC = () => {
 									</HStack>
 
 									{isScored && (
-										<Stack gap={2} pt={1}>
-											<HStack justify="space-between">
-												<Text
-													fontSize="xs"
-													color="fg.muted"
-												>
-													Reward Mode
+										<Stack
+											gap={1.5}
+											pt={1}
+											bg="bg.panel"
+											p={2.5}
+											rounded="card"
+											borderWidth="1px"
+											borderColor="border.glass"
+										>
+											<HStack
+												justify="space-between"
+												fontSize="xs"
+											>
+												<Text color="fg.muted">
+													System reward ({minutes}m @{" "}
+													{effort}):
 												</Text>
-												<Button
-													type="button"
-													size="xs"
-													variant="ghost"
-													onClick={() =>
-														setIsCustomReward(
-															!isCustomReward,
-														)
-													}
-												>
-													{isCustomReward
-														? "Manual EXP"
-														: "Auto Duration-Scaled Rate"}
-												</Button>
-											</HStack>
-
-											{isCustomReward ? (
-												<Box>
-													<Field label="Custom EXP">
-														<Input
-															type="number"
-															min={0}
-															value={customExp}
-															onChange={(e) =>
-																setCustomExp(
-																	e.target
-																		.value,
-																)
-															}
-															rounded="pill"
-															fontSize="xs"
-														/>
-													</Field>
-												</Box>
-											) : (
-												<Stack
-													gap={1.5}
-													bg="bg.panel"
-													p={2.5}
-													rounded="card"
-													borderWidth="1px"
-													borderColor="border.glass"
-												>
-													<HStack
-														justify="space-between"
-														fontSize="xs"
+												{isPreviewFetching ? (
+													<Skeleton
+														h="5"
+														w="20"
+														rounded="pill"
+													/>
+												) : (
+													<Badge
+														size="sm"
+														rounded="pill"
+														variant="subtle"
 													>
-														<Text color="fg.muted">
-															Duration-Scaled
-															Yield ({minutes}m @{" "}
-															{effort}):
-														</Text>
-														{isPreviewFetching ? (
-															<Skeleton
-																h="5"
-																w="20"
-																rounded="pill"
-															/>
-														) : (
-															<Badge
-																size="sm"
-																rounded="pill"
-																variant="subtle"
-															>
-																+
-																{pricePreview?.exp ??
-																	0}{" "}
-																EXP (+
-																{pricePreview?.px ??
-																	0}{" "}
-																PX)
-															</Badge>
-														)}
-													</HStack>
-													{minutes >= 60 && (
-														<HStack
-															gap={1.5}
-															pt={0.5}
-														>
-															<Icon
-																as={LuZap}
-																boxSize={3}
-																color="mint.fg"
-															/>
-															<Text
-																fontSize="11px"
-																color="mint.fg"
-																fontWeight="medium"
-															>
-																Deep Focus
-																active: +20%
-																bonus multiplier
-																on completion
-															</Text>
-														</HStack>
-													)}
-												</Stack>
+														+
+														{pricePreview?.exp ?? 0}{" "}
+														EXP (+
+														{pricePreview?.px ??
+															0}{" "}
+														PX)
+													</Badge>
+												)}
+											</HStack>
+											{minutes >= 60 && (
+												<HStack gap={1.5} pt={0.5}>
+													<Icon
+														as={LuZap}
+														boxSize={3}
+														color="mint.fg"
+													/>
+													<Text
+														fontSize="11px"
+														color="mint.fg"
+														fontWeight="medium"
+													>
+														Deep Focus active: +20%
+														bonus multiplier on
+														completion
+													</Text>
+												</HStack>
 											)}
 										</Stack>
 									)}
@@ -1063,10 +1080,14 @@ export const TasksRoute: React.FC = () => {
 							type="submit"
 							form="create-quest-form"
 							variant="dark"
-							icon={LuPlus}
-							loading={createMutation.isPending}
+							icon={editingQuest ? LuPencil : LuPlus}
+							loading={
+								editingQuest
+									? updateMutation.isPending
+									: createMutation.isPending
+							}
 						>
-							Create Quest
+							{editingQuest ? "Save Changes" : "Create Quest"}
 						</PillButton>
 					</DialogFooter>
 

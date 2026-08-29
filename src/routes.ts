@@ -15,8 +15,10 @@ export default [
 		route("settings", "routes/settings.tsx"),
 		route("settings/duolingo", "routes/settings/duolingo.tsx"),
 		...prefix("game", [
-			route("heroes", "routes/game/heroes.tsx"),
-			route("shop", "routes/game/shop.tsx"),
+			// The shop and inventory are sections of the hero page, not pages
+			// of their own — the optional segment gives them real URLs without
+			// splitting the layout.
+			route("heroes/:section?", "routes/game/heroes.tsx"),
 			route("finance", "routes/game/finance.tsx"),
 		]),
 	]),

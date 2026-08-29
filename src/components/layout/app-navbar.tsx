@@ -29,7 +29,6 @@ import {
 	LuLogOut,
 	LuMoon,
 	LuSettings,
-	LuShoppingBag,
 	LuSparkles,
 	LuSun,
 	LuSwords,
@@ -60,7 +59,6 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 	const isHealth = pathname.startsWith("/health");
 	const isFinance = pathname.startsWith("/game/finance");
 	const isHeroes = pathname.startsWith("/game/heroes");
-	const isShop = pathname.startsWith("/game/shop");
 
 	const currentPillarValue = isTasks
 		? "/tasks"
@@ -68,13 +66,11 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			? "/health"
 			: isHeroes
 				? "/game/heroes"
-				: isShop
-					? "/game/shop"
-					: isFinance
-						? "/game/finance"
-						: isOverview
-							? "/dashboard"
-							: "";
+				: isFinance
+					? "/game/finance"
+					: isOverview
+						? "/dashboard"
+						: "";
 
 	const navPillars = [
 		{
@@ -100,12 +96,6 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			to: "/game/heroes",
 			icon: LuSwords,
 			active: isHeroes,
-		},
-		{
-			label: "Shop",
-			to: "/game/shop",
-			icon: LuShoppingBag,
-			active: isShop,
 		},
 		{
 			label: "Finance",

@@ -189,7 +189,6 @@ export interface Quest extends ModelBase {
 	longest_streak: number;
 	exp_value: number;
 	px_value: number;
-	custom_reward: boolean;
 	archived_at?: ISO8601String;
 }
 
@@ -424,9 +423,6 @@ export interface CreateQuestRequest {
 	minutes: number;
 	scored?: boolean;
 	schedule_days?: number[];
-	/** Price this quest by hand instead of from effort and cadence. */
-	custom_exp?: number;
-	custom_px?: number;
 }
 
 export interface UpdateQuestRequest {
@@ -439,8 +435,6 @@ export interface UpdateQuestRequest {
 	scored?: boolean;
 	active?: boolean;
 	schedule_days?: number[];
-	custom_exp?: number;
-	custom_px?: number;
 }
 
 export interface CompleteQuestRequest {

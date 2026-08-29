@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from "react";
+import { Link, useParams } from "react-router";
 import {
 	Badge,
 	Box,
@@ -210,6 +211,68 @@ const PERK_DEFS: {
 	},
 ];
 
+function getPerkCurrentEffect(id: PerkID, rank: number): string {
+	switch (id) {
+		case "diligence":
+			return rank > 0
+				? `+${rank * 5}% Daily Quest EXP`
+				: "0% (Base rate)";
+		case "merchant":
+			return rank > 0
+				? `+${rank * 5}% PX Points Yield`
+				: "0% (Base rate)";
+		case "vitality":
+			return rank > 0
+				? `+${rank * 10}% Health EXP Multiplier`
+				: "0% (Base rate)";
+		case "resolve":
+			return rank > 0
+				? `+${rank * 15}% Streak Milestone EXP`
+				: "0% (Base rate)";
+		case "ledger":
+			return rank > 0
+				? `+${rank * 10}% Monthly Finance EXP`
+				: "0% (Base rate)";
+		case "deep_focus":
+			return rank > 0
+				? `+${rank * 20}% 60m+ Deep Work EXP`
+				: "0% (Base rate)";
+		case "bargain":
+			return rank > 0
+				? `-${rank * 5}% Shop Catalog PX Cost`
+				: "0% (Full price)";
+		case "second_wind":
+			return rank > 0
+				? "Active (Streak guarded 1x/14d)"
+				: "Inactive (0/1)";
+		default:
+			return `Rank ${rank}`;
+	}
+}
+
+function getPerkUpgradeGain(id: PerkID): string {
+	switch (id) {
+		case "diligence":
+			return "+5% EXP";
+		case "merchant":
+			return "+5% PX";
+		case "vitality":
+			return "+10% Health EXP";
+		case "resolve":
+			return "+15% Streak EXP";
+		case "ledger":
+			return "+10% Finance EXP";
+		case "deep_focus":
+			return "+20% Deep Work";
+		case "bargain":
+			return "-5% PX Cost";
+		case "second_wind":
+			return "Streak Guard";
+		default:
+			return "+1 Level";
+	}
+}
+
 const BUFF_LABEL: Record<string, string> = {
 	streak_shield: "Streak Shield",
 	streak_repair: "Streak Repair",
@@ -235,7 +298,9 @@ type HeroSection = "overview" | "shop" | "inventory";
 export const Heroes: React.FC = () => {
 	const { user } = useAuthContext();
 	const { data: summary, isLoading, isError } = usePlayerSummary();
-	const [activeSection, setActiveSection] = useState<HeroSection>("overview");
+	const { section } = useParams<{ section?: string }>();
+	const activeSection: HeroSection =
+		section === "shop" || section === "inventory" ? section : "overview";
 
 	const spendPerk = useSpendPerk();
 	const ascend = useAscendPlayer();
@@ -321,6 +386,24 @@ export const Heroes: React.FC = () => {
 	const maxAttribute = Math.max(...Object.values(attributes), 10);
 	const canAscend = player.level >= 50;
 
+	const diligenceRank =
+		perks.find((p) => p.perk_id === "diligence")?.rank ?? 0;
+	const merchantRank = perks.find((p) => p.perk_id === "merchant")?.rank ?? 0;
+	const vitalityRank = perks.find((p) => p.perk_id === "vitality")?.rank ?? 0;
+	const resolveRank = perks.find((p) => p.perk_id === "resolve")?.rank ?? 0;
+	const ledgerRank = perks.find((p) => p.perk_id === "ledger")?.rank ?? 0;
+	const deepFocusRank =
+		perks.find((p) => p.perk_id === "deep_focus")?.rank ?? 0;
+	const bargainRank = perks.find((p) => p.perk_id === "bargain")?.rank ?? 0;
+	const secondWindRank =
+		perks.find((p) => p.perk_id === "second_wind")?.rank ?? 0;
+
+	const totalInvestedPoints = perks.reduce((acc, p) => acc + p.rank, 0);
+	const totalAttributesSum = Object.values(attributes).reduce(
+		(a, b) => a + b,
+		0,
+	);
+
 	return (
 		<Container maxW="7xl" py={{ base: 4, md: 6 }}>
 			<RewardFlight />
@@ -375,6 +458,7 @@ export const Heroes: React.FC = () => {
 					<Box {...glassCard} p={3}>
 						<VStack gap={1.5} align="stretch">
 							<Button
+								asChild
 								variant={
 									activeSection === "overview"
 										? "solid"
@@ -385,25 +469,30 @@ export const Heroes: React.FC = () => {
 								size="sm"
 								px={3.5}
 								py={2}
-								onClick={() => setActiveSection("overview")}
 							>
-								<HStack gap={2.5}>
-									<Icon
-										as={LuSwords}
-										boxSize={4}
-										color={
-											activeSection === "overview"
-												? "inherit"
-												: "fg.muted"
-										}
-									/>
-									<Text fontWeight="semibold" fontSize="xs">
-										Hero Overview
-									</Text>
-								</HStack>
+								<Link to="/game/heroes">
+									<HStack gap={2.5}>
+										<Icon
+											as={LuSwords}
+											boxSize={4}
+											color={
+												activeSection === "overview"
+													? "inherit"
+													: "fg.muted"
+											}
+										/>
+										<Text
+											fontWeight="semibold"
+											fontSize="xs"
+										>
+											Hero Overview
+										</Text>
+									</HStack>
+								</Link>
 							</Button>
 
 							<Button
+								asChild
 								variant={
 									activeSection === "shop" ? "solid" : "ghost"
 								}
@@ -412,25 +501,30 @@ export const Heroes: React.FC = () => {
 								size="sm"
 								px={3.5}
 								py={2}
-								onClick={() => setActiveSection("shop")}
 							>
-								<HStack gap={2.5}>
-									<Icon
-										as={LuShoppingBag}
-										boxSize={4}
-										color={
-											activeSection === "shop"
-												? "inherit"
-												: "fg.muted"
-										}
-									/>
-									<Text fontWeight="semibold" fontSize="xs">
-										Shop & Rewards
-									</Text>
-								</HStack>
+								<Link to="/game/heroes/shop">
+									<HStack gap={2.5}>
+										<Icon
+											as={LuShoppingBag}
+											boxSize={4}
+											color={
+												activeSection === "shop"
+													? "inherit"
+													: "fg.muted"
+											}
+										/>
+										<Text
+											fontWeight="semibold"
+											fontSize="xs"
+										>
+											Shop & Rewards
+										</Text>
+									</HStack>
+								</Link>
 							</Button>
 
 							<Button
+								asChild
 								variant={
 									activeSection === "inventory"
 										? "solid"
@@ -441,22 +535,26 @@ export const Heroes: React.FC = () => {
 								size="sm"
 								px={3.5}
 								py={2}
-								onClick={() => setActiveSection("inventory")}
 							>
-								<HStack gap={2.5}>
-									<Icon
-										as={LuPackage}
-										boxSize={4}
-										color={
-											activeSection === "inventory"
-												? "inherit"
-												: "fg.muted"
-										}
-									/>
-									<Text fontWeight="semibold" fontSize="xs">
-										Inventory & Claims
-									</Text>
-								</HStack>
+								<Link to="/game/heroes/inventory">
+									<HStack gap={2.5}>
+										<Icon
+											as={LuPackage}
+											boxSize={4}
+											color={
+												activeSection === "inventory"
+													? "inherit"
+													: "fg.muted"
+											}
+										/>
+										<Text
+											fontWeight="semibold"
+											fontSize="xs"
+										>
+											Inventory & Claims
+										</Text>
+									</HStack>
+								</Link>
 							</Button>
 						</VStack>
 
@@ -488,7 +586,7 @@ export const Heroes: React.FC = () => {
 					</Box>
 
 					{/* Main Content Area */}
-					<Box>
+					<Box minW={0}>
 						{activeSection === "overview" && (
 							<Stack gap={6}>
 								{/* Focal Avatar + Level & Attribute Radar */}
@@ -533,21 +631,15 @@ export const Heroes: React.FC = () => {
 												</Flex>
 											</Box>
 
-											<Stack align="center" gap={0}>
-												<Heading size="lg">
-													Level {player.level}
-												</Heading>
-												<Text
-													fontSize="xs"
-													color="fg.muted"
-												>
-													{player.ascensions}{" "}
-													ascension
-													{player.ascensions === 1
-														? ""
-														: "s"}
-												</Text>
-											</Stack>
+											<Text
+												fontSize="xs"
+												color="fg.muted"
+											>
+												{player.ascensions} ascension
+												{player.ascensions === 1
+													? ""
+													: "s"}
+											</Text>
 
 											<Box w="full">
 												<ExpBar
@@ -575,22 +667,23 @@ export const Heroes: React.FC = () => {
 									</Box>
 
 									{/* Attribute Radar Card */}
-									<Box {...glassCard} p={6}>
-										<Stack gap={4} align="center">
+									<Box {...glassCard} p={6} minW={0}>
+										<Stack gap={4}>
 											<HStack
 												justify="space-between"
 												w="full"
 											>
 												<Stack gap={0.5}>
 													<Heading size="sm">
-														7 RPG Attributes
+														Attribute Breakdown
 													</Heading>
 													<Text
 														fontSize="xs"
 														color="fg.muted"
 													>
-														Disciplined progression
-														from daily life
+														Each attribute is EXP
+														earned from one quest
+														category, log-scaled.
 													</Text>
 												</Stack>
 												<Icon
@@ -603,7 +696,6 @@ export const Heroes: React.FC = () => {
 											<AttributeRadar
 												values={attributes}
 												max={maxAttribute}
-												size={260}
 											/>
 										</Stack>
 									</Box>
@@ -670,6 +762,380 @@ export const Heroes: React.FC = () => {
 										iconColor="fg.muted"
 									/>
 								</Grid>
+
+								{/* Active Hero Multipliers & Combat Stats Matrix */}
+								<Stack gap={3}>
+									<HStack
+										justify="space-between"
+										wrap="wrap"
+										gap={2}
+									>
+										<Stack gap={0.5}>
+											<Heading size="md">
+												Active Hero Multipliers
+											</Heading>
+											<Text
+												fontSize="xs"
+												color="fg.muted"
+											>
+												Live permanent bonuses gained
+												from your invested talent perks
+												and attribute power.
+											</Text>
+										</Stack>
+										<HStack gap={2}>
+											<Badge
+												size="sm"
+												rounded="pill"
+												variant="subtle"
+											>
+												{totalInvestedPoints} Points
+												Invested
+											</Badge>
+											<Badge
+												size="sm"
+												rounded="pill"
+												variant="surface"
+												colorPalette="mint"
+											>
+												{totalAttributesSum} Total
+												Attributes
+											</Badge>
+										</HStack>
+									</HStack>
+
+									<SimpleGrid
+										columns={{
+											base: 2,
+											sm: 3,
+											md: 4,
+											lg: 4,
+										}}
+										gap={2.5}
+									>
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													Quest EXP
+												</Text>
+												<Icon
+													as={LuZap}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													diligenceRank > 0
+														? "mint.fg"
+														: "fg"
+												}
+											>
+												+{diligenceRank * 5}%
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{diligenceRank > 0
+													? `+${diligenceRank * 5}% daily exp`
+													: "Rank 0 (Base 1.0x)"}
+											</Text>
+										</Box>
+
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													PX Yield
+												</Text>
+												<Icon
+													as={LuCoins}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													merchantRank > 0
+														? "mint.fg"
+														: "fg"
+												}
+											>
+												+{merchantRank * 5}%
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{merchantRank > 0
+													? `+${merchantRank * 5}% task px`
+													: "Rank 0 (Base 1.0x)"}
+											</Text>
+										</Box>
+
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													Deep Focus
+												</Text>
+												<Icon
+													as={LuTarget}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													deepFocusRank > 0
+														? "mint.fg"
+														: "fg"
+												}
+											>
+												+{deepFocusRank * 20}%
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{deepFocusRank > 0
+													? `+${deepFocusRank * 20}% 60m+ exp`
+													: "Rank 0 (Base 1.0x)"}
+											</Text>
+										</Box>
+
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													Health Award
+												</Text>
+												<Icon
+													as={LuActivity}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													vitalityRank > 0
+														? "mint.fg"
+														: "fg"
+												}
+											>
+												+{vitalityRank * 10}%
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{vitalityRank > 0
+													? `+${vitalityRank * 10}% daily health`
+													: "Rank 0 (Base 1.0x)"}
+											</Text>
+										</Box>
+
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													Streak Bonus
+												</Text>
+												<Icon
+													as={LuFlame}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													resolveRank > 0
+														? "mint.fg"
+														: "fg"
+												}
+											>
+												+{resolveRank * 15}%
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{resolveRank > 0
+													? `+${resolveRank * 15}% streak boost`
+													: "Rank 0 (Base 1.0x)"}
+											</Text>
+										</Box>
+
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													Finance EXP
+												</Text>
+												<Icon
+													as={LuTrendingUp}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													ledgerRank > 0
+														? "mint.fg"
+														: "fg"
+												}
+											>
+												+{ledgerRank * 10}%
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{ledgerRank > 0
+													? `+${ledgerRank * 10}% monthly exp`
+													: "Rank 0 (Base 1.0x)"}
+											</Text>
+										</Box>
+
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													Shop Discount
+												</Text>
+												<Icon
+													as={LuShoppingBag}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													bargainRank > 0
+														? "mint.fg"
+														: "fg"
+												}
+											>
+												-{bargainRank * 5}%
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{bargainRank > 0
+													? `-${bargainRank * 5}% shop price`
+													: "Rank 0 (Full price)"}
+											</Text>
+										</Box>
+
+										<Box {...glassCard} p={3} bg="bg.panel">
+											<HStack
+												justify="space-between"
+												color="fg.muted"
+												mb={1}
+											>
+												<Text
+													fontSize="10px"
+													fontWeight="semibold"
+													textTransform="uppercase"
+												>
+													Second Wind
+												</Text>
+												<Icon
+													as={LuShield}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+											</HStack>
+											<Text
+												fontSize="lg"
+												fontWeight="bold"
+												color={
+													secondWindRank > 0
+														? "mint.fg"
+														: "fg.muted"
+												}
+											>
+												{secondWindRank > 0
+													? "Active"
+													: "Inactive"}
+											</Text>
+											<Text
+												fontSize="10px"
+												color="fg.muted"
+											>
+												{secondWindRank > 0
+													? "Streak auto-shield (14d)"
+													: "Rank 0 (0/1)"}
+											</Text>
+										</Box>
+									</SimpleGrid>
+								</Stack>
 
 								{/* Perk Tree */}
 								<Stack gap={3}>
@@ -739,11 +1205,11 @@ export const Heroes: React.FC = () => {
 														}}
 													>
 														<Stack
-															gap={2.5}
+															gap={3}
 															h="full"
 															justify="space-between"
 														>
-															<Stack gap={1}>
+															<Stack gap={2}>
 																<HStack justify="space-between">
 																	<Text
 																		fontWeight="bold"
@@ -773,6 +1239,22 @@ export const Heroes: React.FC = () => {
 																		}
 																	</Badge>
 																</HStack>
+
+																{/* Visual Rank Bar */}
+																<Box
+																	h="1.5"
+																	rounded="pill"
+																	bg="bg.muted"
+																	overflow="hidden"
+																>
+																	<Box
+																		h="full"
+																		w={`${(rank / def.max) * 100}%`}
+																		bg="mint.solid"
+																		rounded="pill"
+																	/>
+																</Box>
+
 																<Text
 																	fontSize="xs"
 																	color="fg.muted"
@@ -782,6 +1264,51 @@ export const Heroes: React.FC = () => {
 																		def.description
 																	}
 																</Text>
+
+																{/* Current vs Next Stats Breakdown */}
+																<Stack
+																	gap={1}
+																	p={2}
+																	rounded="xl"
+																	bg="bg.muted"
+																	fontSize="11px"
+																>
+																	<HStack justify="space-between">
+																		<Text color="fg.muted">
+																			Current:
+																		</Text>
+																		<Text
+																			fontWeight="bold"
+																			color={
+																				rank >
+																				0
+																					? "mint.fg"
+																					: "fg.muted"
+																			}
+																		>
+																			{getPerkCurrentEffect(
+																				def.id,
+																				rank,
+																			)}
+																		</Text>
+																	</HStack>
+																	{!atMax && (
+																		<HStack justify="space-between">
+																			<Text color="fg.muted">
+																				Next
+																				rank:
+																			</Text>
+																			<Text
+																				fontWeight="semibold"
+																				color="fg"
+																			>
+																				{getPerkUpgradeGain(
+																					def.id,
+																				)}
+																			</Text>
+																		</HStack>
+																	)}
+																</Stack>
 															</Stack>
 
 															<PillButton
@@ -806,8 +1333,11 @@ export const Heroes: React.FC = () => {
 																}
 															>
 																{atMax
-																	? "Maxed"
-																	: "Upgrade Perk"}
+																	? "Max Rank"
+																	: player.skill_points ===
+																		  0
+																		? "0 Skill Points"
+																		: `Upgrade (+${getPerkUpgradeGain(def.id)})`}
 															</PillButton>
 														</Stack>
 													</Box>

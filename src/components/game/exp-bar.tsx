@@ -163,18 +163,6 @@ export const LevelRing: React.FC<LevelRingProps> = ({
 						: "stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
 				}}
 			/>
-			<Box
-				as="text"
-				x={size / 2}
-				y={size / 2}
-				textAnchor="middle"
-				dominantBaseline="central"
-				fontWeight="bold"
-				fontSize={size * 0.32}
-				color="fg"
-			>
-				{level}
-			</Box>
 		</svg>
 	);
 };
