@@ -80,7 +80,7 @@ export const PillButton = React.forwardRef<HTMLButtonElement, PillButtonProps>(
 		}[size];
 
 		// Variant visual styles
-		const variantStyles = {
+		const variantMap = {
 			light: {
 				bg: { base: "#E2E8F0", _dark: "#1E2230" },
 				color: { base: "#0C0E14", _dark: "#F8FAFC" },
@@ -210,7 +210,11 @@ export const PillButton = React.forwardRef<HTMLButtonElement, PillButtonProps>(
 				iconBubbleColor: "fg",
 				iconBubbleShadow: "none",
 			},
-		}[variant];
+		};
+
+		const variantStyles =
+			(variant && variantMap[variant as keyof typeof variantMap]) ||
+			variantMap.dark;
 
 		const showBubble =
 			!noIcon && Boolean(IconComponent || iconNode || loading);

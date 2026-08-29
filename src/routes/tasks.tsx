@@ -228,6 +228,36 @@ const EFFORT_OPTIONS: SearchableSelectItem[] = [
 	},
 ];
 
+function formatScheduleBadge(
+	cadence: string,
+	scheduleDays?: number[],
+): string {
+	if (
+		!scheduleDays ||
+		scheduleDays.length === 0 ||
+		scheduleDays.length === 7
+	) {
+		if (cadence === "daily") return "Daily";
+		if (cadence === "weekly") return "Weekly (Flexible)";
+		if (cadence === "monthly") return "Monthly (Flexible)";
+		return "One-off";
+	}
+	if (
+		scheduleDays.length === 5 &&
+		[1, 2, 3, 4, 5].every((d) => scheduleDays.includes(d))
+	) {
+		return "Weekdays";
+	}
+	if (
+		scheduleDays.length === 2 &&
+		[0, 6].every((d) => scheduleDays.includes(d))
+	) {
+		return "Weekends";
+	}
+	const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+	return scheduleDays.map((d) => dayNames[d]).join(", ");
+}
+
 export const TasksRoute: React.FC = () => {
 	const { data: todayQuests = [], isLoading } = useTodayQuests();
 	const { data: summary } = usePlayerSummary();
@@ -251,6 +281,7 @@ export const TasksRoute: React.FC = () => {
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
 	const [selectedTab, setSelectedTab] = useState<string>("All");
+	const [scheduleDays, setScheduleDays] = useState<number[]>([]);
 
 	const {
 		register,
@@ -306,6 +337,7 @@ export const TasksRoute: React.FC = () => {
 
 	const handleOpenCreate = () => {
 		setEditingQuest(null);
+		setScheduleDays([]);
 		reset({
 			title: "",
 			notes: "",
@@ -320,6 +352,7 @@ export const TasksRoute: React.FC = () => {
 
 	const handleOpenEdit = (quest: Quest) => {
 		setEditingQuest(quest);
+		setScheduleDays(quest.schedule_days ?? []);
 		reset({
 			title: quest.title,
 			notes: quest.notes || "",
@@ -367,6 +400,11 @@ export const TasksRoute: React.FC = () => {
 	};
 
 	const onSubmitQuest = async (data: QuestFormData) => {
+		const daysPayload =
+			scheduleDays.length > 0 && scheduleDays.length < 7
+				? scheduleDays
+				: undefined;
+
 		try {
 			if (editingQuest) {
 				await updateMutation.mutateAsync({
@@ -379,6 +417,7 @@ export const TasksRoute: React.FC = () => {
 						effort: data.effort,
 						minutes: data.minutes,
 						scored: data.scored,
+						schedule_days: daysPayload,
 					},
 				});
 			} else {
@@ -390,6 +429,7 @@ export const TasksRoute: React.FC = () => {
 					effort: data.effort,
 					minutes: data.minutes,
 					scored: data.scored,
+					schedule_days: daysPayload,
 				});
 			}
 
@@ -686,7 +726,10 @@ export const TasksRoute: React.FC = () => {
 											rounded="pill"
 											variant="subtle"
 										>
-											{tq.quest.cadence}
+											{formatScheduleBadge(
+												tq.quest.cadence,
+												tq.quest.schedule_days,
+											)}
 										</Badge>
 										{tq.quest.scored && (
 											<Badge
@@ -1076,6 +1119,198 @@ export const TasksRoute: React.FC = () => {
 										</Stack>
 									)}
 								</Box>
+
+								{/* Active Schedule & Flexible Recurrence */}
+								<Field label="Active Schedule & Recurrence">
+									<Stack gap={2}>
+										<HStack justify="space-between" wrap="wrap">
+											<Text fontSize="xs" color="fg.muted">
+												{cadence === "daily"
+													? "Select specific days or run every day"
+													: cadence === "weekly"
+														? "Flexible weekly target or designated weekdays"
+														: "Flexible monthly target or designated days"}
+											</Text>
+											<HStack gap={1.5}>
+												<Button
+													type="button"
+													size="xs"
+													rounded="pill"
+													variant={
+														scheduleDays.length ===
+															0 ||
+														scheduleDays.length ===
+															7
+															? "solid"
+															: "outline"
+													}
+													onClick={() =>
+														setScheduleDays([])
+													}
+												>
+													{cadence === "daily"
+														? "Every Day"
+														: "Any Day (Flexible)"}
+												</Button>
+												<Button
+													type="button"
+													size="xs"
+													rounded="pill"
+													variant={
+														scheduleDays.length ===
+															5 &&
+														[
+															1, 2, 3, 4, 5,
+														].every((d) =>
+															scheduleDays.includes(
+																d,
+															),
+														)
+															? "solid"
+															: "outline"
+													}
+													onClick={() =>
+														setScheduleDays([
+															1, 2, 3, 4, 5,
+														])
+													}
+												>
+													Weekdays
+												</Button>
+												<Button
+													type="button"
+													size="xs"
+													rounded="pill"
+													variant={
+														scheduleDays.length ===
+															2 &&
+														[0, 6].every((d) =>
+															scheduleDays.includes(
+																d,
+															),
+														)
+															? "solid"
+															: "outline"
+													}
+													onClick={() =>
+														setScheduleDays([0, 6])
+													}
+												>
+													Weekends
+												</Button>
+											</HStack>
+										</HStack>
+
+										<HStack
+											gap={1.5}
+											justify="space-between"
+										>
+											{[
+												{
+													label: "S",
+													day: 0,
+													title: "Sunday",
+												},
+												{
+													label: "M",
+													day: 1,
+													title: "Monday",
+												},
+												{
+													label: "T",
+													day: 2,
+													title: "Tuesday",
+												},
+												{
+													label: "W",
+													day: 3,
+													title: "Wednesday",
+												},
+												{
+													label: "T",
+													day: 4,
+													title: "Thursday",
+												},
+												{
+													label: "F",
+													day: 5,
+													title: "Friday",
+												},
+												{
+													label: "S",
+													day: 6,
+													title: "Saturday",
+												},
+											].map((item) => {
+												const isSelected =
+													scheduleDays.length === 0 ||
+													scheduleDays.includes(
+														item.day,
+													);
+												return (
+													<Button
+														key={item.day}
+														type="button"
+														size="xs"
+														rounded="circle"
+														w="32px"
+														h="32px"
+														p={0}
+														variant={
+															scheduleDays.includes(
+																item.day,
+															)
+																? "solid"
+																: scheduleDays.length ===
+																	  0
+																	? "subtle"
+																	: "outline"
+														}
+														colorPalette={
+															isSelected
+																? "mint"
+																: undefined
+														}
+														title={item.title}
+														onClick={() => {
+															if (
+																scheduleDays.length ===
+																0
+															) {
+																setScheduleDays(
+																	[item.day],
+																);
+															} else if (
+																scheduleDays.includes(
+																	item.day,
+																)
+															) {
+																const next =
+																	scheduleDays.filter(
+																		(d) =>
+																			d !==
+																			item.day,
+																	);
+																setScheduleDays(
+																	next,
+																);
+															} else {
+																setScheduleDays(
+																	[
+																		...scheduleDays,
+																		item.day,
+																	].sort(),
+																);
+															}
+														}}
+													>
+														{item.label}
+													</Button>
+												);
+											})}
+										</HStack>
+									</Stack>
+								</Field>
 
 								<Field
 									label="Notes / Checklist (Optional)"

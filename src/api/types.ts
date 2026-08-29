@@ -127,7 +127,7 @@ export type HealthMetric =
 	| "resting_hr";
 export type HealthSource = "healthkit" | "googlefit" | "manual";
 export type ShopItemKind = "reward" | "consumable" | "cosmetic";
-export type ClaimStatus = "pending" | "owned" | "redeemed";
+export type ClaimStatus = "pending" | "owned" | "redeemed" | "expired";
 export type BuffKind = "exp" | "px";
 export type ConsumableEffect =
 	| "streak_shield"
@@ -216,6 +216,7 @@ export interface ShopItem extends ModelBase {
 	slot?: string;
 	real_cost: number;
 	currency: string;
+	expires_in_days?: number;
 	archived: boolean;
 }
 
@@ -234,6 +235,7 @@ export interface Claim extends ModelBase {
 	price_paid: number;
 	redeemable_at: ISO8601String;
 	redeemed_at?: ISO8601String;
+	expires_at?: ISO8601String;
 }
 
 export interface Buff extends ModelBase {
@@ -250,12 +252,21 @@ export interface Perk extends ModelBase {
 	rank: number;
 }
 
+export interface Avatar extends ModelBase {
+	user_id: ObjectID;
+	seed: string;
+	equipped: Record<string, string>;
+	palette_id?: string;
+	title?: string;
+}
+
 export interface PlayerSummary {
 	player: Player;
 	exp_to_next: number;
 	attributes: Record<Attribute, number>;
 	active_buffs: Buff[];
 	perks: Perk[];
+	avatar?: Avatar;
 }
 
 export interface QuestPrice {
@@ -457,6 +468,7 @@ export interface CreateShopItemRequest {
 	slot?: string;
 	real_cost?: number;
 	currency?: string;
+	expires_in_days?: number;
 }
 
 // Game / Health

@@ -61,6 +61,7 @@ export const questSchema = z.object({
 		.min(1, "Duration must be at least 1 minute")
 		.max(720, "Duration cannot exceed 12 hours"),
 	scored: z.boolean(),
+	schedule_days: z.array(z.number()).optional(),
 });
 
 export type QuestFormData = z.infer<typeof questSchema>;

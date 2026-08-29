@@ -34,12 +34,15 @@ import {
 	LuClipboardList,
 	LuClock,
 	LuCoins,
+	LuCrown,
 	LuFlame,
 	LuFlaskConical,
 	LuGift,
+	LuGlasses,
 	LuHourglass,
 	LuLock,
 	LuPackage,
+	LuPalette,
 	LuPiggyBank,
 	LuPlus,
 	LuShield,
@@ -82,6 +85,7 @@ import {
 	useCreateShopItem,
 	useDeleteShopItem,
 	useInventory,
+	useLedger,
 	usePlayerSummary,
 	usePurchaseItem,
 	useRedeemClaim,
@@ -89,6 +93,7 @@ import {
 	useSpendPerk,
 	useSuggestPrice,
 	useUseInventoryItem,
+	type Avatar,
 	type Buff,
 	type Claim,
 	type PerkID,
@@ -113,7 +118,77 @@ import {
 	StreakFlame,
 	registerRewardFlightTarget,
 	useRewardFlight,
+	AVAILABLE_COSMETICS,
+	type AvatarSlot,
 } from "@/components/game";
+
+export const PERK_COSMETIC_MAP: Record<
+	PerkID,
+	{
+		slot: AvatarSlot;
+		itemId: string;
+		name: string;
+		description: string;
+		icon: React.ElementType;
+	}
+> = {
+	merchant: {
+		slot: "skin",
+		itemId: "golden_rabbit",
+		name: "24k Midas Solid Gold Skin",
+		description: "Unlocked via Merchant Perk (+5% PX per rank)",
+		icon: LuCoins,
+	},
+	deep_focus: {
+		slot: "glasses",
+		itemId: "vr_visor",
+		name: "Focus VR Visor",
+		description: "Unlocked via Deep Focus Perk (+20% bonus on 60m+ quests)",
+		icon: LuZap,
+	},
+	resolve: {
+		slot: "accessory",
+		itemId: "cape",
+		name: "Warrior's Red Cape",
+		description: "Unlocked via Resolve Perk (+1 streak multiplier grace)",
+		icon: LuShield,
+	},
+	vitality: {
+		slot: "head",
+		itemId: "head_sprout",
+		name: "Sprout of Vitality",
+		description: "Unlocked via Vitality Perk (+10% Health sync bonus)",
+		icon: LuActivity,
+	},
+	ledger: {
+		slot: "glasses",
+		itemId: "monocle",
+		name: "Scholar Monocle",
+		description: "Unlocked via Ledger Perk (+5% finance conversion bonus)",
+		icon: LuBadgeCheck,
+	},
+	diligence: {
+		slot: "head",
+		itemId: "golden_crown",
+		name: "Imperial Golden Crown",
+		description: "Unlocked via Diligence Perk (+5% EXP from all quests)",
+		icon: LuAward,
+	},
+	second_wind: {
+		slot: "head",
+		itemId: "halo",
+		name: "Immortal Angel Halo",
+		description: "Unlocked via Second Wind Perk (50% recovery cost reduction)",
+		icon: LuSparkles,
+	},
+	bargain: {
+		slot: "glasses",
+		itemId: "blush",
+		name: "Merchant's Anime Blush",
+		description: "Unlocked via Bargain Perk (10% shop discount)",
+		icon: LuFlame,
+	},
+};
 
 const glassCard = {
 	bg: "bg.glass",
@@ -312,10 +387,32 @@ export const Heroes: React.FC = () => {
 
 	const spendPerk = useSpendPerk();
 	const ascend = useAscendPlayer();
+	const { data: cosmetics } = useShopCatalog("cosmetic");
 	const [pendingPerk, setPendingPerk] = React.useState<string | null>(null);
 	const [ascendOpen, setAscendOpen] = React.useState(false);
+	const [ledgerOpen, setLedgerOpen] = React.useState(false);
+	const [wardrobeOpen, setWardrobeOpen] = React.useState(false);
 
 	const confirmSpendPerk = useConfirm<PerkID>();
+
+	const equippedCosmetics = useMemo(() => {
+		const res: Partial<Record<AvatarSlot, string>> = {};
+		if (summary?.avatar?.equipped) {
+			for (const [slotType, itemId] of Object.entries(
+				summary.avatar.equipped,
+			)) {
+				const item = cosmetics?.find((c) => c.id === itemId);
+				if (item?.slot) {
+					const parts = item.slot.split(":");
+					const key = parts[0] as AvatarSlot;
+					res[key] = parts[1] || parts[0];
+				} else {
+					res[slotType as AvatarSlot] = itemId;
+				}
+			}
+		}
+		return res;
+	}, [summary?.avatar?.equipped, cosmetics]);
 
 	const handleSpend = async (perkId: PerkID) => {
 		setPendingPerk(perkId);
@@ -439,14 +536,25 @@ export const Heroes: React.FC = () => {
 						</Text>
 					</Stack>
 
-					<HStack {...glassCard} px={4} py={2} gap={2} bg="bg.panel">
-						<Icon as={LuCoins} boxSize={4} color="fg.muted" />
-						<Text fontWeight="bold" fontSize="md">
-							{player.px.toLocaleString()} PX
-						</Text>
-						<Text fontSize="xs" color="fg.muted">
-							available
-						</Text>
+					<HStack gap={3} wrap="wrap">
+						<PillButton
+							size="sm"
+							variant="dark"
+							icon={LuClipboardList}
+							onClick={() => setLedgerOpen(true)}
+						>
+							Ledger History
+						</PillButton>
+
+						<HStack {...glassCard} px={4} py={2} gap={2} bg="bg.panel">
+							<Icon as={LuCoins} boxSize={4} color="fg.muted" />
+							<Text fontWeight="bold" fontSize="md">
+								{player.px.toLocaleString()} PX
+							</Text>
+							<Text fontSize="xs" color="fg.muted">
+								available
+							</Text>
+						</HStack>
 					</HStack>
 				</Flex>
 
@@ -573,6 +681,7 @@ export const Heroes: React.FC = () => {
 									seed={user?.id ?? player.user_id}
 									size={42}
 									animated
+									equipped={equippedCosmetics}
 								/>
 								<Stack gap={0}>
 									<Text fontSize="xs" fontWeight="bold">
@@ -632,6 +741,7 @@ export const Heroes: React.FC = () => {
 															}
 															size={72}
 															animated
+															equipped={equippedCosmetics}
 														/>
 													</Flex>
 												</Box>
@@ -678,6 +788,27 @@ export const Heroes: React.FC = () => {
 														Ascend Hero
 													</PillButton>
 												)}
+
+												<Button
+													variant="outline"
+													size="xs"
+													rounded="pill"
+													w="full"
+													onClick={() =>
+														setWardrobeOpen(true)
+													}
+												>
+													<HStack gap={1.5}>
+														<Icon
+															as={LuShirt}
+															boxSize={3.5}
+															color="mint.fg"
+														/>
+														<Text>
+															Wardrobe & Perks
+														</Text>
+													</HStack>
+												</Button>
 											</Stack>
 										</Box>
 
@@ -1419,11 +1550,28 @@ export const Heroes: React.FC = () => {
 							<InventoryAndClaimsSection
 								player={player}
 								activeBuffs={active_buffs}
+								avatar={summary.avatar}
 							/>
 						)}
 					</Box>
 				</Grid>
 			</Stack>
+
+			{/* Ledger History Modal */}
+			<LedgerModal
+				open={ledgerOpen}
+				onOpenChange={setLedgerOpen}
+			/>
+
+			{/* Wardrobe & Perk Customization Modal */}
+			<WardrobeModal
+				open={wardrobeOpen}
+				onOpenChange={setWardrobeOpen}
+				player={player}
+				summary={summary}
+				cosmetics={cosmetics}
+				equipped={equippedCosmetics}
+			/>
 
 			{/* Confirm Spend Perk Dialog */}
 			<ConfirmDialog
@@ -1488,35 +1636,913 @@ export const Heroes: React.FC = () => {
 	);
 };
 
-interface StatTileProps {
-	label: string;
-	value: React.ReactNode;
-	icon: React.ElementType;
-	iconColor?: string;
+// ---------------------------------------------------------------------------
+// Ledger History Modal
+// ---------------------------------------------------------------------------
+
+interface LedgerModalProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
 }
 
-const StatTile: React.FC<StatTileProps> = ({
-	label,
-	value,
-	icon,
-	iconColor = "fg.muted",
-}) => (
-	<Box {...glassCard} p={3.5}>
-		<HStack justify="space-between" color="fg.muted">
-			<Text
-				fontSize="10px"
-				fontWeight="semibold"
-				textTransform="uppercase"
+const LedgerModal: React.FC<LedgerModalProps> = ({ open, onOpenChange }) => {
+	const [page, setPage] = useState(1);
+	const { data: ledger, isLoading } = useLedger(page, 10);
+
+	return (
+		<DialogRoot
+			open={open}
+			onOpenChange={(details) => onOpenChange(details.open)}
+			placement="center"
+		>
+			<DialogContent
+				maxW="3xl"
+				rounded="2xl"
+				bg="bg.panel"
+				borderWidth="1px"
+				borderColor="border.glass"
+				shadow="float"
+				p={{ base: 4, md: 6 }}
 			>
-				{label}
-			</Text>
-			<Icon as={icon} boxSize={3.5} color={iconColor} />
-		</HStack>
-		<Text fontSize="lg" fontWeight="bold" mt={1}>
-			{value}
-		</Text>
-	</Box>
-);
+				<DialogHeader pb={2}>
+					<Stack gap={0.5}>
+						<DialogTitle fontSize="lg">
+							EXP & PX Award Ledger
+						</DialogTitle>
+						<DialogDescription fontSize="xs" color="fg.muted">
+							Full audit history of all quest completions, health
+							rewards, streaks, and purchases.
+						</DialogDescription>
+					</Stack>
+				</DialogHeader>
+
+				<DialogBody py={3} maxH="60vh" overflowY="auto">
+					{isLoading ? (
+						<Stack gap={2}>
+							{[0, 1, 2, 3, 4].map((i) => (
+								<Skeleton key={i} h="14" rounded="card" />
+							))}
+						</Stack>
+					) : !ledger || ledger.entries.length === 0 ? (
+						<EmptyState
+							title="No ledger entries found"
+							description="Complete quests or earn rewards to populate your ledger."
+							icon={<Icon as={LuClipboardList} boxSize={6} />}
+						/>
+					) : (
+						<Stack gap={2.5}>
+							{ledger.entries.map((entry) => (
+								<Box
+									key={entry.id}
+									p={3.5}
+									rounded="card"
+									bg="bg.muted"
+									borderWidth="1px"
+									borderColor="border.glass"
+								>
+									<Flex
+										justify="space-between"
+										align="center"
+										wrap="wrap"
+										gap={2}
+									>
+										<Stack gap={0.5}>
+											<HStack gap={2}>
+												<Badge
+													size="xs"
+													rounded="pill"
+													variant="subtle"
+													colorPalette={
+														entry.source ===
+														"quest"
+															? "mint"
+															: entry.source ===
+																  "shop"
+																? "amber"
+																: "blue"
+													}
+												>
+													{entry.source}
+												</Badge>
+												<Text
+													fontSize="xs"
+													fontWeight="semibold"
+												>
+													{entry.reason ||
+														"Reward Award"}
+												</Text>
+											</HStack>
+											<HStack
+												gap={2}
+												fontSize="10px"
+												color="fg.muted"
+											>
+												<Text>{entry.occurred_on}</Text>
+												{entry.decay_factor < 1 && (
+													<Text>
+														Decay:{" "}
+														{Math.round(
+															entry.decay_factor *
+																100,
+														)}
+														%
+													</Text>
+												)}
+												{entry.multiplier > 1 && (
+													<Text>
+														Multiplier:{" "}
+														{entry.multiplier}x
+													</Text>
+												)}
+											</HStack>
+										</Stack>
+
+										<HStack gap={3}>
+											{entry.exp_delta !== 0 && (
+												<Text
+													fontSize="xs"
+													fontWeight="bold"
+													color={
+														entry.exp_delta > 0
+															? "mint.fg"
+															: "red.500"
+													}
+												>
+													{entry.exp_delta > 0
+														? `+${entry.exp_delta}`
+														: entry.exp_delta}{" "}
+													EXP
+												</Text>
+											)}
+											{entry.px_delta !== 0 && (
+												<Text
+													fontSize="xs"
+													fontWeight="bold"
+													color={
+														entry.px_delta > 0
+															? "amber.fg"
+															: "red.500"
+													}
+												>
+													{entry.px_delta > 0
+														? `+${entry.px_delta}`
+														: entry.px_delta}{" "}
+													PX
+												</Text>
+											)}
+										</HStack>
+									</Flex>
+								</Box>
+							))}
+						</Stack>
+					)}
+				</DialogBody>
+
+				<DialogFooter pt={3} justify="space-between">
+					<HStack gap={2}>
+						<Button
+							size="xs"
+							variant="outline"
+							rounded="pill"
+							disabled={page <= 1}
+							onClick={() =>
+								setPage((p) => Math.max(1, p - 1))
+							}
+						>
+							Previous
+						</Button>
+						<Text fontSize="xs" color="fg.muted">
+							Page {page} of {ledger?.total_pages || 1}
+						</Text>
+						<Button
+							size="xs"
+							variant="outline"
+							rounded="pill"
+							disabled={
+								!ledger || page >= ledger.total_pages
+							}
+							onClick={() => setPage((p) => p + 1)}
+						>
+							Next
+						</Button>
+					</HStack>
+
+					<Button
+						size="xs"
+						variant="ghost"
+						rounded="pill"
+						onClick={() => onOpenChange(false)}
+					>
+						Close
+					</Button>
+				</DialogFooter>
+				<DialogCloseTrigger />
+			</DialogContent>
+		</DialogRoot>
+	);
+};
+
+// ---------------------------------------------------------------------------
+// Wardrobe & Perk Customization Modal (30+ Pixel Rabbit Customizations)
+// ---------------------------------------------------------------------------
+
+interface WardrobeModalProps {
+	open: boolean;
+	onOpenChange: (open: boolean) => void;
+	player: Player;
+	summary?: PlayerSummary;
+	cosmetics?: ShopItem[];
+	equipped: Partial<Record<AvatarSlot, string>>;
+}
+
+interface CustomizationDef {
+	slot: AvatarSlot;
+	id: string;
+	name: string;
+	description: string;
+	requiredPerk?: PerkID;
+}
+
+const WARDROBE_CUSTOMIZATIONS: CustomizationDef[] = [
+	// Hats (11)
+	{
+		slot: "head",
+		id: "top_hat",
+		name: "Classic Top Hat",
+		description: "Formal gentleman's top hat with crimson ribbon",
+	},
+	{
+		slot: "head",
+		id: "wizard_hat",
+		name: "Arcane Wizard Hat",
+		description: "Pointy wizard hat with glowing pixel stars",
+	},
+	{
+		slot: "head",
+		id: "golden_crown",
+		name: "Imperial Golden Crown",
+		description: "Royal 24k crown set with ruby gem",
+		requiredPerk: "diligence",
+	},
+	{
+		slot: "head",
+		id: "party_hat",
+		name: "Celebration Party Hat",
+		description: "Cone party hat with golden pom-pom",
+	},
+	{
+		slot: "head",
+		id: "viking_helm",
+		name: "Viking Horned Helm",
+		description: "Sturdy iron helmet with curved ivory horns",
+	},
+	{
+		slot: "head",
+		id: "pirate_hat",
+		name: "Pirate Tricorn",
+		description: "Weathered buccaneer hat with skull badge",
+	},
+	{
+		slot: "head",
+		id: "chef_toque",
+		name: "Chef's Toque",
+		description: "Crisp tall white chef puff hat",
+	},
+	{
+		slot: "head",
+		id: "head_sprout",
+		name: "Sprout of Vitality",
+		description: "Single living leaf sprout on head",
+		requiredPerk: "vitality",
+	},
+	{
+		slot: "head",
+		id: "halo",
+		name: "Immortal Angel Halo",
+		description: "Luminous floating golden angel halo",
+		requiredPerk: "second_wind",
+	},
+	{
+		slot: "head",
+		id: "devil_horns",
+		name: "Warrior Devil Horns",
+		description: "Crimson pixel warrior horns",
+		requiredPerk: "resolve",
+	},
+	{
+		slot: "head",
+		id: "cyber_headset",
+		name: "DJ Cyber Headset",
+		description: "Neon cyan gamer headphones across ears",
+		requiredPerk: "deep_focus",
+	},
+
+	// Glasses & Eyewear (7)
+	{
+		slot: "glasses",
+		id: "pixel_shades",
+		name: "Pixel Shades",
+		description: "Thug life 8-bit black deal-with-it shades",
+	},
+	{
+		slot: "glasses",
+		id: "vr_visor",
+		name: "Focus VR Visor",
+		description: "Neon cyan glowing cybernetic VR visor",
+		requiredPerk: "deep_focus",
+	},
+	{
+		slot: "glasses",
+		id: "classic_glasses",
+		name: "Scholar Specs",
+		description: "Round silver wireframe nerd spectacles",
+	},
+	{
+		slot: "glasses",
+		id: "monocle",
+		name: "Scholar Monocle",
+		description: "Golden monocle with hanging cord",
+		requiredPerk: "ledger",
+	},
+	{
+		slot: "glasses",
+		id: "eye_patch",
+		name: "Pirate Eye Patch",
+		description: "Tough leather buccaneer patch",
+	},
+	{
+		slot: "glasses",
+		id: "blush",
+		name: "Anime Blush",
+		description: "Kawaii pink blush cheeks",
+		requiredPerk: "bargain",
+	},
+	{
+		slot: "glasses",
+		id: "sleep_mask",
+		name: "Night Sleep Mask",
+		description: "Restorative deep sleep eye mask",
+	},
+
+	// Accessories & Body (7)
+	{
+		slot: "accessory",
+		id: "bell_collar",
+		name: "Bell Collar",
+		description: "Small golden bell on red band",
+	},
+	{
+		slot: "accessory",
+		id: "bow_tie",
+		name: "Dapper Bowtie",
+		description: "Crisp crimson satin bow-tie",
+	},
+	{
+		slot: "accessory",
+		id: "gold_chain",
+		name: "24k Gold Chain",
+		description: "Heavy gold link chain with medallion",
+		requiredPerk: "merchant",
+	},
+	{
+		slot: "accessory",
+		id: "scarf",
+		name: "Winter Scarf",
+		description: "Warm forest green knitted wool scarf",
+	},
+	{
+		slot: "accessory",
+		id: "cape",
+		name: "Hero's Cape",
+		description: "Flowing crimson superhero cape",
+		requiredPerk: "resolve",
+	},
+	{
+		slot: "accessory",
+		id: "backpack",
+		name: "Adventure Backpack",
+		description: "Leather expedition rucksack on back",
+	},
+	{
+		slot: "accessory",
+		id: "guitar",
+		name: "Electric Guitar",
+		description: "Rockstar axe slung across back",
+	},
+
+	// Skins & Fur Colors (8)
+	{
+		slot: "skin",
+		id: "obsidian",
+		name: "Obsidian Black",
+		description: "Pitch black classic 8-bit rabbit (Default)",
+	},
+	{
+		slot: "skin",
+		id: "ghost_white",
+		name: "Ghost White",
+		description: "Pure moonlit phantom fur with dark eyes",
+	},
+	{
+		slot: "skin",
+		id: "cyber_neon",
+		name: "Cyber Matrix Cyan",
+		description: "Electrified neon cyan matrix rabbit",
+	},
+	{
+		slot: "skin",
+		id: "golden_rabbit",
+		name: "24k Midas Solid Gold",
+		description: "Pure solid 24k shimmering gold skin",
+		requiredPerk: "merchant",
+	},
+	{
+		slot: "skin",
+		id: "sakura_pink",
+		name: "Sakura Blossom Pink",
+		description: "Soft pastel flower petal fur",
+	},
+	{
+		slot: "skin",
+		id: "crimson_shadow",
+		name: "Blood Moon Crimson",
+		description: "Deep dark crimson shadow rabbit",
+	},
+	{
+		slot: "skin",
+		id: "emerald_jade",
+		name: "Mystic Jade Emerald",
+		description: "Gemstone jade green rabbit",
+	},
+	{
+		slot: "skin",
+		id: "royal_purple",
+		name: "Cosmic Royal Amethyst",
+		description: "Regal cosmic violet space rabbit",
+	},
+];
+
+const WardrobeModal: React.FC<WardrobeModalProps> = ({
+	open,
+	onOpenChange,
+	player,
+	summary,
+	cosmetics = [],
+	equipped,
+}) => {
+	const [activeTab, setActiveTab] = useState<string>("head");
+	const [previewSlots, setPreviewSlots] =
+		useState<Partial<Record<AvatarSlot, string>>>(equipped);
+	const useItem = useUseInventoryItem();
+	const { data: inventory = [] } = useInventory();
+
+	// Keep previewSlots synced when modal opens
+	React.useEffect(() => {
+		if (open) {
+			setPreviewSlots(equipped);
+		}
+	}, [open, equipped]);
+
+	const playerPerkMap = useMemo(() => {
+		const res = new Map<PerkID, number>();
+		summary?.perks?.forEach((p) => {
+			res.set(p.perk_id, p.rank);
+		});
+		return res;
+	}, [summary?.perks]);
+
+	const isItemUnlocked = (item: CustomizationDef): boolean => {
+		if (!item.requiredPerk) return true;
+		const rank = playerPerkMap.get(item.requiredPerk) || 0;
+		return rank > 0;
+	};
+
+	const handleToggleSlot = async (item: CustomizationDef) => {
+		const isCurrentlyEquipped = previewSlots[item.slot] === item.id;
+		const nextSlots = { ...previewSlots };
+
+		if (isCurrentlyEquipped) {
+			delete nextSlots[item.slot];
+		} else {
+			nextSlots[item.slot] = item.id;
+		}
+		setPreviewSlots(nextSlots);
+
+		// If this item corresponds to an inventory cosmetic, trigger backend equip/unequip
+		const shopItem = cosmetics.find(
+			(c) => c.slot === `${item.slot}:${item.id}`,
+		);
+		if (shopItem) {
+			const invItem = inventory.find(
+				(i) => i.shop_item_id === shopItem.id,
+			);
+			if (invItem) {
+				try {
+					await useItem.mutateAsync(invItem.id);
+					toaster.create({
+						title: isCurrentlyEquipped
+							? `Unequipped ${item.name}`
+							: `Equipped ${item.name}!`,
+						type: "success",
+					});
+				} catch (err) {
+					toaster.create({
+						title: "Failed to equip item",
+						description:
+							err instanceof ApiError ? err.message : undefined,
+						type: "error",
+					});
+				}
+			}
+		} else if (item.requiredPerk) {
+			toaster.create({
+				title: isCurrentlyEquipped
+					? `Unequipped ${item.name}`
+					: `Equipped Perk Cosmetic: ${item.name}!`,
+				type: "success",
+			});
+		}
+	};
+
+	const categories = [
+		{ id: "head", label: "Hats (11)", icon: LuCrown },
+		{ id: "glasses", label: "Glasses (7)", icon: LuGlasses },
+		{ id: "accessory", label: "Accessories (7)", icon: LuShirt },
+		{ id: "skin", label: "Skins (8)", icon: LuPalette },
+		{ id: "perks", label: "Perk Mastery (8)", icon: LuSparkles },
+	];
+
+	return (
+		<DialogRoot
+			open={open}
+			onOpenChange={(details) => onOpenChange(details.open)}
+			placement="center"
+		>
+			<DialogContent
+				maxW="4xl"
+				rounded="2xl"
+				bg="bg.panel"
+				borderWidth="1px"
+				borderColor="border.glass"
+				shadow="float"
+				p={{ base: 4, md: 6 }}
+			>
+				<DialogHeader pb={2}>
+					<Stack gap={0.5}>
+						<DialogTitle fontSize="lg">
+							Wardrobe & Perk Customization
+						</DialogTitle>
+						<DialogDescription fontSize="xs" color="fg.muted">
+							Equip pixel-art hats, glasses, skins, and unlock exclusive
+							perk prestige customizations for your 13×13 rabbit.
+						</DialogDescription>
+					</Stack>
+				</DialogHeader>
+
+				<DialogBody py={3} maxH="65vh" overflowY="auto">
+					<Grid
+						templateColumns={{ base: "1fr", md: "240px 1fr" }}
+						gap={6}
+						alignItems="start"
+					>
+						{/* Left: Live Rabbit Avatar Preview */}
+						<Box
+							p={4}
+							rounded="card"
+							bg="bg.muted"
+							borderWidth="1px"
+							borderColor="border.glass"
+							textAlign="center"
+						>
+							<Stack align="center" gap={3}>
+								<Text
+									fontSize="xs"
+									fontWeight="bold"
+									textTransform="uppercase"
+									letterSpacing="0.06em"
+									color="fg.muted"
+								>
+									Live 13×13 Preview
+								</Text>
+								<Box
+									p={3}
+									rounded="xl"
+									bg="bg.panel"
+									borderWidth="1px"
+									borderColor="border.glass"
+									boxSize="130px"
+									display="flex"
+									alignItems="center"
+									justifyContent="center"
+								>
+									<HeroAvatar
+										size={96}
+										animated
+										slots={previewSlots}
+									/>
+								</Box>
+								<Badge
+									size="xs"
+									rounded="pill"
+									colorPalette="mint"
+									variant="subtle"
+								>
+									Level {player.level} Rabbit
+								</Badge>
+
+								{/* Active Equipment Badges */}
+								<Stack gap={1} w="full" pt={2} textAlign="left">
+									<Text
+										fontSize="10px"
+										fontWeight="bold"
+										color="fg.muted"
+									>
+										EQUIPPED SLOTS
+									</Text>
+									<HStack wrap="wrap" gap={1}>
+										{Object.entries(previewSlots).map(
+											([slot, id]) => (
+												<Badge
+													key={slot}
+													size="xs"
+													rounded="pill"
+													variant="outline"
+												>
+													{slot}: {id}
+												</Badge>
+											),
+										)}
+									</HStack>
+								</Stack>
+							</Stack>
+						</Box>
+
+						{/* Right: Category Tabs & Customization Grid */}
+						<Stack gap={3}>
+							{/* Category Navigation Pills */}
+							<HStack wrap="wrap" gap={1.5}>
+								{categories.map((cat) => (
+									<Button
+										key={cat.id}
+										size="xs"
+										rounded="pill"
+										variant={
+											activeTab === cat.id
+												? "solid"
+												: "outline"
+										}
+										colorPalette={
+											activeTab === cat.id
+												? "mint"
+												: undefined
+										}
+										onClick={() => setActiveTab(cat.id)}
+									>
+										<HStack gap={1.5}>
+											<Icon as={cat.icon} boxSize={3.5} />
+											<Text>{cat.label}</Text>
+										</HStack>
+									</Button>
+								))}
+							</HStack>
+
+							{/* Perk Mastery Tab */}
+							{activeTab === "perks" ? (
+								<SimpleGrid columns={{ base: 1, sm: 2 }} gap={2.5}>
+									{Object.entries(PERK_COSMETIC_MAP).map(
+										([perkKey, pDef]) => {
+											const perkId = perkKey as PerkID;
+											const perkRank =
+												playerPerkMap.get(perkId) || 0;
+											const isUnlocked = perkRank > 0;
+											const isEquipped =
+												previewSlots[pDef.slot] ===
+												pDef.itemId;
+
+											return (
+												<Box
+													key={perkId}
+													p={3}
+													rounded="card"
+													bg="bg.muted"
+													borderWidth="1px"
+													borderColor={
+														isEquipped
+															? "mint.fg"
+															: "border.glass"
+													}
+												>
+													<Stack
+														gap={2}
+														justify="space-between"
+														h="full"
+													>
+														<Stack gap={1}>
+															<HStack justify="space-between">
+																<HStack gap={1.5}>
+																	<Icon
+																		as={
+																			pDef.icon
+																		}
+																		boxSize={
+																			4
+																		}
+																		color={
+																			isUnlocked
+																				? "mint.fg"
+																				: "fg.muted"
+																		}
+																	/>
+																	<Text
+																		fontWeight="bold"
+																		fontSize="xs"
+																	>
+																		{
+																			pDef.name
+																		}
+																	</Text>
+																</HStack>
+																<Badge
+																	size="xs"
+																	rounded="pill"
+																	colorPalette={
+																		isUnlocked
+																			? "mint"
+																			: "gray"
+																	}
+																	variant="subtle"
+																>
+																	{isUnlocked
+																		? `Rank ${perkRank}`
+																		: "Locked"}
+																</Badge>
+															</HStack>
+															<Text
+																fontSize="11px"
+																color="fg.muted"
+															>
+																{
+																	pDef.description
+																}
+															</Text>
+														</Stack>
+
+														<Button
+															size="xs"
+															rounded="pill"
+															variant={
+																isEquipped
+																	? "solid"
+																	: "outline"
+															}
+															colorPalette={
+																isEquipped
+																	? "mint"
+																	: undefined
+															}
+															disabled={!isUnlocked}
+															onClick={() =>
+																handleToggleSlot({
+																	slot: pDef.slot,
+																	id: pDef.itemId,
+																	name: pDef.name,
+																	description:
+																		pDef.description,
+																	requiredPerk:
+																		perkId,
+																})
+															}
+														>
+															{!isUnlocked
+																? "Unlock in Skill Tree"
+																: isEquipped
+																	? "Unequip"
+																	: "Equip to Rabbit"}
+														</Button>
+													</Stack>
+												</Box>
+											);
+										},
+									)}
+								</SimpleGrid>
+							) : (
+								<SimpleGrid columns={{ base: 1, sm: 2 }} gap={2.5}>
+									{WARDROBE_CUSTOMIZATIONS.filter(
+										(item) => item.slot === activeTab,
+									).map((item) => {
+										const isUnlocked = isItemUnlocked(item);
+										const isEquipped =
+											previewSlots[item.slot] === item.id;
+
+										return (
+											<Box
+												key={item.id}
+												p={3}
+												rounded="card"
+												bg="bg.muted"
+												borderWidth="1px"
+												borderColor={
+													isEquipped
+														? "mint.fg"
+														: "border.glass"
+												}
+											>
+												<Stack
+													gap={2}
+													justify="space-between"
+													h="full"
+												>
+													<Stack gap={1}>
+														<HStack justify="space-between">
+															<Text
+																fontWeight="bold"
+																fontSize="xs"
+															>
+																{item.name}
+															</Text>
+															{isEquipped && (
+																<Badge
+																	size="xs"
+																	rounded="pill"
+																	colorPalette="mint"
+																	variant="solid"
+																>
+																	Equipped
+																</Badge>
+															)}
+															{item.requiredPerk &&
+																!isUnlocked && (
+																	<Badge
+																		size="xs"
+																		rounded="pill"
+																		variant="subtle"
+																	>
+																		Perk:{" "}
+																		{
+																			item.requiredPerk
+																		}
+																	</Badge>
+																)}
+														</HStack>
+														<Text
+															fontSize="11px"
+															color="fg.muted"
+														>
+															{item.description}
+														</Text>
+													</Stack>
+
+													<Button
+														size="xs"
+														rounded="pill"
+														variant={
+															isEquipped
+																? "solid"
+																: "outline"
+														}
+														colorPalette={
+															isEquipped
+																? "mint"
+																: undefined
+														}
+														disabled={!isUnlocked}
+														onClick={() =>
+															handleToggleSlot(
+																item,
+															)
+														}
+													>
+														{!isUnlocked
+															? "Locked by Perk"
+															: isEquipped
+																? "Unequip"
+																: "Equip"}
+													</Button>
+												</Stack>
+											</Box>
+										);
+									})}
+								</SimpleGrid>
+							)}
+						</Stack>
+					</Grid>
+				</DialogBody>
+
+				<DialogFooter pt={3}>
+					<Button
+						size="xs"
+						variant="ghost"
+						rounded="pill"
+						onClick={() => onOpenChange(false)}
+					>
+						Close
+					</Button>
+				</DialogFooter>
+				<DialogCloseTrigger />
+			</DialogContent>
+		</DialogRoot>
+	);
+};
 
 // ---------------------------------------------------------------------------
 // Shop Section with Sliding Tabs and Bottom Sheet Reward Creator
@@ -1587,6 +2613,8 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 						? data.currency_cost
 						: undefined,
 				currency: data.currency_symbol?.trim() || undefined,
+				expires_in_days:
+					hasExpiration && expiryDays > 0 ? expiryDays : undefined,
 			});
 
 			reset();
@@ -1617,116 +2645,69 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 						}
 						variant="plain"
 						size="sm"
-						css={{
-							"--tabs-indicator-bg": "colors.bg.solid",
-							"--tabs-indicator-shadow": "shadows.glass",
-							"--tabs-trigger-radius": "radii.full",
-						}}
 					>
 						<Tabs.List
-							bg="bg.muted"
+							bg="bg.panel"
 							borderWidth="1px"
 							borderColor="border.glass"
 							rounded="pill"
 							p={1}
-							gap={1}
 							position="relative"
-							shadow="glass"
+							gap={1}
 						>
 							<Tabs.Trigger
 								value="reward"
-								px={3.5}
+								rounded="pill"
+								px={4}
 								py={1.5}
-								cursor="pointer"
-								fontWeight="semibold"
 								fontSize="xs"
-								zIndex={1}
-								color={
-									shopTab === "reward"
-										? "fg.inverted"
-										: "fg.muted"
-								}
+								fontWeight="bold"
 								_selected={{
+									bg: "bg.inverted",
 									color: "fg.inverted",
-									fontWeight: "bold",
 								}}
-								_hover={{
-									color:
-										shopTab === "reward"
-											? "fg.inverted"
-											: "fg",
-								}}
-								transition="color 0.15s ease-out"
 							>
 								<HStack gap={1.5}>
 									<Icon as={LuGift} boxSize={3.5} />
-									<Text>Rewards</Text>
+									<Text>Real-World</Text>
 								</HStack>
 							</Tabs.Trigger>
 
 							<Tabs.Trigger
 								value="consumable"
-								px={3.5}
+								rounded="pill"
+								px={4}
 								py={1.5}
-								cursor="pointer"
-								fontWeight="semibold"
 								fontSize="xs"
-								zIndex={1}
-								color={
-									shopTab === "consumable"
-										? "fg.inverted"
-										: "fg.muted"
-								}
+								fontWeight="bold"
 								_selected={{
+									bg: "bg.inverted",
 									color: "fg.inverted",
-									fontWeight: "bold",
 								}}
-								_hover={{
-									color:
-										shopTab === "consumable"
-											? "fg.inverted"
-											: "fg",
-								}}
-								transition="color 0.15s ease-out"
 							>
 								<HStack gap={1.5}>
-									<Icon as={LuFlaskConical} boxSize={3.5} />
+									<Icon as={LuSparkles} boxSize={3.5} />
 									<Text>Consumables</Text>
 								</HStack>
 							</Tabs.Trigger>
 
 							<Tabs.Trigger
 								value="cosmetic"
-								px={3.5}
+								rounded="pill"
+								px={4}
 								py={1.5}
-								cursor="pointer"
-								fontWeight="semibold"
 								fontSize="xs"
-								zIndex={1}
-								color={
-									shopTab === "cosmetic"
-										? "fg.inverted"
-										: "fg.muted"
-								}
+								fontWeight="bold"
 								_selected={{
+									bg: "bg.inverted",
 									color: "fg.inverted",
-									fontWeight: "bold",
 								}}
-								_hover={{
-									color:
-										shopTab === "cosmetic"
-											? "fg.inverted"
-											: "fg",
-								}}
-								transition="color 0.15s ease-out"
 							>
 								<HStack gap={1.5}>
 									<Icon as={LuShirt} boxSize={3.5} />
 									<Text>Cosmetics</Text>
 								</HStack>
 							</Tabs.Trigger>
-
-							<Tabs.Indicator rounded="pill" />
 						</Tabs.List>
 					</Tabs.Root>
 
@@ -1879,7 +2860,7 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 									<Input
 										type="number"
 										min={1}
-										placeholder="2500"
+										placeholder="1000"
 										{...register("cost_px", {
 											valueAsNumber: true,
 										})}
@@ -1890,87 +2871,100 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 									/>
 								</Field>
 
-								{Boolean(suggestion) && (
-									<HStack
-										justify="space-between"
-										bg="bg.muted"
-										p={3}
-										rounded="pill"
-										fontSize="xs"
-									>
-										<Text color="fg.muted">
-											Suggested Rate:{" "}
-											<Text
-												as="span"
-												fontWeight="bold"
-												color="mint.fg"
-											>
-												{suggestion} PX
-											</Text>
-										</Text>
-										<Button
-											size="xs"
-											variant="ghost"
-											type="button"
-											onClick={handleApplySuggested}
+								{suggestion &&
+									suggestion > 0 &&
+									realCost &&
+									realCost > 0 && (
+										<HStack
+											justify="space-between"
+											p={3}
+											rounded="card"
+											bg="bg.panel"
+											borderWidth="1px"
+											borderColor="border.glass"
 										>
-											Apply Suggestion
-										</Button>
-									</HStack>
-								)}
+											<HStack gap={2}>
+												<Icon
+													as={LuSparkles}
+													boxSize={3.5}
+													color="mint.fg"
+												/>
+												<Text
+													fontSize="xs"
+													color="fg.muted"
+												>
+													Suggested price based on{" "}
+													{realCost} {currency}:{" "}
+													<strong>
+														{suggestion} PX
+													</strong>
+												</Text>
+											</HStack>
+											<Button
+												size="xs"
+												variant="ghost"
+												rounded="pill"
+												onClick={handleApplySuggested}
+											>
+												Apply
+											</Button>
+										</HStack>
+									)}
 
-								{/* Expiration Feature Toggle */}
-								<Box
-									bg="bg.muted"
-									p={3}
-									rounded="card"
-									borderWidth="1px"
-									borderColor="border.glass"
+								<Field
+									label="Description (Optional)"
+									invalid={Boolean(errors.description)}
+									errorText={errors.description?.message}
 								>
-									<HStack
-										justify="space-between"
-										mb={hasExpiration ? 2 : 0}
-									>
-										<HStack gap={2}>
-											<Icon
-												as={LuClock}
-												boxSize={4}
-												color="mint.fg"
-											/>
+									<Textarea
+										placeholder="Add notes or goals attached to this reward..."
+										{...register("description")}
+										rounded="card"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
+										rows={2}
+									/>
+								</Field>
+
+								<Field label="Reward Expiration">
+									<Stack gap={2.5}>
+										<HStack justify="space-between">
 											<Text
 												fontSize="xs"
-												fontWeight="semibold"
+												color="fg.muted"
 											>
-												Reward Expiration / Deadline
+												Set an expiration period for
+												this voucher
 											</Text>
+											<Button
+												type="button"
+												size="xs"
+												rounded="pill"
+												variant={
+													hasExpiration
+														? "solid"
+														: "outline"
+												}
+												colorPalette={
+													hasExpiration
+														? "mint"
+														: undefined
+												}
+												onClick={() =>
+													setHasExpiration(
+														!hasExpiration,
+													)
+												}
+											>
+												{hasExpiration
+													? "Expires Enabled"
+													: "No Expiration"}
+											</Button>
 										</HStack>
-										<Button
-											type="button"
-											size="xs"
-											rounded="pill"
-											variant={
-												hasExpiration
-													? "solid"
-													: "outline"
-											}
-											colorPalette={
-												hasExpiration
-													? "mint"
-													: undefined
-											}
-											onClick={() =>
-												setHasExpiration(!hasExpiration)
-											}
-										>
-											{hasExpiration
-												? "Deadline Set"
-												: "No Expiration"}
-										</Button>
-									</HStack>
 
-									{hasExpiration && (
-										<Stack gap={1.5}>
-											<Field label="Expiration Window (Days)">
+										{hasExpiration && (
+											<HStack gap={2}>
 												<Input
 													type="number"
 													min={1}
@@ -1978,64 +2972,27 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 													value={expiryDays}
 													onChange={(e) =>
 														setExpiryDays(
-															Math.max(
-																1,
-																Number(
-																	e.target
-																		.value,
-																) || 1,
-															),
+															Number(
+																e.target.value,
+															) || 30,
 														)
 													}
 													rounded="pill"
-													bg="bg.panel"
-													fontSize="xs"
+													bg="bg.muted"
+													borderColor="border"
+													fontSize="sm"
+													w="100px"
 												/>
-											</Field>
-											<HStack gap={1.5} wrap="wrap">
-												{[7, 14, 30, 60, 90].map(
-													(d) => (
-														<Button
-															key={d}
-															type="button"
-															size="xs"
-															rounded="pill"
-															variant={
-																expiryDays === d
-																	? "solid"
-																	: "outline"
-															}
-															colorPalette={
-																expiryDays === d
-																	? "mint"
-																	: undefined
-															}
-															onClick={() =>
-																setExpiryDays(d)
-															}
-														>
-															{d}d
-														</Button>
-													),
-												)}
+												<Text
+													fontSize="xs"
+													color="fg.muted"
+												>
+													days from purchase before
+													expiration
+												</Text>
 											</HStack>
-										</Stack>
-									)}
-								</Box>
-
-								<Field
-									label="Notes / Description (Optional)"
-									invalid={Boolean(errors.description)}
-									errorText={errors.description?.message}
-								>
-									<Input
-										placeholder="When I reach 5,000 PX milestone..."
-										{...register("description")}
-										rounded="pill"
-										bg="bg.muted"
-										borderColor="border"
-										fontSize="sm"
-									/>
+										)}
+									</Stack>
 								</Field>
 							</Stack>
 						</form>
@@ -2074,11 +3031,13 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 interface InventoryAndClaimsSectionProps {
 	player: Player;
 	activeBuffs: Buff[];
+	avatar?: Avatar;
 }
 
 const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 	player,
 	activeBuffs,
+	avatar,
 }) => {
 	const [now, setNow] = React.useState(() => Date.now());
 
@@ -2089,6 +3048,7 @@ const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 
 	const { data: inventory, isLoading: invLoading } = useInventory();
 	const { data: claims, isLoading: claimsLoading } = useClaims();
+	const { data: allCatalog } = useShopCatalog();
 	const useItem = useUseInventoryItem();
 	const redeemClaim = useRedeemClaim();
 
@@ -2100,7 +3060,7 @@ const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 		try {
 			await useItem.mutateAsync(confirmUseItem.target);
 			toaster.create({
-				title: "Consumable Activated!",
+				title: "Item Used!",
 				type: "success",
 			});
 			confirmUseItem.close();
@@ -2209,12 +3169,12 @@ const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 			<Box {...glassCard} p={5}>
 				<HStack justify="space-between" mb={3}>
 					<Stack gap={0.5}>
-						<Heading size="md">Consumable Bag</Heading>
+						<Heading size="md">Inventory Bag</Heading>
 						<Text fontSize="xs" color="fg.muted">
-							Use items to activate multipliers and protections.
+							Manage and use consumables or equip cyber avatar cosmetics.
 						</Text>
 					</Stack>
-					<Icon as={LuFlaskConical} boxSize={4} color="fg.muted" />
+					<Icon as={LuPackage} boxSize={4} color="fg.muted" />
 				</HStack>
 
 				{invLoading ? (
@@ -2233,7 +3193,7 @@ const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 				) : !inventory || inventory.length === 0 ? (
 					<EmptyState
 						title="Your bag is empty"
-						description="Purchase consumables like Streak Shields and Focus Elixirs from the Shop."
+						description="Purchase consumables like Streak Shields or cosmetics from the Shop."
 						icon={<Icon as={LuPackage} boxSize={6} />}
 					/>
 				) : (
@@ -2245,51 +3205,115 @@ const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 							lg: "repeat(3, 1fr)",
 						}}
 					>
-						{inventory.map((inv) => (
-							<Box
-								key={inv.id}
-								p={4}
-								rounded="card"
-								bg="bg.panel"
-								borderWidth="1px"
-								borderColor="border.glass"
-							>
-								<Stack gap={3} justify="space-between" h="full">
-									<Stack gap={1}>
-										<HStack justify="space-between">
-											<Text
-												fontWeight="bold"
-												fontSize="sm"
-											>
-												{BUFF_LABEL[inv.effect] ??
-													inv.effect}
-											</Text>
-											<Badge
-												size="xs"
-												rounded="pill"
-												variant="subtle"
-											>
-												x{inv.quantity}
-											</Badge>
-										</HStack>
-										<Text fontSize="xs" color="fg.muted">
-											Consumable boost item
-										</Text>
-									</Stack>
+						{inventory.map((inv) => {
+							const shopItem = allCatalog?.find(
+								(c) => c.id === inv.shop_item_id,
+							);
+							const isCosmetic = shopItem?.kind === "cosmetic";
+							const slotType =
+								shopItem?.slot?.split(":")[0] || "accessory";
+							const isEquipped =
+								Boolean(avatar?.equipped?.[slotType]) &&
+								avatar?.equipped?.[slotType] === inv.shop_item_id;
 
-									<PillButton
-										size="xs"
-										variant="dark"
-										w="full"
-										onClick={() =>
-											confirmUseItem.ask(inv.id)
-										}
-									>
-										Use Item
-									</PillButton>
-								</Stack>
-							</Box>
-						))}
+							return (
+								<Box
+									key={inv.id}
+									p={4}
+									rounded="card"
+									bg="bg.panel"
+									borderWidth="1px"
+									borderColor="border.glass"
+								>
+									<Stack gap={3} justify="space-between" h="full">
+										<Stack gap={1}>
+											<HStack justify="space-between">
+												<Text
+													fontWeight="bold"
+													fontSize="sm"
+												>
+													{shopItem?.name ||
+														BUFF_LABEL[inv.effect] ||
+														inv.effect ||
+														"Inventory Item"}
+												</Text>
+												<Badge
+													size="xs"
+													rounded="pill"
+													variant="subtle"
+													colorPalette={
+														isCosmetic
+															? isEquipped
+																? "mint"
+																: "purple"
+															: "gray"
+													}
+												>
+													{isCosmetic
+														? isEquipped
+															? "Equipped"
+															: "Cosmetic"
+														: `x${inv.quantity}`}
+												</Badge>
+											</HStack>
+											<Text fontSize="xs" color="fg.muted">
+												{isCosmetic
+													? shopItem?.description ||
+														`Slot: ${slotType}`
+													: "Consumable boost item"}
+											</Text>
+										</Stack>
+
+										<PillButton
+											size="xs"
+											variant={
+												isCosmetic && isEquipped
+													? "subtle"
+													: "dark"
+											}
+											w="full"
+											loading={
+												useItem.isPending &&
+												useItem.variables === inv.id
+											}
+											onClick={async () => {
+												if (isCosmetic) {
+													try {
+														await useItem.mutateAsync(
+															inv.id,
+														);
+														toaster.create({
+															title: isEquipped
+																? "Cosmetic Unequipped"
+																: "Cosmetic Equipped!",
+															type: "success",
+														});
+													} catch (err) {
+														toaster.create({
+															title: "Failed to update avatar cosmetic",
+															description:
+																err instanceof
+																ApiError
+																	? err.message
+																	: undefined,
+															type: "error",
+														});
+													}
+												} else {
+													confirmUseItem.ask(inv.id);
+												}
+											}}
+										>
+											{isCosmetic
+												? isEquipped
+													? "Unequip"
+													: "Equip to Avatar"
+												: "Use Item"}
+										</PillButton>
+									</Stack>
+								</Box>
+							);
+						})}
 					</Grid>
 				)}
 			</Box>
@@ -2334,56 +3358,96 @@ const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 							lg: "repeat(3, 1fr)",
 						}}
 					>
-						{claims.map((claim) => (
-							<Box
-								key={claim.id}
-								p={4}
-								rounded="card"
-								bg="bg.panel"
-								borderWidth="1px"
-								borderColor="border.glass"
-							>
-								<Stack gap={3} justify="space-between" h="full">
-									<Stack gap={1}>
-										<HStack justify="space-between">
-											<Text
-												fontWeight="bold"
-												fontSize="sm"
-											>
-												{claim.name}
-											</Text>
-											<Badge
-												size="xs"
-												rounded="pill"
-												colorPalette={
-													claim.status === "redeemed"
-														? "mint"
-														: "gray"
-												}
-											>
-												{claim.status}
-											</Badge>
-										</HStack>
-										<Text fontSize="xs" color="fg.muted">
-											Cost: {claim.price_paid} PX
-										</Text>
-									</Stack>
+						{claims.map((claim) => {
+							const isExpired =
+								claim.status === "expired" ||
+								(claim.status !== "redeemed" &&
+									Boolean(claim.expires_at) &&
+									new Date(claim.expires_at!).getTime() <
+										now);
 
-									{claim.status !== "redeemed" && (
-										<PillButton
-											size="xs"
-											variant="dark"
-											w="full"
-											onClick={() =>
-												confirmRedeem.ask(claim.id)
-											}
-										>
-											Mark as Redeemed
-										</PillButton>
-									)}
-								</Stack>
-							</Box>
-						))}
+							return (
+								<Box
+									key={claim.id}
+									p={4}
+									rounded="card"
+									bg="bg.panel"
+									borderWidth="1px"
+									borderColor="border.glass"
+								>
+									<Stack
+										gap={3}
+										justify="space-between"
+										h="full"
+									>
+										<Stack gap={1}>
+											<HStack justify="space-between">
+												<Text
+													fontWeight="bold"
+													fontSize="sm"
+												>
+													{claim.name}
+												</Text>
+												<Badge
+													size="xs"
+													rounded="pill"
+													colorPalette={
+														claim.status ===
+														"redeemed"
+															? "mint"
+															: isExpired
+																? "red"
+																: "gray"
+													}
+												>
+													{isExpired
+														? "Expired"
+														: claim.status}
+												</Badge>
+											</HStack>
+											<HStack
+												justify="space-between"
+												fontSize="xs"
+												color="fg.muted"
+											>
+												<Text>
+													Cost: {claim.price_paid} PX
+												</Text>
+												{claim.expires_at && (
+													<Text
+														color={
+															isExpired
+																? "red.500"
+																: "fg.muted"
+														}
+													>
+														{isExpired
+															? "Expired"
+															: `Expires ${new Date(claim.expires_at).toLocaleDateString()}`}
+													</Text>
+												)}
+											</HStack>
+										</Stack>
+
+										{claim.status !== "redeemed" &&
+											!isExpired && (
+												<PillButton
+													size="xs"
+													variant="dark"
+													w="full"
+													onClick={() =>
+														confirmRedeem.ask(
+															claim.id,
+														)
+													}
+												>
+													Mark as Redeemed
+												</PillButton>
+											)}
+									</Stack>
+								</Box>
+							);
+						})}
 					</Grid>
 				)}
 			</Box>
