@@ -77,99 +77,107 @@ export interface AttributeRadarProps {
 	size?: number;
 }
 
-export const AttributeRadar: React.FC<AttributeRadarProps> = ({
-	values,
-	max = 100,
-}) => {
-	const effectiveMax = Math.max(20, max);
+const CHART_SERIES: Array<{ name: "value"; color: string }> = [
+	{ name: "value", color: "mint.solid" },
+];
 
-	const chartData = React.useMemo(
-		() =>
-			ATTRIBUTES.map((attr) => ({
-				attribute: attr.label,
-				value: values[attr.key] ?? 0,
-			})),
-		[values],
-	);
+export const AttributeRadar: React.FC<AttributeRadarProps> = React.memo(
+	({ values, max = 100 }) => {
+		const effectiveMax = Math.max(20, max);
 
-	const chart = useChart({
-		data: chartData,
-		series: [{ name: "value", color: "mint.solid" }],
-	});
+		const chartData = React.useMemo(
+			() =>
+				ATTRIBUTES.map((attr) => ({
+					attribute: attr.label,
+					value: values[attr.key] ?? 0,
+				})),
+			[values],
+		);
 
-	return (
-		<Grid
-			gap={5}
-			templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
-			w="full"
-			alignItems="center"
-		>
-			<Chart.Root chart={chart} h="260px" w="full" minW={0}>
-				<ResponsiveContainer width="100%" height="100%">
-					<RadarChart data={chart.data} outerRadius="75%">
-						<PolarGrid stroke={chart.color("border")} />
-						<PolarAngleAxis
-							dataKey={chart.key("attribute")}
-							tick={{
-								fill: chart.color("fg.muted"),
-								fontSize: 10,
-							}}
-						/>
-						<PolarRadiusAxis
-							domain={[0, effectiveMax]}
-							tick={false}
-							axisLine={false}
-						/>
-						<Radar
-							dataKey={chart.key("value")}
-							stroke={chart.color("mint.solid")}
-							fill={chart.color("mint.solid")}
-							fillOpacity={0.25}
-							isAnimationActive={false}
-						/>
-					</RadarChart>
-				</ResponsiveContainer>
-			</Chart.Root>
+		const chart = useChart({
+			data: chartData,
+			series: CHART_SERIES,
+		});
 
-			<Stack gap={2} minW={0}>
-				{ATTRIBUTES.map((attr) => (
-					<Tooltip key={attr.key} content={attr.description}>
-						<HStack
-							justify="space-between"
-							gap={3}
-							px={2.5}
-							py={1.5}
-							rounded="pill"
-							bg="bg.muted"
-							cursor="default"
-						>
-							<Stack gap={0} minW={0}>
-								<Text fontSize="xs" fontWeight="bold">
-									{attr.label}
-								</Text>
-								<Text
-									fontSize="10px"
-									color="fg.muted"
-									textTransform="capitalize"
-								>
-									from {attr.source}
-								</Text>
-							</Stack>
-							<Text
-								fontSize="sm"
-								fontWeight="bold"
-								fontFamily="mono"
-								color="mint.fg"
-								flexShrink={0}
+		return (
+			<Grid
+				gap={5}
+				templateColumns={{ base: "1fr", lg: "1fr 1fr" }}
+				w="full"
+				alignItems="center"
+			>
+				<Chart.Root chart={chart} h="260px" w="full" minW={0}>
+					<ResponsiveContainer
+						width="100%"
+						height={260}
+						minWidth={0}
+						minHeight={0}
+					>
+						<RadarChart data={chart.data} outerRadius="75%">
+							<PolarGrid stroke={chart.color("border")} />
+							<PolarAngleAxis
+								dataKey={chart.key("attribute")}
+								tick={{
+									fill: chart.color("fg.muted"),
+									fontSize: 10,
+								}}
+							/>
+							<PolarRadiusAxis
+								domain={[0, effectiveMax]}
+								tick={false}
+								axisLine={false}
+							/>
+							<Radar
+								dataKey={chart.key("value")}
+								stroke={chart.color("mint.solid")}
+								fill={chart.color("mint.solid")}
+								fillOpacity={0.25}
+								isAnimationActive={false}
+							/>
+						</RadarChart>
+					</ResponsiveContainer>
+				</Chart.Root>
+
+				<Stack gap={2} minW={0}>
+					{ATTRIBUTES.map((attr) => (
+						<Tooltip key={attr.key} content={attr.description}>
+							<HStack
+								justify="space-between"
+								gap={3}
+								px={2.5}
+								py={1.5}
+								rounded="pill"
+								bg="bg.muted"
+								cursor="default"
 							>
-								{values[attr.key] ?? 0}
-							</Text>
-						</HStack>
-					</Tooltip>
-				))}
-			</Stack>
-		</Grid>
-	);
-};
+								<Stack gap={0} minW={0}>
+									<Text fontSize="xs" fontWeight="bold">
+										{attr.label}
+									</Text>
+									<Text
+										fontSize="10px"
+										color="fg.muted"
+										textTransform="capitalize"
+									>
+										from {attr.source}
+									</Text>
+								</Stack>
+								<Text
+									fontSize="sm"
+									fontWeight="bold"
+									fontFamily="mono"
+									color="mint.fg"
+									flexShrink={0}
+								>
+									{values[attr.key] ?? 0}
+								</Text>
+							</HStack>
+						</Tooltip>
+					))}
+				</Stack>
+			</Grid>
+		);
+	},
+);
 
 export default AttributeRadar;

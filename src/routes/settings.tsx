@@ -49,16 +49,14 @@ export const Settings: React.FC = () => {
 	const handleDisconnect = async () => {
 		try {
 			await disconnect.mutateAsync();
-			toaster.create({
-				title: "Duolingo disconnected",
-				type: "success",
-			});
 		} catch (err) {
-			toaster.create({
-				title: "Failed to disconnect",
-				description: err instanceof ApiError ? err.message : undefined,
-				type: "error",
-			});
+			if (err instanceof ApiError && err.violations?._error) {
+				toaster.create({
+					title: "Validation Error",
+					description: err.violations._error.message,
+					type: "error",
+				});
+			}
 		}
 	};
 

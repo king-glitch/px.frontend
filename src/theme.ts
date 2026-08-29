@@ -1,4 +1,9 @@
-import { createSystem, defaultConfig, defineConfig, defineRecipe } from "@chakra-ui/react";
+import {
+	createSystem,
+	defaultConfig,
+	defineConfig,
+	defineRecipe,
+} from "@chakra-ui/react";
 
 const buttonRecipe = defineRecipe({
 	base: {

@@ -66,6 +66,8 @@ import {
 } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
 	useCompleteQuest,
 	useCreateQuest,
@@ -81,6 +83,8 @@ import {
 	type QuestEffort,
 	type TodayQuest,
 } from "@/api";
+import { type QuestFormData, questSchema } from "@/api/schemas";
+import { handleFormApiError } from "@/utils/form-error";
 import {
 	RewardFlight,
 	registerRewardFlightTarget,
@@ -191,15 +195,20 @@ const CADENCE_OPTIONS: SearchableSelectItem[] = [
 	},
 	{
 		label: "One-Time Task",
-		value: "one_time",
+		value: "one_off",
 		description: "Completes once permanently",
 	},
 ];
 
 const EFFORT_OPTIONS: SearchableSelectItem[] = [
 	{
-		label: "Low Effort (Quick Win)",
-		value: "low",
+		label: "Trivial Effort (Instant)",
+		value: "trivial",
+		description: "~5 minutes",
+	},
+	{
+		label: "Light Effort (Quick Win)",
+		value: "light",
 		description: "~15 minutes",
 	},
 	{
@@ -208,13 +217,13 @@ const EFFORT_OPTIONS: SearchableSelectItem[] = [
 		description: "~30-45 minutes",
 	},
 	{
-		label: "High Effort (Deep Work)",
-		value: "high",
+		label: "Hard Effort (Deep Work)",
+		value: "hard",
 		description: "~60-90 minutes",
 	},
 	{
-		label: "Epic Effort (Major Milestone)",
-		value: "epic",
+		label: "Grueling Effort (Major Milestone)",
+		value: "grueling",
 		description: "2+ hours intense focus",
 	},
 ];
@@ -241,14 +250,34 @@ export const TasksRoute: React.FC = () => {
 	// Dialog & Form State
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
-	const [title, setTitle] = useState("");
-	const [notes, setNotes] = useState("");
-	const [category, setCategory] = useState<string>("work");
-	const [cadence, setCadence] = useState<QuestCadence>("daily");
-	const [effort, setEffort] = useState<QuestEffort>("moderate");
-	const [minutes, setMinutes] = useState<number>(30);
-	const [isScored, setIsScored] = useState(true);
 	const [selectedTab, setSelectedTab] = useState<string>("All");
+
+	const {
+		register,
+		handleSubmit,
+		setValue,
+		watch,
+		reset,
+		setError,
+		formState: { errors },
+	} = useForm<QuestFormData>({
+		resolver: zodResolver(questSchema),
+		defaultValues: {
+			title: "",
+			notes: "",
+			category: "work",
+			cadence: "daily",
+			effort: "moderate",
+			minutes: 30,
+			scored: true,
+		},
+	});
+
+	const effort = watch("effort");
+	const cadence = watch("cadence");
+	const minutes = watch("minutes");
+	const category = watch("category");
+	const scored = watch("scored");
 
 	// Estimated Reward Preview from Authoritative Backend Engine
 	const { data: pricePreview, isFetching: isPreviewFetching } =
@@ -277,25 +306,29 @@ export const TasksRoute: React.FC = () => {
 
 	const handleOpenCreate = () => {
 		setEditingQuest(null);
-		setTitle("");
-		setNotes("");
-		setCategory("work");
-		setCadence("daily");
-		setEffort("moderate");
-		setMinutes(30);
-		setIsScored(true);
+		reset({
+			title: "",
+			notes: "",
+			category: "work",
+			cadence: "daily",
+			effort: "moderate",
+			minutes: 30,
+			scored: true,
+		});
 		setIsCreateOpen(true);
 	};
 
 	const handleOpenEdit = (quest: Quest) => {
 		setEditingQuest(quest);
-		setTitle(quest.title);
-		setNotes(quest.notes || "");
-		setCategory(quest.category);
-		setCadence(quest.cadence);
-		setEffort(quest.effort);
-		setMinutes(quest.minutes || 30);
-		setIsScored(quest.scored);
+		reset({
+			title: quest.title,
+			notes: quest.notes || "",
+			category: quest.category,
+			cadence: quest.cadence,
+			effort: quest.effort,
+			minutes: quest.minutes || 30,
+			scored: quest.scored,
+		});
 		setIsCreateOpen(true);
 	};
 
@@ -303,20 +336,14 @@ export const TasksRoute: React.FC = () => {
 		if (tq.completed) {
 			try {
 				await undoMutation.mutateAsync({ id: tq.quest.id });
-				toaster.create({
-					title: "Quest marked pending",
-					description: `Undid "${tq.quest.title}".`,
-					type: "info",
-				});
 			} catch (err) {
-				toaster.create({
-					title: "Failed to undo quest",
-					description:
-						err instanceof ApiError
-							? err.message
-							: "Error updating quest",
-					type: "error",
-				});
+				if (err instanceof ApiError && err.violations?._error) {
+					toaster.create({
+						title: "Validation Error",
+						description: err.violations._error.message,
+						type: "error",
+					});
+				}
 			}
 		} else {
 			try {
@@ -327,88 +354,50 @@ export const TasksRoute: React.FC = () => {
 					void fly(el, award.exp, "exp");
 					void fly(el, award.px, "px");
 				}
-				toaster.create({
-					title: "Quest Completed!",
-					description: `+${award.exp} EXP and +${award.px} PX points awarded!`,
-					type: "success",
-				});
 			} catch (err) {
-				toaster.create({
-					title: "Failed to complete quest",
-					description:
-						err instanceof ApiError
-							? err.message
-							: "Error completing quest",
-					type: "error",
-				});
+				if (err instanceof ApiError && err.violations?._error) {
+					toaster.create({
+						title: "Validation Error",
+						description: err.violations._error.message,
+						type: "error",
+					});
+				}
 			}
 		}
 	};
 
-	const handleSubmitTask = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!title.trim()) {
-			toaster.create({
-				title: "Title required",
-				description: "Please enter a title for your quest.",
-				type: "error",
-			});
-			return;
-		}
-
+	const onSubmitQuest = async (data: QuestFormData) => {
 		try {
 			if (editingQuest) {
 				await updateMutation.mutateAsync({
 					id: editingQuest.id,
 					payload: {
-						title: title.trim(),
-						notes: notes.trim() || undefined,
-						category: (category || "work") as QuestCategory,
-						cadence,
-						effort,
-						minutes,
-						scored: isScored,
+						title: data.title.trim(),
+						notes: data.notes?.trim() || undefined,
+						category: data.category as QuestCategory,
+						cadence: data.cadence,
+						effort: data.effort,
+						minutes: data.minutes,
+						scored: data.scored,
 					},
-				});
-
-				toaster.create({
-					title: "Quest Updated",
-					description: `"${title.trim()}" updated successfully.`,
-					type: "success",
 				});
 			} else {
 				await createMutation.mutateAsync({
-					title: title.trim(),
-					notes: notes.trim() || undefined,
-					category: (category || "work") as QuestCategory,
-					cadence,
-					effort,
-					minutes,
-					scored: isScored,
-				});
-
-				toaster.create({
-					title: "Quest Created",
-					description: `"${title.trim()}" added to your ${cadence} quest board.`,
-					type: "success",
+					title: data.title.trim(),
+					notes: data.notes?.trim() || undefined,
+					category: data.category as QuestCategory,
+					cadence: data.cadence,
+					effort: data.effort,
+					minutes: data.minutes,
+					scored: data.scored,
 				});
 			}
 
-			setTitle("");
-			setNotes("");
+			reset();
 			setEditingQuest(null);
 			setIsCreateOpen(false);
 		} catch (err) {
-			toaster.create({
-				title: editingQuest
-					? "Failed to update quest"
-					: "Failed to create quest",
-				description:
-					err instanceof ApiError
-						? err.message
-						: "Error saving quest",
-				type: "error",
-			});
+			handleFormApiError(err, setError);
 		}
 	};
 
@@ -829,16 +818,24 @@ export const TasksRoute: React.FC = () => {
 						<form
 							id="create-quest-form"
 							noValidate
-							onSubmit={handleSubmitTask}
+							onSubmit={handleSubmit(onSubmitQuest)}
 						>
 							<Stack gap={3.5}>
-								<Field label="Quest Title" required>
+								{errors.root?.message && (
+									<Text color="red.500" fontSize="xs">
+										{errors.root.message}
+									</Text>
+								)}
+
+								<Field
+									label="Quest Title"
+									required
+									invalid={Boolean(errors.title)}
+									errorText={errors.title?.message}
+								>
 									<Input
 										placeholder="e.g. 45m TypeScript deep work"
-										value={title}
-										onChange={(e) =>
-											setTitle(e.target.value)
-										}
+										{...register("title")}
 										rounded="pill"
 										bg="bg.muted"
 										borderColor="border"
@@ -853,22 +850,42 @@ export const TasksRoute: React.FC = () => {
 									}}
 									gap={3}
 								>
-									<Field label="Category" required>
+									<Field
+										label="Category"
+										required
+										invalid={Boolean(errors.category)}
+										errorText={errors.category?.message}
+									>
 										<SearchableSelect
 											items={QUEST_CATEGORIES}
 											value={category}
-											onValueChange={setCategory}
+											onValueChange={(val) =>
+												setValue(
+													"category",
+													val as QuestCategory,
+													{ shouldValidate: true },
+												)
+											}
 											placeholder="Select category..."
 											searchPlaceholder="Search category..."
 										/>
 									</Field>
 
-									<Field label="Cadence (Frequency)" required>
+									<Field
+										label="Cadence (Frequency)"
+										required
+										invalid={Boolean(errors.cadence)}
+										errorText={errors.cadence?.message}
+									>
 										<SearchableSelect
 											items={CADENCE_OPTIONS}
 											value={cadence}
 											onValueChange={(val) =>
-												setCadence(val as QuestCadence)
+												setValue(
+													"cadence",
+													val as QuestCadence,
+													{ shouldValidate: true },
+												)
 											}
 											placeholder="Frequency"
 										/>
@@ -882,12 +899,21 @@ export const TasksRoute: React.FC = () => {
 									}}
 									gap={3}
 								>
-									<Field label="Effort Level" required>
+									<Field
+										label="Effort Level"
+										required
+										invalid={Boolean(errors.effort)}
+										errorText={errors.effort?.message}
+									>
 										<SearchableSelect
 											items={EFFORT_OPTIONS}
 											value={effort}
 											onValueChange={(val) =>
-												setEffort(val as QuestEffort)
+												setValue(
+													"effort",
+													val as QuestEffort,
+													{ shouldValidate: true },
+												)
 											}
 											placeholder="Effort"
 										/>
@@ -897,22 +923,16 @@ export const TasksRoute: React.FC = () => {
 										<Field
 											label="Task Duration (Minutes)"
 											required
+											invalid={Boolean(errors.minutes)}
+											errorText={errors.minutes?.message}
 										>
 											<Input
 												type="number"
 												min={1}
-												max={480}
-												value={minutes}
-												onChange={(e) =>
-													setMinutes(
-														Math.max(
-															1,
-															Number(
-																e.target.value,
-															) || 1,
-														),
-													)
-												}
+												max={720}
+												{...register("minutes", {
+													valueAsNumber: true,
+												})}
 												rounded="pill"
 												bg="bg.muted"
 												borderColor="border"
@@ -939,7 +959,13 @@ export const TasksRoute: React.FC = () => {
 																: undefined
 														}
 														onClick={() =>
-															setMinutes(m)
+															setValue(
+																"minutes",
+																m,
+																{
+																	shouldValidate: true,
+																},
+															)
 														}
 													>
 														{m}m
@@ -977,20 +1003,20 @@ export const TasksRoute: React.FC = () => {
 											size="xs"
 											rounded="pill"
 											variant={
-												isScored ? "solid" : "outline"
+												scored ? "solid" : "outline"
 											}
 											colorPalette={
-												isScored ? "mint" : undefined
+												scored ? "mint" : undefined
 											}
 											onClick={() =>
-												setIsScored(!isScored)
+												setValue("scored", !scored)
 											}
 										>
-											{isScored ? "EXP Active" : "No EXP"}
+											{scored ? "EXP Active" : "No EXP"}
 										</Button>
 									</HStack>
 
-									{isScored && (
+									{scored && (
 										<Stack
 											gap={1.5}
 											pt={1}
@@ -1051,13 +1077,14 @@ export const TasksRoute: React.FC = () => {
 									)}
 								</Box>
 
-								<Field label="Notes / Checklist (Optional)">
+								<Field
+									label="Notes / Checklist (Optional)"
+									invalid={Boolean(errors.notes)}
+									errorText={errors.notes?.message}
+								>
 									<Input
 										placeholder="Context, subtasks or URL link"
-										value={notes}
-										onChange={(e) =>
-											setNotes(e.target.value)
-										}
+										{...register("notes")}
 										rounded="pill"
 										bg="bg.muted"
 										borderColor="border"

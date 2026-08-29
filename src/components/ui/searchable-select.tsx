@@ -11,12 +11,7 @@ import {
 	VStack,
 } from "@chakra-ui/react";
 import React, { useMemo, useRef, useState } from "react";
-import {
-	LuCheck,
-	LuChevronDown,
-	LuSearch,
-	LuX,
-} from "react-icons/lu";
+import { LuCheck, LuChevronDown, LuSearch, LuX } from "react-icons/lu";
 import {
 	PopoverBody,
 	PopoverContent,
@@ -72,7 +67,8 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 		return items.filter(
 			(item) =>
 				item.label.toLowerCase().includes(q) ||
-				(item.description && item.description.toLowerCase().includes(q)),
+				(item.description &&
+					item.description.toLowerCase().includes(q)),
 		);
 	}, [items, searchQuery]);
 
@@ -100,7 +96,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 					setSearchQuery("");
 				}
 			}}
-			positioning={{ sameWidth: true, placement: "bottom-start", gutter: 4 }}
+			positioning={{
+				sameWidth: true,
+				placement: "bottom-start",
+				gutter: 4,
+			}}
 		>
 			<PopoverTrigger asChild>
 				<Button
@@ -122,7 +122,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 						{selectedItem ? (
 							<>
 								{selectedItem.color && (
-									<Circle size="2" bg={selectedItem.color} flexShrink={0} />
+									<Circle
+										size="2"
+										bg={selectedItem.color}
+										flexShrink={0}
+									/>
 								)}
 								<Text
 									fontSize={size === "xs" ? "xs" : "sm"}
@@ -151,12 +155,19 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 								bg="bg.muted"
 								cursor="pointer"
 								onClick={handleClear}
-								_hover={{ bg: "bg.solid", color: "fg.inverted" }}
+								_hover={{
+									bg: "bg.solid",
+									color: "fg.inverted",
+								}}
 							>
 								<Icon as={LuX} boxSize={2.5} />
 							</Circle>
 						)}
-						<Icon as={LuChevronDown} boxSize={3.5} color="fg.muted" />
+						<Icon
+							as={LuChevronDown}
+							boxSize={3.5}
+							color="fg.muted"
+						/>
 					</HStack>
 				</Button>
 			</PopoverTrigger>
@@ -184,7 +195,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 							borderWidth="1px"
 							borderColor="border"
 						>
-							<Icon as={LuSearch} boxSize={3.5} color="fg.muted" />
+							<Icon
+								as={LuSearch}
+								boxSize={3.5}
+								color="fg.muted"
+							/>
 							<Input
 								ref={searchInputRef}
 								placeholder={searchPlaceholder}
@@ -229,10 +244,20 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 									_hover={{ bg: "bg.muted" }}
 									onClick={() => handleSelect("")}
 								>
-									<Text fontSize="xs" color="fg.muted" fontStyle="italic">
+									<Text
+										fontSize="xs"
+										color="fg.muted"
+										fontStyle="italic"
+									>
 										{clearLabel}
 									</Text>
-									{!value && <Icon as={LuCheck} boxSize={3.5} color="fg" />}
+									{!value && (
+										<Icon
+											as={LuCheck}
+											boxSize={3.5}
+											color="fg"
+										/>
+									)}
 								</Flex>
 							)}
 
@@ -254,9 +279,15 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 											py={1.5}
 											rounded="pill"
 											cursor="pointer"
-											bg={isSelected ? "bg.muted" : "transparent"}
+											bg={
+												isSelected
+													? "bg.muted"
+													: "transparent"
+											}
 											_hover={{ bg: "bg.muted" }}
-											onClick={() => handleSelect(item.value)}
+											onClick={() =>
+												handleSelect(item.value)
+											}
 										>
 											<HStack gap={2} overflow="hidden">
 												{item.color && (
@@ -266,16 +297,28 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 														flexShrink={0}
 													/>
 												)}
-												<VStack align="flex-start" gap={0} overflow="hidden">
+												<VStack
+													align="flex-start"
+													gap={0}
+													overflow="hidden"
+												>
 													<Text
 														fontSize="xs"
-														fontWeight={isSelected ? "bold" : "normal"}
+														fontWeight={
+															isSelected
+																? "bold"
+																: "normal"
+														}
 														truncate
 													>
 														{item.label}
 													</Text>
 													{item.description && (
-														<Text fontSize="10px" color="fg.muted" truncate>
+														<Text
+															fontSize="10px"
+															color="fg.muted"
+															truncate
+														>
 															{item.description}
 														</Text>
 													)}
@@ -283,7 +326,11 @@ export const SearchableSelect: React.FC<SearchableSelectProps> = ({
 											</HStack>
 
 											{isSelected && (
-												<Icon as={LuCheck} boxSize={3.5} color="fg" />
+												<Icon
+													as={LuCheck}
+													boxSize={3.5}
+													color="fg"
+												/>
 											)}
 										</Flex>
 									);

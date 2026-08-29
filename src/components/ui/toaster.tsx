@@ -49,11 +49,18 @@ export const Toaster = () => {
 						) : (
 							(() => {
 								const meta =
-									toastIconByType[toast.type as keyof typeof toastIconByType];
+									toastIconByType[
+										toast.type as keyof typeof toastIconByType
+									];
 								if (!meta) return <Toast.Indicator />;
 
 								return (
-									<Circle size="7" bg={meta.bg} color={meta.fg} flexShrink={0}>
+									<Circle
+										size="7"
+										bg={meta.bg}
+										color={meta.fg}
+										flexShrink={0}
+									>
 										<Icon as={meta.icon} boxSize={4} />
 									</Circle>
 								);
@@ -61,12 +68,19 @@ export const Toaster = () => {
 						)}
 						<Stack gap="1" flex="1" maxWidth="100%">
 							{toast.title && (
-								<Toast.Title fontSize="sm" fontWeight="bold" color="fg">
+								<Toast.Title
+									fontSize="sm"
+									fontWeight="bold"
+									color="fg"
+								>
 									{toast.title}
 								</Toast.Title>
 							)}
 							{toast.description && (
-								<Toast.Description fontSize="xs" color="fg.muted">
+								<Toast.Description
+									fontSize="xs"
+									color="fg.muted"
+								>
 									{toast.description}
 								</Toast.Description>
 							)}
@@ -80,7 +94,9 @@ export const Toaster = () => {
 								{toast.action.label}
 							</Toast.ActionTrigger>
 						)}
-						{toast.closable && <Toast.CloseTrigger rounded="full" />}
+						{toast.closable && (
+							<Toast.CloseTrigger rounded="full" />
+						)}
 					</Toast.Root>
 				)}
 			</ChakraToaster>

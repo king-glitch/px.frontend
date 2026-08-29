@@ -14,12 +14,17 @@ import {
 } from "@chakra-ui/react";
 import { LuArrowLeft, LuLeaf, LuShieldCheck, LuSparkles } from "react-icons/lu";
 import { Link, useNavigate } from "react-router";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import { PasswordInput } from "@/components/ui/password-input";
-import { toaster } from "@/components/ui/toaster";
-import { ApiError } from "@/api/client";
 import { useConnectDuolingo } from "@/api";
+import {
+	type ConnectDuolingoFormData,
+	connectDuolingoSchema,
+} from "@/api/schemas";
+import { handleFormApiError } from "@/utils/form-error";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -32,37 +37,30 @@ const glassCard = {
 
 export const DuolingoConnectRoute: React.FC = () => {
 	const navigate = useNavigate();
-	const [botUsername, setBotUsername] = useState("");
-	const [botPassword, setBotPassword] = useState("");
-	const [error, setError] = useState<string | null>(null);
 	const connect = useConnectDuolingo();
 
-	const onSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!botUsername.trim() || !botPassword.trim()) {
-			setError("Please provide both username and password");
-			return;
-		}
+	const {
+		register,
+		handleSubmit,
+		setError,
+		formState: { errors, isSubmitting },
+	} = useForm<ConnectDuolingoFormData>({
+		resolver: zodResolver(connectDuolingoSchema),
+		defaultValues: {
+			bot_username: "",
+			bot_password: "",
+		},
+	});
 
-		setError(null);
+	const onSubmit = async (data: ConnectDuolingoFormData) => {
 		try {
-			const link = await connect.mutateAsync({
-				bot_username: botUsername.trim(),
-				bot_password: botPassword,
-			});
-
-			toaster.create({
-				title: "Duolingo connected",
-				description: `Linked to @${link.bot_username}`,
-				type: "success",
+			await connect.mutateAsync({
+				bot_username: data.bot_username.trim(),
+				bot_password: data.bot_password,
 			});
 			navigate("/settings");
 		} catch (err) {
-			setError(
-				err instanceof ApiError
-					? err.message
-					: "Failed to connect to Duolingo. Please check your credentials.",
-			);
+			handleFormApiError(err, setError);
 		}
 	};
 
@@ -123,9 +121,9 @@ export const DuolingoConnectRoute: React.FC = () => {
 						</Flex>
 
 						{/* Connect Form */}
-						<form noValidate onSubmit={onSubmit}>
+						<form noValidate onSubmit={handleSubmit(onSubmit)}>
 							<Stack gap={5}>
-								{error && (
+								{errors.root?.message && (
 									<Box
 										p={3}
 										rounded="xl"
@@ -135,30 +133,34 @@ export const DuolingoConnectRoute: React.FC = () => {
 										color="red.fg"
 										fontSize="sm"
 									>
-										{error}
+										{errors.root.message}
 									</Box>
 								)}
 
-								<Field label="Duolingo Username" required>
+								<Field
+									label="Duolingo Username"
+									required
+									invalid={Boolean(errors.bot_username)}
+									errorText={errors.bot_username?.message}
+								>
 									<Input
 										placeholder="e.g. duousername"
-										value={botUsername}
-										onChange={(e) =>
-											setBotUsername(e.target.value)
-										}
+										{...register("bot_username")}
 										autoComplete="username"
 										autoFocus
 										rounded="xl"
 									/>
 								</Field>
 
-								<Field label="Duolingo Password" required>
+								<Field
+									label="Duolingo Password"
+									required
+									invalid={Boolean(errors.bot_password)}
+									errorText={errors.bot_password?.message}
+								>
 									<PasswordInput
 										placeholder="Your Duolingo password"
-										value={botPassword}
-										onChange={(e) =>
-											setBotPassword(e.target.value)
-										}
+										{...register("bot_password")}
 										autoComplete="current-password"
 										rounded="xl"
 									/>
@@ -200,7 +202,9 @@ export const DuolingoConnectRoute: React.FC = () => {
 										type="submit"
 										variant="dark"
 										flex="2"
-										loading={connect.isPending}
+										loading={
+											connect.isPending || isSubmitting
+										}
 									>
 										Connect Account
 									</Button>

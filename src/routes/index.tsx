@@ -1,6 +1,13 @@
-import { PillButton } from "@/components/ui/pill-button";
 import {
-	Badge,
+	useDuolingoStatus,
+	useFinanceSummary,
+	useHealthDay,
+	usePlayerSummary,
+	useQuests,
+	useTodayQuests,
+} from "@/api";
+import { ExpBar, HeroAvatar, LevelRing, StreakFlame } from "@/components/game";
+import {
 	Box,
 	Circle,
 	Flex,
@@ -20,19 +27,12 @@ import {
 	LuArrowUpRight,
 	LuCalendarDays,
 	LuCircleCheck,
-	LuFlame,
 	LuLayoutDashboard,
 	LuLeaf,
-	LuMessageSquare,
 	LuSettings,
-	LuSparkles,
 	LuTarget,
-	LuTrendingUp,
-	LuTrophy,
-	LuWallet,
 } from "react-icons/lu";
 import { Link, useLocation } from "react-router";
-import { useDuolingoStatus } from "@/api";
 
 const railItems = [
 	{ icon: LuLayoutDashboard, label: "Dashboard", to: "/dashboard" },
@@ -43,13 +43,9 @@ const railItems = [
 	{ icon: LuTarget, label: "Goals" },
 ];
 
-const trackerRows = [
-	{ label: "Work 1 - 5 hrs", tone: "solid" as const },
-	{ label: "Valuable investment", tone: "solid" as const },
-	{ label: "Complete at least 10 task today - 2/10", tone: "muted" as const },
-	{ label: "Spent 30 seconds", tone: "muted" as const },
-	{ label: "Still time", tone: "muted" as const },
-];
+function todayISO(): string {
+	return new Date().toISOString().split("T")[0];
+}
 
 // Luminous Holographic Glassmorphism tokens (Enhanced frosted depth & specular glow)
 const holoGlassCard = {
@@ -458,6 +454,42 @@ const OutlinePill: React.FC<OutlinePillProps> = ({ children }) => (
 export const Index: React.FC = () => {
 	const { pathname } = useLocation();
 	const { data: duolingoStatus } = useDuolingoStatus();
+	const { data: summary } = usePlayerSummary();
+	const { data: todayQuests = [] } = useTodayQuests();
+	const { data: questPage } = useQuests(1, 1);
+	const { data: healthSummary } = useHealthDay(todayISO());
+	const { data: financeSummary } = useFinanceSummary();
+
+	const player = summary?.player;
+	const completedToday = todayQuests.filter((tq) => tq.completed).length;
+	const pendingToday = todayQuests.length - completedToday;
+	const ongoingHabits = Math.max(
+		0,
+		(questPage?.count ?? 0) - todayQuests.length,
+	);
+
+	const healthScores = Object.values(healthSummary?.metrics ?? {});
+	const healthScorePct = healthScores.length
+		? Math.round(
+				(healthScores.reduce((sum, m) => sum + m.score, 0) /
+					healthScores.length) *
+					100,
+			)
+		: 0;
+	const todayCompletionPct = todayQuests.length
+		? Math.round((completedToday / todayQuests.length) * 100)
+		: 0;
+
+	const netThisMonth = financeSummary
+		? financeSummary.income - financeSummary.expense
+		: undefined;
+
+	const todayLabel = new Date().toLocaleDateString(undefined, {
+		weekday: "long",
+		month: "long",
+		day: "numeric",
+		year: "numeric",
+	});
 
 	return (
 		<Box
@@ -621,11 +653,12 @@ export const Index: React.FC = () => {
 								position="relative"
 							>
 								<HStack gap={1.5} color="fg.muted">
-									<Icon as={LuLeaf} boxSize={4} color="mint.fg" />
-									<Text
-										fontSize="sm"
-										fontWeight="semibold"
-									>
+									<Icon
+										as={LuLeaf}
+										boxSize={4}
+										color="mint.fg"
+									/>
+									<Text fontSize="sm" fontWeight="semibold">
 										{duolingoStatus?.username || "Duolingo"}
 									</Text>
 								</HStack>
@@ -653,7 +686,10 @@ export const Index: React.FC = () => {
 												: "Connect Duolingo"
 										}
 									>
-										<Icon as={LuArrowUpRight} boxSize={4.5} />
+										<Icon
+											as={LuArrowUpRight}
+											boxSize={4.5}
+										/>
 									</Link>
 								</Circle>
 								<HStack align="baseline" gap={2} mt={4}>
@@ -700,17 +736,18 @@ export const Index: React.FC = () => {
 								<Grid
 									templateColumns={{
 										base: "1fr",
-										sm: "repeat(3, 1fr)",
+										sm: "repeat(2, 1fr)",
+										xl: "repeat(3, 1fr)",
 									}}
-									gap={{ base: 4, xl: 6 }}
+									gap={{ base: 4, xl: 5 }}
 									h="full"
 									alignItems="center"
 								>
 									{/* To do */}
 									<Box
 										position="relative"
-										pr={{ sm: 4 }}
-										borderRightWidth={{ sm: "1px" }}
+										pr={{ xl: 4 }}
+										borderRightWidth={{ xl: "1px" }}
 										borderColor="border.glass"
 									>
 										<Text
@@ -730,7 +767,7 @@ export const Index: React.FC = () => {
 												letterSpacing="-0.04em"
 												lineHeight="1"
 											>
-												158
+												{pendingToday}
 											</Text>
 											<Text
 												fontSize="sm"
@@ -745,8 +782,8 @@ export const Index: React.FC = () => {
 									{/* On going */}
 									<Box
 										position="relative"
-										pr={{ sm: 4 }}
-										borderRightWidth={{ sm: "1px" }}
+										pr={{ xl: 4 }}
+										borderRightWidth={{ xl: "1px" }}
 										borderColor="border.glass"
 									>
 										<Text
@@ -767,7 +804,10 @@ export const Index: React.FC = () => {
 											transition="all 0.15s ease-out"
 											_hover={{ transform: "scale(1.1)" }}
 										>
-											<Icon as={LuArrowUpRight} boxSize={4} />
+											<Icon
+												as={LuArrowUpRight}
+												boxSize={4}
+											/>
 										</Circle>
 										<HStack align="baseline" gap={2} mt={4}>
 											<Text
@@ -779,7 +819,7 @@ export const Index: React.FC = () => {
 												letterSpacing="-0.04em"
 												lineHeight="1"
 											>
-												28
+												{ongoingHabits}
 											</Text>
 											<Text
 												fontSize="sm"
@@ -792,7 +832,12 @@ export const Index: React.FC = () => {
 									</Box>
 
 									{/* Complete */}
-									<Box position="relative">
+									<Box
+										position="relative"
+										pr={{ xl: 4 }}
+										borderRightWidth={{ xl: "1px" }}
+										borderColor="border.glass"
+									>
 										<Text
 											fontSize="sm"
 											fontWeight="semibold"
@@ -814,10 +859,6 @@ export const Index: React.FC = () => {
 											rounded="pill"
 											px={4}
 											py={2}
-											shadow={{
-												base: "0 10px 24px -4px rgba(15, 23, 42, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.95)",
-												_dark: "0 10px 24px -4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
-											}}
 											justify="space-between"
 											mt={3}
 											w="fit-content"
@@ -836,7 +877,9 @@ export const Index: React.FC = () => {
 													letterSpacing="-0.04em"
 													lineHeight="1"
 												>
-													02
+													{String(
+														completedToday,
+													).padStart(2, "0")}
 												</Text>
 												<Text
 													fontSize="xs"
@@ -846,7 +889,11 @@ export const Index: React.FC = () => {
 													tasks
 												</Text>
 											</HStack>
-											<Circle size="6" bg="bg.muted" color="fg">
+											<Circle
+												size="6"
+												bg="bg.muted"
+												color="fg"
+											>
 												<Icon
 													as={LuArrowUpRight}
 													boxSize={3}
@@ -860,15 +907,86 @@ export const Index: React.FC = () => {
 					</Stack>
 				</GridItem>
 
-				{/* Right Side Widgets: Habit Tracker & Performance */}
+				{/* Right Side Widgets: Hero, Habit Tracker & Performance */}
 				<GridItem h="full" minH="0">
 					<Flex
 						direction="column"
 						h="full"
 						justify="space-between"
-						gap={5}
+						gap={4}
 						pb={3}
 					>
+						{/* Hero Snapshot Card */}
+						<Box {...holoGlassCard} p={{ base: 5, xl: 6 }}>
+							<HStack justify="space-between" align="flex-start">
+								<HStack gap={3.5}>
+									<Box position="relative" boxSize="60px">
+										<Box position="absolute" inset={0}>
+											<LevelRing
+												level={player?.level ?? 1}
+												progress={
+													player && summary
+														? player.exp_into_level /
+															Math.max(
+																1,
+																summary.exp_to_next,
+															)
+														: 0
+												}
+												size={60}
+											/>
+										</Box>
+										<Flex
+											position="absolute"
+											inset={0}
+											align="center"
+											justify="center"
+										>
+											<HeroAvatar
+												seed={player?.user_id ?? "hero"}
+												size={40}
+												animated
+											/>
+										</Flex>
+									</Box>
+									<Stack gap={0.5}>
+										<Text
+											fontSize="xs"
+											fontWeight="bold"
+											textTransform="uppercase"
+											letterSpacing="0.06em"
+											color="fg.muted"
+										>
+											{player?.ascensions
+												? `${player.ascensions} ascension${player.ascensions === 1 ? "" : "s"}`
+												: "Hero"}
+										</Text>
+										<Text
+											fontSize="lg"
+											fontWeight="bold"
+											letterSpacing="-0.02em"
+											lineHeight="1"
+										>
+											{(player?.px ?? 0).toLocaleString()}{" "}
+											PX
+										</Text>
+									</Stack>
+								</HStack>
+								<StreakFlame
+									days={player?.streak ?? 0}
+									size={18}
+								/>
+							</HStack>
+
+							<Box mt={4}>
+								<ExpBar
+									level={player?.level ?? 1}
+									expIntoLevel={player?.exp_into_level ?? 0}
+									expToNext={summary?.exp_to_next ?? 1}
+								/>
+							</Box>
+						</Box>
+
 						{/* Habit Tracker Card */}
 						<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
 							<Heading
@@ -879,30 +997,18 @@ export const Index: React.FC = () => {
 								Habit <OutlinePill>tracker</OutlinePill>
 							</Heading>
 							<Text fontSize="sm" color="fg.muted" mt={1}>
-								Today, Dec 28, 2030
+								Today, {todayLabel}
 							</Text>
 
 							<Flex wrap="wrap" gap={2.5} mt={4}>
-								{trackerRows.map((row) => (
+								{todayQuests.length === 0 ? (
 									<HStack
-										key={row.label}
 										flex="1 1 auto"
-										bg={
-											row.tone === "solid"
-												? "bg.solid"
-												: {
-														base: "rgba(255, 255, 255, 0.8)",
-														_dark: "rgba(25, 30, 45, 0.8)",
-													}
-										}
-										color={
-											row.tone === "solid"
-												? "fg.inverted"
-												: "fg"
-										}
-										borderWidth={
-											row.tone === "solid" ? "0" : "1px"
-										}
+										bg={{
+											base: "rgba(255, 255, 255, 0.8)",
+											_dark: "rgba(25, 30, 45, 0.8)",
+										}}
+										borderWidth="1px"
 										borderColor={{
 											base: "rgba(255, 255, 255, 0.9)",
 											_dark: "rgba(255, 255, 255, 0.12)",
@@ -911,39 +1017,91 @@ export const Index: React.FC = () => {
 										px={4}
 										py={2}
 										gap={2.5}
-										cursor="pointer"
-										transition="all 0.15s ease-out"
-										shadow={
-											row.tone === "solid"
-												? "none"
-												: "0 2px 8px -2px rgba(15, 23, 42, 0.04)"
-										}
-										_hover={{
-											transform: "translateY(-1px)",
-											shadow: "glass",
-										}}
 									>
-										<Circle
-											size="2.5"
-											bg={
-												row.tone === "solid"
-													? "mint.solid"
-													: "fg.muted"
-											}
-										/>
+										<Circle size="2.5" bg="fg.muted" />
 										<Text
 											fontSize="sm"
 											fontWeight="medium"
 											whiteSpace="nowrap"
 										>
-											{row.label}
+											No quests scheduled today
 										</Text>
 									</HStack>
-								))}
+								) : (
+									todayQuests.map((tq) => (
+										<HStack
+											key={tq.quest.id}
+											flex="1 1 auto"
+											bg={
+												tq.completed
+													? "bg.solid"
+													: {
+															base: "rgba(255, 255, 255, 0.8)",
+															_dark: "rgba(25, 30, 45, 0.8)",
+														}
+											}
+											color={
+												tq.completed
+													? "fg.inverted"
+													: "fg"
+											}
+											borderWidth={
+												tq.completed ? "0" : "1px"
+											}
+											borderColor={{
+												base: "rgba(255, 255, 255, 0.9)",
+												_dark: "rgba(255, 255, 255, 0.12)",
+											}}
+											rounded="pill"
+											px={4}
+											py={2}
+											gap={2.5}
+											cursor="pointer"
+											transition="all 0.15s ease-out"
+											shadow={
+												tq.completed
+													? "none"
+													: "0 2px 8px -2px rgba(15, 23, 42, 0.04)"
+											}
+											_hover={{
+												transform: "translateY(-1px)",
+												shadow: "glass",
+											}}
+										>
+											<Circle
+												size="2.5"
+												bg={
+													tq.completed
+														? "mint.solid"
+														: "fg.muted"
+												}
+											/>
+											<Text
+												fontSize="sm"
+												fontWeight="medium"
+												whiteSpace="nowrap"
+											>
+												{tq.quest.title}
+											</Text>
+											<Text
+												fontSize="10px"
+												fontWeight="bold"
+												opacity={0.65}
+												whiteSpace="nowrap"
+											>
+												+
+												{tq.completed
+													? tq.exp_awarded
+													: tq.quest.exp_value}{" "}
+												EXP
+											</Text>
+										</HStack>
+									))
+								)}
 							</Flex>
 						</Box>
 
-						{/* Performance Stats Card */}
+						{/* Today's Pulse: Health + Quests bars, Finance headline */}
 						<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
 							<Text
 								fontSize="sm"
@@ -951,7 +1109,7 @@ export const Index: React.FC = () => {
 								textTransform="uppercase"
 								letterSpacing="0.08em"
 							>
-								Performance
+								Today
 							</Text>
 							<Stack gap={2.5} mt={4}>
 								<Box
@@ -962,7 +1120,7 @@ export const Index: React.FC = () => {
 								>
 									<Box
 										h="full"
-										w="72%"
+										w={`${todayCompletionPct}%`}
 										rounded="pill"
 										bg="bg.solid"
 									/>
@@ -975,7 +1133,7 @@ export const Index: React.FC = () => {
 								>
 									<Box
 										h="full"
-										w="45%"
+										w={`${healthScorePct}%`}
 										rounded="pill"
 										bg="bg.solid"
 									/>
@@ -988,24 +1146,16 @@ export const Index: React.FC = () => {
 									fontWeight="bold"
 									letterSpacing="-0.04em"
 									lineHeight="1"
+									color={
+										netThisMonth !== undefined &&
+										netThisMonth < 0
+											? "red.fg"
+											: "fg"
+									}
 								>
-									35
-								</Text>
-								<Text
-									fontSize={{ base: "3.2rem", xl: "3.8rem" }}
-									color="fg.muted"
-									fontWeight="light"
-									lineHeight="1"
-								>
-									/
-								</Text>
-								<Text
-									fontSize={{ base: "3.2rem", xl: "3.8rem" }}
-									fontWeight="bold"
-									letterSpacing="-0.04em"
-									lineHeight="1"
-								>
-									82
+									{netThisMonth !== undefined
+										? `${netThisMonth >= 0 ? "+" : ""}${netThisMonth.toLocaleString()}`
+										: "—"}
 								</Text>
 								<Text
 									fontSize="sm"
@@ -1013,9 +1163,19 @@ export const Index: React.FC = () => {
 									pl={3}
 									fontWeight="medium"
 								>
-									Total target
+									net this period
 								</Text>
 							</HStack>
+							{financeSummary && (
+								<Text fontSize="xs" color="fg.muted" mt={1.5}>
+									Income{" "}
+									{financeSummary.income.toLocaleString()} ·
+									Expense{" "}
+									{financeSummary.expense.toLocaleString()} ·
+									+{financeSummary.projected_exp} EXP
+									projected
+								</Text>
+							)}
 						</Box>
 					</Flex>
 				</GridItem>

@@ -57,6 +57,9 @@ import {
 	SearchableSelect,
 	type SearchableSelectItem,
 } from "@/components/ui/searchable-select";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
 import {
@@ -70,6 +73,7 @@ import {
 	useFinanceSummary,
 } from "@/api";
 import type { FinanceDirection, FinanceEntry } from "@/api/types";
+import { handleFormApiError } from "@/utils/form-error";
 import {
 	RewardFlight,
 	registerRewardFlightTarget,
@@ -702,67 +706,77 @@ interface EntriesSectionProps {
 	period: string;
 }
 
+const entrySchema = z.object({
+	amount: z.number().positive("Amount must be greater than 0"),
+	currency: z.string().min(1, "Currency is required"),
+	category: z.string().min(1, "Category is required"),
+	direction: z.enum(["income", "expense"]),
+	occurred_on: z.string().optional(),
+	note: z.string().optional(),
+});
+type EntryFormData = z.infer<typeof entrySchema>;
+
 const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 	const [page, setPage] = useState(1);
 	const { data, isLoading } = useFinanceEntries(page, 20);
 	const createEntry = useCreateFinanceEntry();
 	const deleteEntry = useDeleteFinanceEntry();
 
-	const [direction, setDirection] = useState<FinanceDirection>("expense");
-	const [amount, setAmount] = useState("");
-	const [currency, setCurrency] = useState("THB");
-	const [category, setCategory] = useState("");
-	const [occurredOn, setOccurredOn] = useState(today);
-	const [note, setNote] = useState("");
-
 	const confirmDelete = useConfirm<string>();
+
+	const {
+		register,
+		handleSubmit,
+		setValue,
+		watch,
+		reset,
+		setError,
+		formState: { errors, isSubmitting },
+	} = useForm<EntryFormData>({
+		resolver: zodResolver(entrySchema),
+		defaultValues: {
+			direction: "expense",
+			amount: undefined,
+			currency: "THB",
+			category: "",
+			occurred_on: today(),
+			note: "",
+		},
+	});
+
+	const direction = watch("direction");
+	const currency = watch("currency") || "THB";
+	const category = watch("category");
 
 	const categoryItems = useMemo(() => {
 		return direction === "income" ? INCOME_CATEGORIES : EXPENSE_CATEGORIES;
 	}, [direction]);
 
 	const handleDirectionChange = (newDir: FinanceDirection) => {
-		setDirection(newDir);
-		setCategory("");
+		setValue("direction", newDir);
+		setValue("category", "", { shouldValidate: true });
 	};
 
-	const onSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!amount || !category.trim()) {
-			toaster.create({
-				title: "Missing required fields",
-				description: "Please enter both an amount and a category.",
-				type: "error",
-			});
-			return;
-		}
-
+	const onSubmit = async (formData: EntryFormData) => {
 		try {
 			await createEntry.mutateAsync({
-				direction,
-				amount: Number(amount),
-				currency,
-				category: category.trim(),
-				occurred_on: occurredOn,
-				note: note.trim() || undefined,
+				direction: formData.direction,
+				amount: formData.amount,
+				currency: formData.currency,
+				category: formData.category.trim(),
+				occurred_on: formData.occurred_on || today(),
+				note: formData.note?.trim() || undefined,
 			});
-			toaster.create({
-				title: "Entry logged",
-				description: `${direction === "income" ? "+" : "-"}${amount} ${currency} in ${category}`,
-				type: "success",
+			reset({
+				direction: formData.direction,
+				amount: undefined,
+				currency: formData.currency,
+				category: "",
+				occurred_on: today(),
+				note: "",
 			});
-			setAmount("");
-			setCategory("");
-			setNote("");
 		} catch (err) {
-			toaster.create({
-				title: "Failed to add entry",
-				description:
-					err instanceof ApiError
-						? err.message
-						: "Error creating transaction entry",
-				type: "error",
-			});
+			handleFormApiError(err, setError);
 		}
 	};
 
@@ -807,8 +821,14 @@ const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 			<Box {...glassCard} p={{ base: 5, md: 6 }}>
 				<Stack gap={5}>
 					{/* Add Entry Form */}
-					<form noValidate onSubmit={onSubmit}>
+					<form noValidate onSubmit={handleSubmit(onSubmit)}>
 						<Stack gap={3.5}>
+							{errors.root?.message && (
+								<Text color="red.500" fontSize="xs">
+									{errors.root.message}
+								</Text>
+							)}
+
 							<HStack gap={2}>
 								<Button
 									type="button"
@@ -859,60 +879,84 @@ const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 									lg: "repeat(5, 1fr)",
 								}}
 							>
-								<Field label="Amount" required>
+								<Field
+									label="Amount"
+									required
+									invalid={Boolean(errors.amount)}
+									errorText={errors.amount?.message}
+								>
 									<Input
 										type="number"
 										min={0}
 										step="any"
 										placeholder="0.00"
-										value={amount}
-										onChange={(e) =>
-											setAmount(e.target.value)
-										}
+										{...register("amount", {
+											valueAsNumber: true,
+										})}
 										rounded="pill"
 										bg="bg.panel"
 										borderColor="border"
 										fontSize="sm"
 									/>
 								</Field>
-								<Field label="Currency" required>
+								<Field
+									label="Currency"
+									required
+									invalid={Boolean(errors.currency)}
+									errorText={errors.currency?.message}
+								>
 									<SearchableSelect
 										items={CURRENCY_OPTIONS}
 										value={currency}
-										onValueChange={setCurrency}
+										onValueChange={(val) =>
+											setValue("currency", val, {
+												shouldValidate: true,
+											})
+										}
 										placeholder="Select currency..."
 										searchPlaceholder="Search currency..."
 									/>
 								</Field>
-								<Field label="Category" required>
+								<Field
+									label="Category"
+									required
+									invalid={Boolean(errors.category)}
+									errorText={errors.category?.message}
+								>
 									<SearchableSelect
 										items={categoryItems}
 										value={category}
-										onValueChange={setCategory}
+										onValueChange={(val) =>
+											setValue("category", val, {
+												shouldValidate: true,
+											})
+										}
 										placeholder="Select category..."
 										searchPlaceholder="Filter categories..."
 									/>
 								</Field>
-								<Field label="Date">
+								<Field
+									label="Date"
+									invalid={Boolean(errors.occurred_on)}
+									errorText={errors.occurred_on?.message}
+								>
 									<Input
 										type="date"
-										value={occurredOn}
-										onChange={(e) =>
-											setOccurredOn(e.target.value)
-										}
+										{...register("occurred_on")}
 										rounded="pill"
 										bg="bg.panel"
 										borderColor="border"
 										fontSize="sm"
 									/>
 								</Field>
-								<Field label="Note">
+								<Field
+									label="Note"
+									invalid={Boolean(errors.note)}
+									errorText={errors.note?.message}
+								>
 									<Input
 										placeholder="Optional description"
-										value={note}
-										onChange={(e) =>
-											setNote(e.target.value)
-										}
+										{...register("note")}
 										rounded="pill"
 										bg="bg.panel"
 										borderColor="border"
@@ -925,7 +969,7 @@ const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 								type="submit"
 								variant="dark"
 								alignSelf="flex-start"
-								loading={createEntry.isPending}
+								loading={createEntry.isPending || isSubmitting}
 							>
 								<HStack gap={1.5}>
 									<Icon as={LuPlus} boxSize={4} />
@@ -1086,15 +1130,36 @@ interface BudgetsSectionProps {
 	periodEntries: FinanceEntry[];
 }
 
+const budgetSchema = z.object({
+	category: z.string().min(1, "Category is required"),
+	monthly_limit: z.number().positive("Monthly limit must be greater than 0"),
+});
+type BudgetFormData = z.infer<typeof budgetSchema>;
+
 const BudgetsSection: React.FC<BudgetsSectionProps> = ({ periodEntries }) => {
 	const { data: budgets = [], isLoading } = useFinanceBudgets();
 	const createBudget = useCreateFinanceBudget();
 	const deleteBudget = useDeleteFinanceBudget();
 
-	const [category, setCategory] = useState("");
-	const [monthlyLimit, setMonthlyLimit] = useState("");
-
 	const confirmDeleteBudget = useConfirm<string>();
+
+	const {
+		register,
+		handleSubmit,
+		setValue,
+		watch,
+		reset,
+		setError,
+		formState: { errors, isSubmitting },
+	} = useForm<BudgetFormData>({
+		resolver: zodResolver(budgetSchema),
+		defaultValues: {
+			category: "",
+			monthly_limit: undefined,
+		},
+	});
+
+	const category = watch("category");
 
 	// Calculate spent per budget category
 	const spendByCategory = useMemo(() => {
@@ -1110,39 +1175,15 @@ const BudgetsSection: React.FC<BudgetsSectionProps> = ({ periodEntries }) => {
 		return map;
 	}, [periodEntries]);
 
-	const onSubmit = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!category.trim() || !monthlyLimit) {
-			toaster.create({
-				title: "Missing budget details",
-				description:
-					"Please select a category and specify a monthly spending limit.",
-				type: "error",
-			});
-			return;
-		}
-
+	const onSubmit = async (formData: BudgetFormData) => {
 		try {
 			await createBudget.mutateAsync({
-				category: category.trim(),
-				monthly_limit: Number(monthlyLimit),
+				category: formData.category.trim(),
+				monthly_limit: formData.monthly_limit,
 			});
-			toaster.create({
-				title: "Budget created",
-				description: `Monthly limit for ${category} set to $${monthlyLimit}`,
-				type: "success",
-			});
-			setCategory("");
-			setMonthlyLimit("");
+			reset();
 		} catch (err) {
-			toaster.create({
-				title: "Failed to create budget",
-				description:
-					err instanceof ApiError
-						? err.message
-						: "Error creating budget target",
-				type: "error",
-			});
+			handleFormApiError(err, setError);
 		}
 	};
 
@@ -1150,20 +1191,15 @@ const BudgetsSection: React.FC<BudgetsSectionProps> = ({ periodEntries }) => {
 		if (!confirmDeleteBudget.target) return;
 		try {
 			await deleteBudget.mutateAsync(confirmDeleteBudget.target);
-			toaster.create({
-				title: "Budget deleted",
-				type: "success",
-			});
 			confirmDeleteBudget.close();
 		} catch (err) {
-			toaster.create({
-				title: "Failed to delete budget",
-				description:
-					err instanceof ApiError
-						? err.message
-						: "Error deleting budget",
-				type: "error",
-			});
+			if (err instanceof ApiError && err.violations?._error) {
+				toaster.create({
+					title: "Validation Error",
+					description: err.violations._error.message,
+					type: "error",
+				});
+			}
 		}
 	};
 
@@ -1187,26 +1223,41 @@ const BudgetsSection: React.FC<BudgetsSectionProps> = ({ periodEntries }) => {
 			<Box {...glassCard} p={{ base: 5, md: 6 }}>
 				<Stack gap={5}>
 					{/* Add Budget Form */}
-					<form noValidate onSubmit={onSubmit}>
+					<form noValidate onSubmit={handleSubmit(onSubmit)}>
 						<HStack gap={3} wrap="wrap" align="flex-end">
-							<Field label="Category" required w="240px">
+							<Field
+								label="Category"
+								required
+								w="240px"
+								invalid={Boolean(errors.category)}
+								errorText={errors.category?.message}
+							>
 								<SearchableSelect
 									items={EXPENSE_CATEGORIES}
 									value={category}
-									onValueChange={setCategory}
+									onValueChange={(val) =>
+										setValue("category", val, {
+											shouldValidate: true,
+										})
+									}
 									placeholder="Select category..."
 									searchPlaceholder="Search expense category..."
 								/>
 							</Field>
-							<Field label="Monthly Limit" required w="180px">
+							<Field
+								label="Monthly Limit"
+								required
+								w="180px"
+								invalid={Boolean(errors.monthly_limit)}
+								errorText={errors.monthly_limit?.message}
+							>
 								<Input
 									type="number"
 									min={0}
 									placeholder="500"
-									value={monthlyLimit}
-									onChange={(e) =>
-										setMonthlyLimit(e.target.value)
-									}
+									{...register("monthly_limit", {
+										valueAsNumber: true,
+									})}
 									rounded="pill"
 									bg="bg.panel"
 									borderColor="border"
@@ -1216,7 +1267,7 @@ const BudgetsSection: React.FC<BudgetsSectionProps> = ({ periodEntries }) => {
 							<Button
 								type="submit"
 								variant="dark"
-								loading={createBudget.isPending}
+								loading={createBudget.isPending || isSubmitting}
 							>
 								<HStack gap={1.5}>
 									<Icon as={LuPlus} boxSize={4} />

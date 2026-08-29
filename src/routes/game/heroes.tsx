@@ -43,6 +43,7 @@ import {
 	LuPiggyBank,
 	LuPlus,
 	LuShield,
+	LuShieldCheck,
 	LuShirt,
 	LuShoppingBag,
 	LuSparkles,
@@ -95,6 +96,13 @@ import {
 	type ShopItem,
 	type ShopItemKind,
 } from "@/api";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+	type CustomShopItemFormData,
+	customShopItemSchema,
+} from "@/api/schemas";
+import { handleFormApiError } from "@/utils/form-error";
 import { useAuthContext } from "@/contexts/auth-context";
 import {
 	AttributeRadar,
@@ -306,14 +314,8 @@ export const Heroes: React.FC = () => {
 	const ascend = useAscendPlayer();
 	const [pendingPerk, setPendingPerk] = React.useState<string | null>(null);
 	const [ascendOpen, setAscendOpen] = React.useState(false);
-	const [now, setNow] = React.useState(() => Date.now());
 
 	const confirmSpendPerk = useConfirm<PerkID>();
-
-	React.useEffect(() => {
-		const interval = setInterval(() => setNow(Date.now()), 1000);
-		return () => clearInterval(interval);
-	}, []);
 
 	const handleSpend = async (perkId: PerkID) => {
 		setPendingPerk(perkId);
@@ -596,75 +598,197 @@ export const Heroes: React.FC = () => {
 										base: "1fr",
 										md: "320px 1fr",
 									}}
+									alignItems="stretch"
 								>
-									{/* Avatar Level Card */}
-									<Box {...glassCard} p={6}>
-										<Stack align="center" gap={4}>
-											<Box
-												position="relative"
-												boxSize="140px"
-											>
+									{/* Left Column: 2 Rows (Hero Progression + Streak & Badges) */}
+									<Stack gap={4} justify="space-between">
+										{/* Hero Level & Exp Progression Card */}
+										<Box {...glassCard} p={4.5} flex="1">
+											<Stack align="center" gap={3}>
 												<Box
-													position="absolute"
-													inset={0}
+													position="relative"
+													boxSize="110px"
 												>
-													<LevelRing
+													<Box
+														position="absolute"
+														inset={0}
+													>
+														<LevelRing
+															level={player.level}
+															progress={expFraction}
+															size={110}
+														/>
+													</Box>
+													<Flex
+														position="absolute"
+														inset={0}
+														align="center"
+														justify="center"
+													>
+														<HeroAvatar
+															seed={
+																user?.id ??
+																player.user_id
+															}
+															size={72}
+															animated
+														/>
+													</Flex>
+												</Box>
+
+												<HStack gap={2}>
+													<Badge
+														size="sm"
+														rounded="pill"
+														variant="subtle"
+													>
+														Level {player.level}
+													</Badge>
+													{player.ascensions > 0 && (
+														<Badge
+															size="sm"
+															rounded="pill"
+															variant="subtle"
+														>
+															Ascension {player.ascensions}
+														</Badge>
+													)}
+												</HStack>
+
+												<Box w="full">
+													<ExpBar
 														level={player.level}
-														progress={expFraction}
-														size={140}
+														expIntoLevel={
+															player.exp_into_level
+														}
+														expToNext={exp_to_next}
 													/>
 												</Box>
-												<Flex
-													position="absolute"
-													inset={0}
-													align="center"
-													justify="center"
-												>
-													<HeroAvatar
-														seed={
-															user?.id ??
-															player.user_id
+
+												{canAscend && (
+													<PillButton
+														variant="dark"
+														icon={LuArrowUp}
+														w="full"
+														size="xs"
+														onClick={() =>
+															setAscendOpen(true)
 														}
-														size={92}
-														animated
-													/>
-												</Flex>
-											</Box>
+													>
+														Ascend Hero
+													</PillButton>
+												)}
+											</Stack>
+										</Box>
 
-											<Text
-												fontSize="xs"
-												color="fg.muted"
-											>
-												{player.ascensions} ascension
-												{player.ascensions === 1
-													? ""
-													: "s"}
-											</Text>
-
-											<Box w="full">
-												<ExpBar
-													level={player.level}
-													expIntoLevel={
-														player.exp_into_level
-													}
-													expToNext={exp_to_next}
-												/>
-											</Box>
-
-											{canAscend && (
-												<PillButton
-													variant="dark"
-													icon={LuArrowUp}
-													w="full"
-													onClick={() =>
-														setAscendOpen(true)
-													}
+										{/* Streak & Badges Card */}
+										<Box {...glassCard} p={4.5}>
+											<Stack gap={3}>
+												<HStack
+													justify="space-between"
+													align="center"
 												>
-													Ascend Hero
-												</PillButton>
-											)}
-										</Stack>
-									</Box>
+													<HStack gap={2}>
+														<Icon
+															as={LuFlame}
+															boxSize={4}
+															color="mint.fg"
+														/>
+														<Text
+															fontSize="xs"
+															fontWeight="semibold"
+															textTransform="uppercase"
+															letterSpacing="0.05em"
+														>
+															Streak & Badges
+														</Text>
+													</HStack>
+													<Badge
+														size="xs"
+														rounded="pill"
+														variant="subtle"
+													>
+														Best: {player.longest_streak}d
+													</Badge>
+												</HStack>
+
+												<HStack
+													justify="space-between"
+													align="center"
+													bg="bg.panel"
+													p={2.5}
+													rounded="card"
+													borderWidth="1px"
+													borderColor="border.glass"
+												>
+													<HStack gap={2.5}>
+														<StreakFlame
+															days={player.streak}
+															size={24}
+														/>
+														<Stack gap={0}>
+															<Text
+																fontSize="sm"
+																fontWeight="bold"
+															>
+																{player.streak}{" "}
+																{player.streak === 1
+																	? "Day"
+																	: "Days"}
+															</Text>
+															<Text
+																fontSize="10px"
+																color="fg.muted"
+															>
+																Active Streak
+															</Text>
+														</Stack>
+													</HStack>
+													{secondWindRank > 0 && (
+														<Badge
+															size="xs"
+															rounded="pill"
+															variant="surface"
+															colorPalette="mint"
+														>
+															Shielded
+														</Badge>
+													)}
+												</HStack>
+
+												{active_buffs.length > 0 ? (
+													<HStack gap={1.5} wrap="wrap">
+														{active_buffs.map((buff) => (
+															<Badge
+																key={buff.kind}
+																size="xs"
+																rounded="pill"
+																variant="subtle"
+															>
+																{BUFF_LABEL[buff.kind] || buff.kind}
+															</Badge>
+														))}
+													</HStack>
+												) : (
+													<HStack
+														gap={2}
+														color="fg.muted"
+														fontSize="xs"
+													>
+														<Icon
+															as={LuShieldCheck}
+															boxSize={3.5}
+														/>
+														<Text fontSize="11px">
+															{secondWindRank > 0
+																? "Second Wind talent active"
+																: "No active consumable buffs"}
+														</Text>
+													</HStack>
+												)}
+											</Stack>
+										</Box>
+									</Stack>
 
 									{/* Attribute Radar Card */}
 									<Box {...glassCard} p={6} minW={0}>
@@ -699,68 +823,6 @@ export const Heroes: React.FC = () => {
 											/>
 										</Stack>
 									</Box>
-								</Grid>
-
-								{/* Stat Summary Tiles */}
-								<Grid
-									gap={3}
-									templateColumns={{
-										base: "1fr",
-										sm: "repeat(2, 1fr)",
-										md: "repeat(3, 1fr)",
-										lg: "repeat(6, 1fr)",
-									}}
-								>
-									<StatTile
-										label="Hero Level"
-										value={`Lv ${player.level}`}
-										icon={LuTrendingUp}
-										iconColor="fg.muted"
-									/>
-									<StatTile
-										label="Total PX"
-										value={player.px.toLocaleString()}
-										icon={LuCoins}
-										iconColor="fg.muted"
-									/>
-									<Box {...glassCard} p={3.5}>
-										<HStack
-											justify="space-between"
-											color="fg.muted"
-										>
-											<Text
-												fontSize="10px"
-												fontWeight="semibold"
-												textTransform="uppercase"
-											>
-												Active Streak
-											</Text>
-										</HStack>
-										<Box mt={1}>
-											<StreakFlame
-												days={player.streak}
-												size={20}
-											/>
-										</Box>
-									</Box>
-									<StatTile
-										label="Best Streak"
-										value={`${player.longest_streak}d`}
-										icon={LuFlame}
-										iconColor="fg.muted"
-									/>
-									<StatTile
-										label="Skill Points"
-										value={player.skill_points}
-										icon={LuTarget}
-										iconColor="fg.muted"
-									/>
-									<StatTile
-										label="Ascensions"
-										value={player.ascensions}
-										icon={LuAward}
-										iconColor="fg.muted"
-									/>
 								</Grid>
 
 								{/* Active Hero Multipliers & Combat Stats Matrix */}
@@ -1168,7 +1230,7 @@ export const Heroes: React.FC = () => {
 										</Badge>
 									</HStack>
 
-									<Box {...glassCard} p={{ base: 5, md: 6 }}>
+									<Box {...glassCard}>
 										<Grid
 											gap={3.5}
 											templateColumns={{
@@ -1356,7 +1418,6 @@ export const Heroes: React.FC = () => {
 						{activeSection === "inventory" && (
 							<InventoryAndClaimsSection
 								player={player}
-								now={now}
 								activeBuffs={active_buffs}
 							/>
 						)}
@@ -1471,81 +1532,68 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 
 	// New Reward Form State
 	const createItem = useCreateShopItem();
-	const [rewardName, setRewardName] = useState("");
-	const [rewardDesc, setRewardDesc] = useState("");
-	const [realCost, setRealCost] = useState("");
-	const [currency, setCurrency] = useState("THB");
-	const [pricePx, setPricePx] = useState("");
-	const [hasExpiration, setHasExpiration] = useState(false);
-	const [expiryDate, setExpiryDate] = useState("");
 
-	const numericRealCost = parseFloat(realCost);
+	const {
+		register,
+		handleSubmit,
+		setValue,
+		watch,
+		reset,
+		setError,
+		formState: { errors, isSubmitting },
+	} = useForm<CustomShopItemFormData>({
+		resolver: zodResolver(customShopItemSchema),
+		defaultValues: {
+			title: "",
+			description: "",
+			cost_px: 1000,
+			currency_symbol: "THB",
+			currency_cost: undefined,
+			expires_in_days: undefined,
+		},
+	});
+
+	const currency = watch("currency_symbol") || "THB";
+	const realCost = watch("currency_cost");
+	const [hasExpiration, setHasExpiration] = useState(false);
+	const [expiryDays, setExpiryDays] = useState<number>(30);
+
 	const { data: suggestion } = useSuggestPrice(
-		Number.isFinite(numericRealCost) && numericRealCost > 0
-			? numericRealCost
-			: 0,
+		realCost && realCost > 0 ? realCost : 0,
 	);
 
 	const handleApplySuggested = () => {
 		if (suggestion) {
-			setPricePx(String(suggestion));
+			setValue("cost_px", suggestion, { shouldValidate: true });
 		}
 	};
 
-	const handleCreateReward = async (e: React.FormEvent) => {
-		e.preventDefault();
-		const parsedPrice = parseInt(pricePx, 10);
-		if (
-			!rewardName.trim() ||
-			!Number.isFinite(parsedPrice) ||
-			parsedPrice <= 0
-		) {
-			toaster.create({
-				title: "Please enter a valid reward name and PX cost",
-				type: "error",
-			});
-			return;
-		}
-
-		let fullDescription = rewardDesc.trim();
-		if (hasExpiration && expiryDate) {
+	const onSubmitReward = async (data: CustomShopItemFormData) => {
+		let fullDescription = data.description?.trim() || "";
+		if (hasExpiration && expiryDays > 0) {
 			fullDescription = fullDescription
-				? `${fullDescription} [Expires: ${expiryDate}]`
-				: `[Expires: ${expiryDate}]`;
+				? `${fullDescription} [Expires in: ${expiryDays}d]`
+				: `[Expires in: ${expiryDays}d]`;
 		}
 
 		try {
 			await createItem.mutateAsync({
 				kind: "reward",
-				name: rewardName.trim(),
+				name: data.title.trim(),
 				description: fullDescription || undefined,
-				price_px: parsedPrice,
+				price_px: data.cost_px,
 				real_cost:
-					Number.isFinite(numericRealCost) && numericRealCost > 0
-						? numericRealCost
+					data.currency_cost && data.currency_cost > 0
+						? data.currency_cost
 						: undefined,
-				currency: currency.trim() || undefined,
+				currency: data.currency_symbol?.trim() || undefined,
 			});
 
-			toaster.create({
-				title: `Custom Reward "${rewardName.trim()}" created!`,
-				description: `Priced at ${parsedPrice.toLocaleString()} PX`,
-				type: "success",
-			});
-
-			setRewardName("");
-			setRewardDesc("");
-			setRealCost("");
-			setPricePx("");
+			reset();
 			setHasExpiration(false);
-			setExpiryDate("");
 			setIsAddRewardOpen(false);
 		} catch (err) {
-			toaster.create({
-				title: "Failed to create reward",
-				description: err instanceof ApiError ? err.message : undefined,
-				type: "error",
-			});
+			handleFormApiError(err, setError);
 		}
 	};
 
@@ -1743,16 +1791,24 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 						<form
 							id="create-reward-form"
 							noValidate
-							onSubmit={handleCreateReward}
+							onSubmit={handleSubmit(onSubmitReward)}
 						>
 							<Stack gap={3.5}>
-								<Field label="Reward Name" required>
+								{errors.root?.message && (
+									<Text color="red.500" fontSize="xs">
+										{errors.root.message}
+									</Text>
+								)}
+
+								<Field
+									label="Reward Name"
+									required
+									invalid={Boolean(errors.title)}
+									errorText={errors.title?.message}
+								>
 									<Input
 										placeholder="e.g. Seiko Automatic Watch / Omakase Dinner"
-										value={rewardName}
-										onChange={(e) =>
-											setRewardName(e.target.value)
-										}
+										{...register("title")}
 										rounded="pill"
 										bg="bg.muted"
 										borderColor="border"
@@ -1767,15 +1823,20 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 									}}
 									gap={3}
 								>
-									<Field label="Real-Life Cost (Optional)">
+									<Field
+										label="Real-Life Cost (Optional)"
+										invalid={Boolean(errors.currency_cost)}
+										errorText={
+											errors.currency_cost?.message
+										}
+									>
 										<Input
 											type="number"
 											min={0}
 											placeholder="4500"
-											value={realCost}
-											onChange={(e) =>
-												setRealCost(e.target.value)
-											}
+											{...register("currency_cost", {
+												valueAsNumber: true,
+											})}
 											rounded="pill"
 											bg="bg.muted"
 											borderColor="border"
@@ -1783,26 +1844,45 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 										/>
 									</Field>
 
-									<Field label="Currency" required>
+									<Field
+										label="Currency"
+										required
+										invalid={Boolean(
+											errors.currency_symbol,
+										)}
+										errorText={
+											errors.currency_symbol?.message
+										}
+									>
 										<SearchableSelect
 											items={CURRENCY_OPTIONS}
 											value={currency}
-											onValueChange={setCurrency}
+											onValueChange={(val) =>
+												setValue(
+													"currency_symbol",
+													val,
+													{ shouldValidate: true },
+												)
+											}
 											placeholder="Select currency..."
 											searchPlaceholder="Search currency..."
 										/>
 									</Field>
 								</Grid>
 
-								<Field label="Price (PX Points)" required>
+								<Field
+									label="Price (PX Points)"
+									required
+									invalid={Boolean(errors.cost_px)}
+									errorText={errors.cost_px?.message}
+								>
 									<Input
 										type="number"
 										min={1}
 										placeholder="2500"
-										value={pricePx}
-										onChange={(e) =>
-											setPricePx(e.target.value)
-										}
+										{...register("cost_px", {
+											valueAsNumber: true,
+										})}
 										rounded="pill"
 										bg="bg.muted"
 										borderColor="border"
@@ -1875,7 +1955,7 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 											}
 											colorPalette={
 												hasExpiration
-													? "purple"
+													? "mint"
 													: undefined
 											}
 											onClick={() =>
@@ -1889,33 +1969,68 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 									</HStack>
 
 									{hasExpiration && (
-										<Field
-											label="Valid Until Date"
-											required
-										>
-											<Input
-												type="date"
-												value={expiryDate}
-												onChange={(e) =>
-													setExpiryDate(
-														e.target.value,
-													)
-												}
-												rounded="pill"
-												bg="bg.panel"
-												fontSize="xs"
-											/>
-										</Field>
+										<Stack gap={1.5}>
+											<Field label="Expiration Window (Days)">
+												<Input
+													type="number"
+													min={1}
+													max={365}
+													value={expiryDays}
+													onChange={(e) =>
+														setExpiryDays(
+															Math.max(
+																1,
+																Number(
+																	e.target
+																		.value,
+																) || 1,
+															),
+														)
+													}
+													rounded="pill"
+													bg="bg.panel"
+													fontSize="xs"
+												/>
+											</Field>
+											<HStack gap={1.5} wrap="wrap">
+												{[7, 14, 30, 60, 90].map(
+													(d) => (
+														<Button
+															key={d}
+															type="button"
+															size="xs"
+															rounded="pill"
+															variant={
+																expiryDays === d
+																	? "solid"
+																	: "outline"
+															}
+															colorPalette={
+																expiryDays === d
+																	? "mint"
+																	: undefined
+															}
+															onClick={() =>
+																setExpiryDays(d)
+															}
+														>
+															{d}d
+														</Button>
+													),
+												)}
+											</HStack>
+										</Stack>
 									)}
 								</Box>
 
-								<Field label="Notes / Description (Optional)">
+								<Field
+									label="Notes / Description (Optional)"
+									invalid={Boolean(errors.description)}
+									errorText={errors.description?.message}
+								>
 									<Input
 										placeholder="When I reach 5,000 PX milestone..."
-										value={rewardDesc}
-										onChange={(e) =>
-											setRewardDesc(e.target.value)
-										}
+										{...register("description")}
 										rounded="pill"
 										bg="bg.muted"
 										borderColor="border"
@@ -1939,7 +2054,7 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 							form="create-reward-form"
 							variant="dark"
 							icon={LuPlus}
-							loading={createItem.isPending}
+							loading={createItem.isPending || isSubmitting}
 						>
 							Create Reward
 						</PillButton>
@@ -1958,15 +2073,20 @@ const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 
 interface InventoryAndClaimsSectionProps {
 	player: Player;
-	now: number;
 	activeBuffs: Buff[];
 }
 
 const InventoryAndClaimsSection: React.FC<InventoryAndClaimsSectionProps> = ({
 	player,
-	now,
 	activeBuffs,
 }) => {
+	const [now, setNow] = React.useState(() => Date.now());
+
+	React.useEffect(() => {
+		const interval = setInterval(() => setNow(Date.now()), 1000);
+		return () => clearInterval(interval);
+	}, []);
+
 	const { data: inventory, isLoading: invLoading } = useInventory();
 	const { data: claims, isLoading: claimsLoading } = useClaims();
 	const useItem = useUseInventoryItem();
