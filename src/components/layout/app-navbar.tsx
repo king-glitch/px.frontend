@@ -59,16 +59,22 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 	const isTasks = pathname.startsWith("/tasks");
 	const isHealth = pathname.startsWith("/health");
 	const isFinance = pathname.startsWith("/game/finance");
+	const isHeroes = pathname.startsWith("/game/heroes");
+	const isShop = pathname.startsWith("/game/shop");
 
 	const currentPillarValue = isTasks
 		? "/tasks"
 		: isHealth
 			? "/health"
-			: isFinance
-				? "/game/finance"
-				: isOverview
-					? "/dashboard"
-					: "";
+			: isHeroes
+				? "/game/heroes"
+				: isShop
+					? "/game/shop"
+					: isFinance
+						? "/game/finance"
+						: isOverview
+							? "/dashboard"
+							: "";
 
 	const navPillars = [
 		{
@@ -88,6 +94,18 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 			to: "/health",
 			icon: LuActivity,
 			active: isHealth,
+		},
+		{
+			label: "Heroes",
+			to: "/game/heroes",
+			icon: LuSwords,
+			active: isHeroes,
+		},
+		{
+			label: "Shop",
+			to: "/game/shop",
+			icon: LuShoppingBag,
+			active: isShop,
 		},
 		{
 			label: "Finance",

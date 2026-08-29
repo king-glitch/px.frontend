@@ -1,1750 +1,1026 @@
-import React, { useMemo, useState } from "react";
+import { PillButton } from "@/components/ui/pill-button";
 import {
 	Badge,
 	Box,
-	Button,
 	Circle,
-	Container,
 	Flex,
 	Grid,
 	GridItem,
 	HStack,
 	Heading,
 	Icon,
-	Input,
-	SimpleGrid,
-	Skeleton,
-	Spinner,
 	Stack,
-	Tabs,
 	Text,
 	VStack,
 } from "@chakra-ui/react";
+import { keyframes } from "@emotion/react";
+import React from "react";
 import {
 	LuActivity,
-	LuArrowRight,
 	LuArrowUpRight,
-	LuBed,
-	LuBrain,
-	LuCircle,
+	LuCalendarDays,
 	LuCircleCheck,
-	LuCoins,
 	LuFlame,
-	LuFootprints,
-	LuHeart,
+	LuLayoutDashboard,
 	LuLeaf,
-	LuPlus,
-	LuRocket,
+	LuMessageSquare,
 	LuSettings,
-	LuShield,
 	LuSparkles,
 	LuTarget,
 	LuTrendingUp,
-	LuUsers,
+	LuTrophy,
 	LuWallet,
-	LuZap,
 } from "react-icons/lu";
-import { Link } from "react-router";
-import {
-	Area,
-	AreaChart,
-	CartesianGrid,
-	ResponsiveContainer,
-	Tooltip,
-	XAxis,
-	YAxis,
-} from "recharts";
-import {
-	ChartGradient,
-	ChartRoot,
-	ChartTooltip,
-	useChart,
-} from "@chakra-ui/charts";
-import { PillButton } from "@/components/ui/pill-button";
-import { EmptyState } from "@/components/ui/empty-state";
-import {
-	DialogActionTrigger,
-	DialogBody,
-	DialogCloseTrigger,
-	DialogContent,
-	DialogDescription,
-	DialogFooter,
-	DialogHeader,
-	DialogRoot,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Field } from "@/components/ui/field";
-import {
-	SearchableSelect,
-	type SearchableSelectItem,
-} from "@/components/ui/searchable-select";
-import { toaster } from "@/components/ui/toaster";
-import { ApiError } from "@/api/client";
-import {
-	useCompleteQuest,
-	useCreateQuest,
-	useCurrencyBalance,
-	useDuolingoStatus,
-	useFinanceSummary,
-	useHealthDay,
-	useLedger,
-	usePlayerSummary,
-	useQuestPricePreview,
-	useTodayQuests,
-	useUndoCompleteQuest,
-	type Attribute,
-	type QuestCadence,
-	type QuestCategory,
-	type QuestEffort,
-	type TodayQuest,
-} from "@/api";
-import {
-	AttributeRadar,
-	ExpBar,
-	HeroAvatar,
-	StreakFlame,
-} from "@/components/game";
+import { Link, useLocation } from "react-router";
+import { useDuolingoStatus } from "@/api";
 
-const glassCard = {
-	bg: "bg.glass",
+const railItems = [
+	{ icon: LuLayoutDashboard, label: "Dashboard", to: "/dashboard" },
+	{ icon: LuCircleCheck, label: "Tasks & Habits", to: "/tasks" },
+	{ icon: LuActivity, label: "Health", to: "/health" },
+	{ icon: LuSettings, label: "Settings", to: "/settings" },
+	{ icon: LuCalendarDays, label: "Calendar" },
+	{ icon: LuTarget, label: "Goals" },
+];
+
+const trackerRows = [
+	{ label: "Work 1 - 5 hrs", tone: "solid" as const },
+	{ label: "Valuable investment", tone: "solid" as const },
+	{ label: "Complete at least 10 task today - 2/10", tone: "muted" as const },
+	{ label: "Spent 30 seconds", tone: "muted" as const },
+	{ label: "Still time", tone: "muted" as const },
+];
+
+// Luminous Holographic Glassmorphism tokens (Enhanced frosted depth & specular glow)
+const holoGlassCard = {
+	bg: {
+		base: "rgba(255, 255, 255, 0.65)",
+		_dark: "rgba(18, 22, 34, 0.65)",
+	},
+	backdropFilter: "blur(24px) saturate(180%)",
 	borderWidth: "1px",
-	borderColor: "border.glass",
-	rounded: "card",
-	shadow: "glass",
-	backdropFilter: "blur(30px) saturate(1.4)",
+	borderColor: {
+		base: "rgba(255, 255, 255, 0.9)",
+		_dark: "rgba(255, 255, 255, 0.16)",
+	},
+	rounded: "3xl",
+	shadow: {
+		base: "0 16px 40px -10px rgba(15, 23, 42, 0.06), inset 0 1px 2px rgba(255, 255, 255, 0.95), inset 0 0 0 1px rgba(255, 255, 255, 0.6)",
+		_dark: "0 16px 40px -10px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.08)",
+	},
+	transition:
+		"transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+	_hover: {
+		transform: "translateY(-2px)",
+		shadow: {
+			base: "0 24px 52px -12px rgba(15, 23, 42, 0.1), inset 0 1px 2px rgba(255, 255, 255, 1), inset 0 0 0 1px rgba(255, 255, 255, 0.8)",
+			_dark: "0 24px 52px -12px rgba(0, 0, 0, 0.6), inset 0 1px 1px rgba(255, 255, 255, 0.18), inset 0 0 0 1px rgba(255, 255, 255, 0.12)",
+		},
+	},
 } as const;
 
-function todayDateString(): string {
-	return new Date().toISOString().split("T")[0];
+// Smooth physics-based mouse parallax hook (GPU-lerped 60fps)
+function useMouseParallax() {
+	const [offset, setOffset] = React.useState({ x: 0, y: 0 });
+	const targetRef = React.useRef({ x: 0, y: 0 });
+	const currentRef = React.useRef({ x: 0, y: 0 });
+	const rafRef = React.useRef<number | null>(null);
+
+	React.useEffect(() => {
+		const handleMouseMove = (e: MouseEvent) => {
+			const { innerWidth, innerHeight } = window;
+			const nx = (e.clientX / innerWidth - 0.5) * 2;
+			const ny = (e.clientY / innerHeight - 0.5) * 2;
+			targetRef.current = { x: nx, y: ny };
+		};
+
+		const animate = () => {
+			const k = 0.075;
+			currentRef.current.x +=
+				(targetRef.current.x - currentRef.current.x) * k;
+			currentRef.current.y +=
+				(targetRef.current.y - currentRef.current.y) * k;
+
+			setOffset({
+				x: Math.round(currentRef.current.x * 1000) / 1000,
+				y: Math.round(currentRef.current.y * 1000) / 1000,
+			});
+
+			rafRef.current = requestAnimationFrame(animate);
+		};
+
+		window.addEventListener("mousemove", handleMouseMove, {
+			passive: true,
+		});
+		rafRef.current = requestAnimationFrame(animate);
+
+		return () => {
+			window.removeEventListener("mousemove", handleMouseMove);
+			if (rafRef.current) cancelAnimationFrame(rafRef.current);
+		};
+	}, []);
+
+	return offset;
 }
 
-function currentMonthString(): string {
-	return new Date().toISOString().slice(0, 7);
+// Organic Starfall cascading floating keyframes
+const starfallHero = keyframes({
+	"0%, 100%": { transform: "translate3d(0, 0, 0) scale(1) rotate(0deg)" },
+	"33%": {
+		transform: "translate3d(8px, -14px, 0) scale(1.02) rotate(1.5deg)",
+	},
+	"66%": {
+		transform: "translate3d(-8px, -20px, 0) scale(0.99) rotate(-1.5deg)",
+	},
+});
+
+const starfallDrift1 = keyframes({
+	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
+	"50%": {
+		transform: "translate3d(14px, -18px, 0) scale(1.03) rotate(3deg)",
+	},
+});
+
+const starfallDrift2 = keyframes({
+	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
+	"50%": {
+		transform: "translate3d(-12px, -15px, 0) scale(0.97) rotate(-2.5deg)",
+	},
+});
+
+const starfallDrift3 = keyframes({
+	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
+	"50%": {
+		transform: "translate3d(10px, -22px, 0) scale(1.04) rotate(2deg)",
+	},
+});
+
+const starfallDrift4 = keyframes({
+	"0%, 100%": { transform: "translate3d(0, 0, 0) rotate(0deg)" },
+	"50%": {
+		transform: "translate3d(-14px, -20px, 0) scale(1.03) rotate(-2deg)",
+	},
+});
+
+interface FloatingCreatureConfig {
+	id: string;
+	name: string;
+	src: string;
+	layer: "back" | "front";
+	depth: number;
+	style: React.CSSProperties;
+	boxSize: { base: string; lg: string; xl: string };
+	animation: string;
+	glowGradient: string;
+	blur: string;
+	opacity: number;
 }
 
-const QUEST_CATEGORIES: SearchableSelectItem[] = [
+// Starfall celestial cascading arrangement across 3D depth planes with Optical Focus & Bokeh
+const CREATURE_CONFIGS: FloatingCreatureConfig[] = [
+	// 1. Kurelly - Top-Left (Mild Background Depth) -> Subtle lens blur (2.5px)
 	{
-		label: "Work & Career",
-		value: "work",
-		description: "Deep work, coding & execution",
+		id: "kurelly",
+		name: "Kurelly",
+		src: "/images/creatures/kurelly.png",
+		layer: "back",
+		depth: 14,
+		style: {
+			left: "8%",
+			top: "2%",
+		},
+		boxSize: {
+			base: "110px",
+			lg: "clamp(120px, 10vw, 160px)",
+			xl: "clamp(140px, 11vw, 180px)",
+		},
+		animation: `${starfallDrift1} 16s ease-in-out infinite`,
+		glowGradient:
+			"radial-gradient(circle at 50% 50%, rgba(165, 243, 252, 0.5) 0%, rgba(221, 214, 254, 0.3) 45%, transparent 75%)",
+		blur: "2.5px",
+		opacity: 0.9,
 	},
+
+	// 2. Ocelly - Upper-Center (Distant Deep Background) -> Heavy atmospheric bokeh (7px)
 	{
-		label: "Health & Fitness",
-		value: "health",
-		description: "Workouts, nutrition & recovery",
+		id: "ocelly",
+		name: "Ocelly",
+		src: "/images/creatures/ocelly.png",
+		layer: "back",
+		depth: 18,
+		style: {
+			left: "44%",
+			top: "-2%",
+		},
+		boxSize: {
+			base: "100px",
+			lg: "clamp(110px, 9vw, 150px)",
+			xl: "clamp(130px, 10vw, 170px)",
+		},
+		animation: `${starfallDrift2} 18s ease-in-out infinite 1.5s`,
+		glowGradient:
+			"radial-gradient(circle at 50% 50%, rgba(254, 240, 138, 0.45) 0%, rgba(251, 207, 232, 0.3) 45%, transparent 75%)",
+		blur: "7px",
+		opacity: 0.6,
 	},
+
+	// 3. Pollelly - Mid-Left crossing near 'P' (In-Focus Plane) -> 100% Crisp & Sharp (0px blur)
 	{
-		label: "Learning & Skills",
-		value: "learning",
-		description: "Reading, study & practice",
+		id: "pollelly",
+		name: "Pollelly",
+		src: "/images/creatures/pollelly.png",
+		layer: "front",
+		depth: 32,
+		style: {
+			left: "14%",
+			top: "42%",
+		},
+		boxSize: {
+			base: "100px",
+			lg: "clamp(110px, 9vw, 150px)",
+			xl: "clamp(130px, 10vw, 170px)",
+		},
+		animation: `${starfallDrift3} 15s ease-in-out infinite 2.5s`,
+		glowGradient:
+			"radial-gradient(circle at 50% 50%, rgba(251, 207, 232, 0.5) 0%, rgba(221, 214, 254, 0.3) 45%, transparent 75%)",
+		blur: "0px",
+		opacity: 1,
 	},
+
+	// 4. Starelly - Center Hero companion crossing in front of 'X.O' (In-Focus Hero) -> 100% Crisp & Sharp (0px blur)
 	{
-		label: "Chores & Life Ops",
-		value: "chores",
-		description: "Errands, cleaning & admin",
+		id: "starelly",
+		name: "Starelly",
+		src: "/images/creatures/starelly.png",
+		layer: "front",
+		depth: 46,
+		style: {
+			left: "50%",
+			bottom: "0%",
+		},
+		boxSize: {
+			base: "200px",
+			lg: "clamp(240px, 19vw, 310px)",
+			xl: "clamp(270px, 21vw, 350px)",
+		},
+		animation: `${starfallHero} 14s ease-in-out infinite`,
+		glowGradient:
+			"radial-gradient(circle at 50% 50%, rgba(221, 214, 254, 0.55) 0%, rgba(251, 207, 232, 0.38) 45%, transparent 75%)",
+		blur: "0px",
+		opacity: 1,
 	},
+
+	// 5. Yelly - Starfall right wing (Foreground Lens Edge) -> Foreground lens softness (4px)
 	{
-		label: "Mindfulness",
-		value: "mindfulness",
-		description: "Meditation, journaling & rest",
-	},
-	{
-		label: "Social & Community",
-		value: "social",
-		description: "Family, friends & networking",
-	},
-	{
-		label: "Finance & Wealth",
-		value: "finance",
-		description: "Budgeting, investing & review",
+		id: "yelly",
+		name: "Yelly",
+		src: "/images/creatures/yelly.png",
+		layer: "front",
+		depth: 36,
+		style: {
+			right: "4%",
+			top: "34%",
+		},
+		boxSize: {
+			base: "110px",
+			lg: "clamp(120px, 10vw, 160px)",
+			xl: "clamp(140px, 11vw, 180px)",
+		},
+		animation: `${starfallDrift4} 17s ease-in-out infinite 1.2s`,
+		glowGradient:
+			"radial-gradient(circle at 50% 50%, rgba(163, 247, 136, 0.45) 0%, rgba(165, 243, 252, 0.3) 45%, transparent 75%)",
+		blur: "4px",
+		opacity: 0.82,
 	},
 ];
 
-const FILTER_CATEGORIES: SearchableSelectItem[] = [
-	{ label: "All Categories", value: "All", description: "Show all quests" },
-	{
-		label: "Work & Career",
-		value: "work",
-		description: "Deep work & execution",
-	},
-	{
-		label: "Health & Fitness",
-		value: "health",
-		description: "Workouts & recovery",
-	},
-	{
-		label: "Learning & Skills",
-		value: "learning",
-		description: "Reading & study",
-	},
-	{
-		label: "Chores & Life Ops",
-		value: "chores",
-		description: "Errands & cleaning",
-	},
-	{
-		label: "Mindfulness",
-		value: "mindfulness",
-		description: "Meditation & calm",
-	},
-	{
-		label: "Social & Community",
-		value: "social",
-		description: "Family & friends",
-	},
-	{
-		label: "Finance & Wealth",
-		value: "finance",
-		description: "Budgeting & savings",
-	},
-];
+const FloatingCreaturesScene: React.FC = () => {
+	const mouse = useMouseParallax();
 
-const CADENCE_OPTIONS: SearchableSelectItem[] = [
-	{
-		label: "Daily Loop",
-		value: "daily",
-		description: "Resets every 24 hours",
-	},
-	{
-		label: "Weekly Quest",
-		value: "weekly",
-		description: "Resets on Mondays",
-	},
-	{
-		label: "Monthly Goal",
-		value: "monthly",
-		description: "Resets on 1st of month",
-	},
-	{
-		label: "One-Time Task",
-		value: "one_time",
-		description: "Completes once permanently",
-	},
-];
+	const backCreatures = CREATURE_CONFIGS.filter((c) => c.layer === "back");
+	const frontCreatures = CREATURE_CONFIGS.filter((c) => c.layer === "front");
 
-const EFFORT_OPTIONS: SearchableSelectItem[] = [
-	{
-		label: "Low Effort (Quick Win)",
-		value: "low",
-		description: "~15 minutes",
-	},
-	{
-		label: "Moderate Effort (Standard)",
-		value: "moderate",
-		description: "~30-45 minutes",
-	},
-	{
-		label: "High Effort (Deep Work)",
-		value: "high",
-		description: "~60-90 minutes",
-	},
-	{
-		label: "Epic Effort (Major Milestone)",
-		value: "epic",
-		description: "2+ hours intense focus",
-	},
-];
+	const renderCreature = (creature: FloatingCreatureConfig) => {
+		const isCenter = creature.id === "starelly";
+		const baseTransform = isCenter
+			? "translate3d(-50%, 0, 0)"
+			: "translate3d(0, 0, 0)";
+		const parallaxTransform = `translate3d(${mouse.x * creature.depth}px, ${mouse.y * creature.depth}px, 0)`;
 
-const ATTRIBUTE_CONFIG: {
-	key: Attribute;
-	label: string;
-	icon: React.ElementType;
-	color: string;
-	description: string;
-}[] = [
-	{
-		key: "vigor",
-		label: "Vigor",
-		icon: LuActivity,
-		color: "red.solid",
-		description: "Health & vitality",
-	},
-	{
-		key: "craft",
-		label: "Craft",
-		icon: LuZap,
-		color: "orange.solid",
-		description: "Creation & work",
-	},
-	{
-		key: "mind",
-		label: "Mind",
-		icon: LuBrain,
-		color: "blue.solid",
-		description: "Learning & wisdom",
-	},
-	{
-		key: "order",
-		label: "Order",
-		icon: LuTarget,
-		color: "mint.solid",
-		description: "Habits & routines",
-	},
-	{
-		key: "spirit",
-		label: "Spirit",
-		icon: LuLeaf,
-		color: "purple.solid",
-		description: "Mindfulness & peace",
-	},
-	{
-		key: "bond",
-		label: "Bond",
-		icon: LuUsers,
-		color: "pink.solid",
-		description: "Social & community",
-	},
-	{
-		key: "fortune",
-		label: "Fortune",
-		icon: LuCoins,
-		color: "yellow.solid",
-		description: "Wealth & savings",
-	},
-];
+		return (
+			<Box
+				key={creature.id}
+				position="absolute"
+				w={creature.boxSize}
+				h={creature.boxSize}
+				style={{
+					...creature.style,
+					transform: `${baseTransform} ${parallaxTransform}`,
+					filter:
+						creature.blur !== "0px"
+							? `blur(${creature.blur})`
+							: undefined,
+					opacity: creature.opacity,
+					willChange: "transform, filter",
+				}}
+				pointerEvents="none"
+				userSelect="none"
+			>
+				{/* Starfall Floating Loop */}
+				<Box
+					w="full"
+					h="full"
+					position="relative"
+					animation={creature.animation}
+				>
+					{/* Individual creature soft glow */}
+					<Box
+						position="absolute"
+						inset="-15%"
+						opacity={0.35}
+						style={{
+							background: creature.glowGradient,
+						}}
+					/>
 
-export const Index: React.FC = () => {
-	const today = useMemo(todayDateString, []);
-	const currentMonth = useMemo(currentMonthString, []);
-
-	// Live API Hooks
-	const { data: playerSummary, isLoading: playerLoading } =
-		usePlayerSummary();
-	const { data: todayQuests = [], isLoading: questsLoading } =
-		useTodayQuests();
-	const { data: healthSummary, isLoading: healthLoading } =
-		useHealthDay(today);
-	const { data: financeSummary, isLoading: financeLoading } =
-		useFinanceSummary(currentMonth);
-	const { data: pxBalance } = useCurrencyBalance("px");
-	const { data: ledgerData } = useLedger(1, 14);
-	const { data: duolingoStatus } = useDuolingoStatus();
-
-	// Mutations
-	const completeQuest = useCompleteQuest();
-	const undoCompleteQuest = useUndoCompleteQuest();
-	const createQuest = useCreateQuest();
-
-	// Quest Creation Dialog State
-	const [isCreateOpen, setIsCreateOpen] = useState(false);
-	const [title, setTitle] = useState("");
-	const [notes, setNotes] = useState("");
-	const [category, setCategory] = useState<string>("work");
-	const [cadence, setCadence] = useState<QuestCadence>("daily");
-	const [effort, setEffort] = useState<QuestEffort>("moderate");
-	const [minutes, setMinutes] = useState<number>(30);
-	const [isCustomReward, setIsCustomReward] = useState(false);
-	const [customExp, setCustomExp] = useState<string>("50");
-	const [customPx, setCustomPx] = useState<string>("25");
-	const [isScored, setIsScored] = useState(true);
-	const [selectedCategory, setSelectedCategory] = useState<string>("All");
-
-	const { data: pricePreview, isFetching: isPreviewFetching } =
-		useQuestPricePreview(effort, cadence, minutes);
-
-	// Quest Calculations
-	const totalQuests = todayQuests.length;
-	const completedQuests = todayQuests.filter((q) => q.completed).length;
-	const progressPercent =
-		totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
-
-	const categories = [
-		"All",
-		"work",
-		"health",
-		"learning",
-		"chores",
-		"mindfulness",
-		"social",
-		"finance",
-	];
-	const filteredQuests = useMemo(() => {
-		if (selectedCategory === "All") return todayQuests;
-		return todayQuests.filter(
-			(q) =>
-				q.quest.category.toLowerCase() ===
-				selectedCategory.toLowerCase(),
+					{/* Creature Sprite */}
+					<Box
+						position="absolute"
+						inset="0"
+						style={{
+							willChange: "transform",
+						}}
+						css={{
+							backgroundImage: `url('${creature.src}')`,
+							backgroundSize: "contain",
+							backgroundPosition: "center center",
+							backgroundRepeat: "no-repeat",
+						}}
+					/>
+				</Box>
+			</Box>
 		);
-	}, [todayQuests, selectedCategory]);
-
-	// Quest Interactions with Toasts
-	const handleToggleQuest = async (tq: TodayQuest) => {
-		if (tq.completed) {
-			try {
-				await undoCompleteQuest.mutateAsync({ id: tq.quest.id });
-				toaster.create({
-					title: "Quest undone",
-					description: `Marked "${tq.quest.title}" as pending.`,
-					type: "info",
-				});
-			} catch (err) {
-				toaster.create({
-					title: "Failed to undo quest",
-					description:
-						err instanceof ApiError
-							? err.message
-							: "Error updating quest",
-					type: "error",
-				});
-			}
-		} else {
-			try {
-				const award = await completeQuest.mutateAsync({
-					id: tq.quest.id,
-				});
-				toaster.create({
-					title: "Quest completed!",
-					description: `+${award.exp} EXP and +${award.px} PX earned!`,
-					type: "success",
-				});
-			} catch (err) {
-				toaster.create({
-					title: "Failed to complete quest",
-					description:
-						err instanceof ApiError
-							? err.message
-							: "Error completing quest",
-					type: "error",
-				});
-			}
-		}
 	};
-
-	const handleCreateQuest = async (e: React.FormEvent) => {
-		e.preventDefault();
-		if (!title.trim()) {
-			toaster.create({
-				title: "Title required",
-				description: "Please enter a title for your quest.",
-				type: "error",
-			});
-			return;
-		}
-
-		try {
-			await createQuest.mutateAsync({
-				title: title.trim(),
-				notes: notes.trim() || undefined,
-				category: (category || "work") as QuestCategory,
-				cadence,
-				effort,
-				minutes,
-				scored: isScored,
-				custom_exp: isCustomReward ? Number(customExp) || 0 : undefined,
-				custom_px: isCustomReward ? Number(customPx) || 0 : undefined,
-			});
-
-			toaster.create({
-				title: "Quest created",
-				description: `"${title.trim()}" added to your quest loops.`,
-				type: "success",
-			});
-
-			setTitle("");
-			setNotes("");
-			setIsCreateOpen(false);
-		} catch (err) {
-			toaster.create({
-				title: "Failed to add quest",
-				description:
-					err instanceof ApiError
-						? err.message
-						: "Error creating quest",
-				type: "error",
-			});
-		}
-	};
-
-	// Ledger Activity Chart Data
-	const ledgerChartData = useMemo(() => {
-		const entries = ledgerData?.entries ?? [];
-		if (entries.length === 0) {
-			return [
-				{ day: "Mon", exp: 40, px: 20 },
-				{ day: "Tue", exp: 85, px: 45 },
-				{ day: "Wed", exp: 60, px: 30 },
-				{ day: "Thu", exp: 120, px: 65 },
-				{ day: "Fri", exp: 95, px: 50 },
-				{ day: "Sat", exp: 140, px: 70 },
-				{ day: "Sun", exp: 110, px: 55 },
-			];
-		}
-
-		// Aggregate exp and px by occurred_on
-		const dayMap = new Map<
-			string,
-			{ day: string; exp: number; px: number }
-		>();
-		for (const entry of entries) {
-			const dayLabel = entry.occurred_on.slice(5); // "MM-DD"
-			const current = dayMap.get(dayLabel) ?? {
-				day: dayLabel,
-				exp: 0,
-				px: 0,
-			};
-			current.exp += entry.exp_delta;
-			current.px += entry.px_delta;
-			dayMap.set(dayLabel, current);
-		}
-
-		return Array.from(dayMap.values()).slice(-7);
-	}, [ledgerData]);
-
-	const activityChart = useChart({
-		data: ledgerChartData,
-		series: [
-			{ name: "exp", color: "mint.solid", label: "EXP" },
-			{ name: "px", color: "slate", label: "PX Points" },
-		],
-	});
-
-	// Attributes Data for Radar Chart & List Breakdown
-	const player = playerSummary?.player;
-	const attributes =
-		playerSummary?.attributes ?? ({} as Record<Attribute, number>);
-	const maxAttr = Math.max(50, ...Object.values(attributes));
-
-	// Health Vitals
-	const healthMetrics = (healthSummary?.metrics ?? {}) as Partial<
-		Record<
-			"steps" | "sleep_minutes" | "active_energy" | "hrv",
-			{ value: number; target: number; score: number; exp: number }
-		>
-	>;
-	const stepsMetric = healthMetrics["steps"];
-	const sleepMetric = healthMetrics["sleep_minutes"];
-	const provisionalExp = Object.values(healthMetrics).reduce(
-		(acc, m) => acc + (m?.exp ?? 0),
-		0,
-	);
 
 	return (
-		<Container maxW="7xl" py={{ base: 4, md: 6 }}>
-			<Stack gap={6}>
-				{/* Top Hero Command Banner */}
-				<Box {...glassCard} p={{ base: 5, md: 6 }}>
-					<Grid
-						templateColumns={{ base: "1fr", lg: "auto 1fr auto" }}
-						gap={{ base: 5, lg: 8 }}
-						alignItems="center"
+		<Box
+			position="absolute"
+			inset="0"
+			zIndex={0}
+			pointerEvents="none"
+			userSelect="none"
+			overflow="visible"
+		>
+			{/* Ambient central backdrop glow centered in creature stage */}
+			<Box
+				position="absolute"
+				left="50%"
+				top="50%"
+				transform={`translate(-50%, -50%) translate3d(${mouse.x * 8}px, ${mouse.y * 8}px, 0)`}
+				w="clamp(420px, 40vw, 650px)"
+				h="clamp(320px, 30vw, 500px)"
+				opacity={0.45}
+				style={{
+					background:
+						"radial-gradient(circle at center, rgba(221, 214, 254, 0.5) 0%, rgba(251, 207, 232, 0.3) 40%, rgba(165, 243, 252, 0.2) 60%, transparent 75%)",
+					willChange: "transform",
+				}}
+			/>
+
+			{/* Layer 0 (Behind Text): Starfall Background Creatures */}
+			<Box position="absolute" inset="0" zIndex={0}>
+				{backCreatures.map(renderCreature)}
+			</Box>
+
+			{/* Layer 1 (Middle): Massive Hero Typography Exactly Centered in Creature Box */}
+			<Flex
+				position="absolute"
+				left="50%"
+				top="50%"
+				transform={`translate(-50%, -50%) translate3d(${mouse.x * 22}px, ${mouse.y * 22}px, 0)`}
+				zIndex={1}
+				pointerEvents="none"
+				userSelect="none"
+				direction="column"
+				align="center"
+				textAlign="center"
+				w="full"
+				style={{
+					willChange: "transform",
+				}}
+			>
+				<Text
+					fontSize={{
+						base: "4.5rem",
+						md: "6.5rem",
+						lg: "8.5rem",
+						xl: "11rem",
+					}}
+					fontWeight="900"
+					letterSpacing="-0.07em"
+					lineHeight="0.85"
+					color="fg"
+					textTransform="uppercase"
+				>
+					PX.OS
+				</Text>
+			</Flex>
+
+			{/* Layer 2 (In Front of Text): Starfall Foreground Creatures */}
+			<Box position="absolute" inset="0" zIndex={2}>
+				{frontCreatures.map(renderCreature)}
+			</Box>
+		</Box>
+	);
+};
+
+interface OutlinePillProps {
+	children: React.ReactNode;
+}
+
+const OutlinePill: React.FC<OutlinePillProps> = ({ children }) => (
+	<Flex
+		as="span"
+		display="inline-flex"
+		align="center"
+		justify="center"
+		borderWidth="1.5px"
+		borderColor="fg"
+		rounded="pill"
+		px="0.55em"
+		py="0.12em"
+		lineHeight="1.05"
+	>
+		{children}
+	</Flex>
+);
+
+export const Index: React.FC = () => {
+	const { pathname } = useLocation();
+	const { data: duolingoStatus } = useDuolingoStatus();
+
+	return (
+		<Box
+			position="relative"
+			flex="1"
+			h="full"
+			overflow="hidden"
+			display="flex"
+			flexDirection="column"
+			justifyContent="space-between"
+		>
+			<Grid
+				flex="1"
+				minH="0"
+				h="full"
+				gap={{ base: 4, lg: 6, xl: 8 }}
+				templateColumns={{
+					base: "1fr",
+					lg: "76px minmax(0, 1fr) 370px",
+					xl: "84px minmax(0, 1fr) 420px",
+				}}
+				position="relative"
+				zIndex={1}
+			>
+				{/* Left Floating Rail */}
+				<GridItem
+					display={{ base: "none", lg: "flex" }}
+					alignItems="flex-end"
+					pb={3}
+				>
+					<VStack
+						gap={2.5}
+						bg={{
+							base: "rgba(255, 255, 255, 0.7)",
+							_dark: "rgba(20, 24, 36, 0.7)",
+						}}
+						backdropFilter="blur(24px) saturate(180%)"
+						borderWidth="1px"
+						borderColor={{
+							base: "rgba(255, 255, 255, 0.9)",
+							_dark: "rgba(255, 255, 255, 0.16)",
+						}}
+						rounded="pill"
+						py={5}
+						px={2.5}
+						shadow={{
+							base: "0 16px 40px -10px rgba(15, 23, 42, 0.06), inset 0 1px 2px rgba(255, 255, 255, 0.95)",
+							_dark: "0 16px 40px -10px rgba(0, 0, 0, 0.45), inset 0 1px 1px rgba(255, 255, 255, 0.12)",
+						}}
 					>
-						{/* Avatar & Player Identity */}
-						<HStack gap={4}>
-							<Box
-								p={1.5}
-								rounded="full"
-								bg="bg.panel"
-								borderWidth="1px"
-								borderColor="border.glass"
-								shadow="float"
-							>
-								<HeroAvatar
-									seed={player?.user_id || "hero"}
-									size={72}
-									animated
-								/>
-							</Box>
-							<Stack gap={1}>
-								<HStack gap={2}>
-									{playerLoading ? (
-										<Skeleton
-											h="6"
-											w="100px"
-											rounded="pill"
-										/>
-									) : (
-										<>
-											<Heading size="lg">
-												Level {player?.level ?? 1}
-											</Heading>
-											{player?.ascensions ? (
-												<Badge
-													rounded="pill"
-													size="sm"
-													variant="subtle"
-												>
-													Ascension{" "}
-													{player.ascensions}
-												</Badge>
-											) : null}
-										</>
-									)}
-								</HStack>
-								<Text fontSize="xs" color="fg.muted">
-									{playerLoading ? (
-										<Skeleton
-											h="3"
-											w="140px"
-											rounded="pill"
-											mt={1}
-										/>
-									) : player?.skill_points ? (
-										<Text
-											as="span"
-											color="fg"
-											fontWeight="bold"
-										>
-											{player.skill_points} unspent skill
-											points
-										</Text>
-									) : (
-										"All skill points allocated"
-									)}
-								</Text>
-							</Stack>
+						{railItems.map((item) => {
+							const active =
+								item.to === pathname ||
+								(item.to === "/dashboard" && pathname === "/");
+
+							if (item.to) {
+								return (
+									<Circle
+										key={item.label}
+										asChild
+										title={item.label}
+										aria-label={item.label}
+										aria-current={
+											active ? "page" : undefined
+										}
+										size="11"
+										bg={active ? "bg.solid" : "transparent"}
+										color={
+											active ? "fg.inverted" : "fg.muted"
+										}
+										shadow={active ? "glass" : "none"}
+										cursor="pointer"
+										transition="all 0.15s ease-out"
+										_hover={{
+											color: active
+												? "fg.inverted"
+												: "fg",
+											bg: active
+												? "bg.solid"
+												: "bg.panel",
+											transform: "scale(1.08)",
+										}}
+									>
+										<Link to={item.to}>
+											<Icon
+												as={item.icon}
+												boxSize={4.5}
+											/>
+										</Link>
+									</Circle>
+								);
+							}
+
+							return (
+								<Circle
+									key={item.label}
+									title={item.label}
+									aria-label={item.label}
+									size="11"
+									bg="transparent"
+									color="fg.muted"
+									cursor="pointer"
+									transition="all 0.15s ease-out"
+									_hover={{
+										color: "fg",
+										transform: "scale(1.08)",
+									}}
+								>
+									<Icon as={item.icon} boxSize={4.5} />
+								</Circle>
+							);
+						})}
+					</VStack>
+				</GridItem>
+
+				{/* Center Column: Open Creature Stage Box & Bottom Daily Summary */}
+				<GridItem
+					h="full"
+					minH="0"
+					display="flex"
+					flexDirection="column"
+					justifyContent="space-between"
+					position="relative"
+				>
+					{/* Dedicated Creature Stage Box (Fills entire available space above Daily Summary) */}
+					<Box
+						flex="1"
+						minH="0"
+						position="relative"
+						w="full"
+						overflow="visible"
+						display={{ base: "none", lg: "block" }}
+					>
+						<FloatingCreaturesScene />
+					</Box>
+
+					{/* Bottom: Daily Summary Dock */}
+					<Stack gap={3.5} pb={3} position="relative" zIndex={2}>
+						<HStack gap={2.5}>
+							<Text fontSize="lg" fontWeight="bold">
+								Daily
+							</Text>
+							<Text fontSize="lg">
+								<OutlinePill>summary</OutlinePill>
+							</Text>
 						</HStack>
 
-						{/* EXP Progression Bar */}
-						<Box w="full">
-							{playerLoading ? (
-								<Skeleton h="3" rounded="pill" />
-							) : (
-								<ExpBar
-									level={player?.level ?? 1}
-									expIntoLevel={player?.exp_into_level ?? 0}
-									expToNext={
-										playerSummary?.exp_to_next ?? 100
-									}
-								/>
-							)}
+						<Grid
+							gap={{ base: 3, xl: 4 }}
+							templateColumns={{
+								base: "1fr",
+								lg: "220px 1fr",
+								xl: "260px 1fr",
+							}}
+						>
+							{/* 1. Isolated Duolingo Card */}
+							<Box
+								{...holoGlassCard}
+								p={{ base: 5, xl: 6 }}
+								minH={{ base: "140px", xl: "155px" }}
+								position="relative"
+							>
+								<HStack gap={1.5} color="fg.muted">
+									<Icon as={LuLeaf} boxSize={4} color="mint.fg" />
+									<Text
+										fontSize="sm"
+										fontWeight="semibold"
+									>
+										{duolingoStatus?.username || "Duolingo"}
+									</Text>
+								</HStack>
+								<Circle
+									asChild
+									size="9"
+									bg="mint.solid"
+									color="mint.contrast"
+									position="absolute"
+									top={4}
+									right={4}
+									shadow="glass"
+									transition="all 0.15s ease-out"
+									_hover={{ transform: "scale(1.1)" }}
+								>
+									<Link
+										to={
+											duolingoStatus
+												? "/settings"
+												: "/settings/duolingo"
+										}
+										title={
+											duolingoStatus
+												? "Manage Duolingo"
+												: "Connect Duolingo"
+										}
+									>
+										<Icon as={LuArrowUpRight} boxSize={4.5} />
+									</Link>
+								</Circle>
+								<HStack align="baseline" gap={2} mt={4}>
+									<Text
+										fontSize={{
+											base: "2.6rem",
+											xl: "3.2rem",
+										}}
+										fontWeight="bold"
+										letterSpacing="-0.04em"
+										lineHeight="1"
+									>
+										{duolingoStatus
+											? `${duolingoStatus.streak}d`
+											: "0d"}
+									</Text>
+									<Text
+										fontSize="sm"
+										color="fg.muted"
+										fontWeight="medium"
+									>
+										{duolingoStatus ? "streak" : "streak"}
+									</Text>
+								</HStack>
+								<Text
+									fontSize="xs"
+									color="fg.muted"
+									fontWeight="medium"
+									mt={1}
+								>
+									{duolingoStatus
+										? `${duolingoStatus.rank > 0 ? `#${duolingoStatus.rank} rank · ` : ""}${duolingoStatus.xp} XP`
+										: "Link account"}
+								</Text>
+							</Box>
+
+							{/* 2. Large Merged Card: To do, On going, Complete */}
+							<Box
+								{...holoGlassCard}
+								p={{ base: 5, xl: 6 }}
+								minH={{ base: "140px", xl: "155px" }}
+								position="relative"
+							>
+								<Grid
+									templateColumns={{
+										base: "1fr",
+										sm: "repeat(3, 1fr)",
+									}}
+									gap={{ base: 4, xl: 6 }}
+									h="full"
+									alignItems="center"
+								>
+									{/* To do */}
+									<Box
+										position="relative"
+										pr={{ sm: 4 }}
+										borderRightWidth={{ sm: "1px" }}
+										borderColor="border.glass"
+									>
+										<Text
+											fontSize="sm"
+											fontWeight="semibold"
+											color="fg.muted"
+										>
+											To do
+										</Text>
+										<HStack align="baseline" gap={2} mt={4}>
+											<Text
+												fontSize={{
+													base: "2.4rem",
+													xl: "2.8rem",
+												}}
+												fontWeight="bold"
+												letterSpacing="-0.04em"
+												lineHeight="1"
+											>
+												158
+											</Text>
+											<Text
+												fontSize="sm"
+												color="fg.muted"
+												fontWeight="medium"
+											>
+												tasks
+											</Text>
+										</HStack>
+									</Box>
+
+									{/* On going */}
+									<Box
+										position="relative"
+										pr={{ sm: 4 }}
+										borderRightWidth={{ sm: "1px" }}
+										borderColor="border.glass"
+									>
+										<Text
+											fontSize="sm"
+											fontWeight="semibold"
+											color="fg.muted"
+										>
+											On going
+										</Text>
+										<Circle
+											size="8"
+											bg="bg.solid"
+											color="fg.inverted"
+											position="absolute"
+											top={0}
+											right={2}
+											shadow="glass"
+											transition="all 0.15s ease-out"
+											_hover={{ transform: "scale(1.1)" }}
+										>
+											<Icon as={LuArrowUpRight} boxSize={4} />
+										</Circle>
+										<HStack align="baseline" gap={2} mt={4}>
+											<Text
+												fontSize={{
+													base: "2.4rem",
+													xl: "2.8rem",
+												}}
+												fontWeight="bold"
+												letterSpacing="-0.04em"
+												lineHeight="1"
+											>
+												28
+											</Text>
+											<Text
+												fontSize="sm"
+												color="fg.muted"
+												fontWeight="medium"
+											>
+												tasks
+											</Text>
+										</HStack>
+									</Box>
+
+									{/* Complete */}
+									<Box position="relative">
+										<Text
+											fontSize="sm"
+											fontWeight="semibold"
+											color="fg.muted"
+										>
+											Complete
+										</Text>
+										<HStack
+											bg={{
+												base: "rgba(255, 255, 255, 0.85)",
+												_dark: "rgba(25, 30, 45, 0.85)",
+											}}
+											backdropFilter="blur(24px) saturate(180%)"
+											borderWidth="1px"
+											borderColor={{
+												base: "rgba(255, 255, 255, 0.95)",
+												_dark: "rgba(255, 255, 255, 0.18)",
+											}}
+											rounded="pill"
+											px={4}
+											py={2}
+											shadow={{
+												base: "0 10px 24px -4px rgba(15, 23, 42, 0.05), inset 0 1px 2px rgba(255, 255, 255, 0.95)",
+												_dark: "0 10px 24px -4px rgba(0, 0, 0, 0.4), inset 0 1px 1px rgba(255, 255, 255, 0.15)",
+											}}
+											justify="space-between"
+											mt={3}
+											w="fit-content"
+											gap={3}
+											cursor="pointer"
+											transition="all 0.15s ease-out"
+											_hover={{
+												transform: "translateY(-1px)",
+												shadow: "float",
+											}}
+										>
+											<HStack align="baseline" gap={2}>
+												<Text
+													fontSize="2rem"
+													fontWeight="bold"
+													letterSpacing="-0.04em"
+													lineHeight="1"
+												>
+													02
+												</Text>
+												<Text
+													fontSize="xs"
+													color="fg.muted"
+													fontWeight="medium"
+												>
+													tasks
+												</Text>
+											</HStack>
+											<Circle size="6" bg="bg.muted" color="fg">
+												<Icon
+													as={LuArrowUpRight}
+													boxSize={3}
+												/>
+											</Circle>
+										</HStack>
+									</Box>
+								</Grid>
+							</Box>
+						</Grid>
+					</Stack>
+				</GridItem>
+
+				{/* Right Side Widgets: Habit Tracker & Performance */}
+				<GridItem h="full" minH="0">
+					<Flex
+						direction="column"
+						h="full"
+						justify="space-between"
+						gap={5}
+						pb={3}
+					>
+						{/* Habit Tracker Card */}
+						<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
+							<Heading
+								fontSize="xl"
+								fontWeight="normal"
+								letterSpacing="-0.03em"
+							>
+								Habit <OutlinePill>tracker</OutlinePill>
+							</Heading>
+							<Text fontSize="sm" color="fg.muted" mt={1}>
+								Today, Dec 28, 2030
+							</Text>
+
+							<Flex wrap="wrap" gap={2.5} mt={4}>
+								{trackerRows.map((row) => (
+									<HStack
+										key={row.label}
+										flex="1 1 auto"
+										bg={
+											row.tone === "solid"
+												? "bg.solid"
+												: {
+														base: "rgba(255, 255, 255, 0.8)",
+														_dark: "rgba(25, 30, 45, 0.8)",
+													}
+										}
+										color={
+											row.tone === "solid"
+												? "fg.inverted"
+												: "fg"
+										}
+										borderWidth={
+											row.tone === "solid" ? "0" : "1px"
+										}
+										borderColor={{
+											base: "rgba(255, 255, 255, 0.9)",
+											_dark: "rgba(255, 255, 255, 0.12)",
+										}}
+										rounded="pill"
+										px={4}
+										py={2}
+										gap={2.5}
+										cursor="pointer"
+										transition="all 0.15s ease-out"
+										shadow={
+											row.tone === "solid"
+												? "none"
+												: "0 2px 8px -2px rgba(15, 23, 42, 0.04)"
+										}
+										_hover={{
+											transform: "translateY(-1px)",
+											shadow: "glass",
+										}}
+									>
+										<Circle
+											size="2.5"
+											bg={
+												row.tone === "solid"
+													? "mint.solid"
+													: "fg.muted"
+											}
+										/>
+										<Text
+											fontSize="sm"
+											fontWeight="medium"
+											whiteSpace="nowrap"
+										>
+											{row.label}
+										</Text>
+									</HStack>
+								))}
+							</Flex>
 						</Box>
 
-						{/* Quick Stat Badges */}
-						<HStack
-							gap={3}
-							justify={{ base: "flex-start", lg: "flex-end" }}
-							wrap="wrap"
-						>
-							<Box
-								bg="bg.panel"
-								px={3.5}
-								py={2}
-								rounded="pill"
-								borderWidth="1px"
-								borderColor="border.glass"
+						{/* Performance Stats Card */}
+						<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
+							<Text
+								fontSize="sm"
+								fontWeight="bold"
+								textTransform="uppercase"
+								letterSpacing="0.08em"
 							>
-								{playerLoading ? (
-									<Skeleton h="4" w="60px" rounded="pill" />
-								) : (
-									<HStack gap={2}>
-										<StreakFlame
-											days={player?.streak ?? 0}
-											size={18}
-										/>
-										<Text fontSize="xs" color="fg.muted">
-											Streak
-										</Text>
-									</HStack>
-								)}
-							</Box>
-
-							<Box
-								bg="bg.panel"
-								px={3.5}
-								py={2}
-								rounded="pill"
-								borderWidth="1px"
-								borderColor="border.glass"
-							>
-								{playerLoading ? (
-									<Skeleton h="4" w="70px" rounded="pill" />
-								) : (
-									<HStack gap={2}>
-										<Icon
-											as={LuCoins}
-											boxSize={4}
-											color="fg.muted"
-										/>
-										<Text fontSize="sm" fontWeight="bold">
-											{(
-												pxBalance?.amount ??
-												player?.px ??
-												0
-											).toLocaleString()}
-										</Text>
-										<Text fontSize="xs" color="fg.muted">
-											PX
-										</Text>
-									</HStack>
-								)}
-							</Box>
-						</HStack>
-					</Grid>
-				</Box>
-
-				{/* Main Dashboard Layout Grid */}
-				<Grid
-					templateColumns={{ base: "1fr", lg: "1fr 390px" }}
-					gap={6}
-					alignItems="start"
-				>
-					{/* Left / Center Column: Action Focus */}
-					<Stack gap={6}>
-						{/* 1. Today's Quest Command Center */}
-						<Box {...glassCard} p={{ base: 5, md: 6 }}>
-							<Stack gap={4}>
-								{/* Section Header */}
-								<Flex
-									justify="space-between"
-									align="center"
-									wrap="wrap"
-									gap={3}
-								>
-									<Stack gap={0.5}>
-										<Heading size="md">
-											Today&apos;s Quests & Focus Loops
-										</Heading>
-										<Text fontSize="xs" color="fg.muted">
-											{completedQuests} of {totalQuests}{" "}
-											daily quests completed (
-											{progressPercent}%)
-										</Text>
-									</Stack>
-
-									<HStack gap={3} wrap="wrap" align="center">
-										<Box w={{ base: "full", sm: "180px" }}>
-											<SearchableSelect
-												items={FILTER_CATEGORIES}
-												value={selectedCategory}
-												onValueChange={
-													setSelectedCategory
-												}
-												placeholder="Filter category..."
-												searchPlaceholder="Search category..."
-											/>
-										</Box>
-
-										{/* Bottom Dialog Trigger */}
-										<PillButton
-											variant="dark"
-											size="sm"
-											icon={LuPlus}
-											onClick={() =>
-												setIsCreateOpen(true)
-											}
-										>
-											New Quest
-										</PillButton>
-									</HStack>
-								</Flex>
-
-								{/* Completion Progress Bar */}
+								Performance
+							</Text>
+							<Stack gap={2.5} mt={4}>
 								<Box
-									h="2"
+									h="3.5"
 									rounded="pill"
 									bg="bg.muted"
 									overflow="hidden"
 								>
 									<Box
 										h="full"
-										w={`${progressPercent}%`}
-										bg="mint.solid"
+										w="72%"
 										rounded="pill"
-										transition="width 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
+										bg="bg.solid"
 									/>
 								</Box>
-
-								{/* Quests List */}
-								{questsLoading ? (
-									<Stack gap={2} pt={2}>
-										<Skeleton h="14" rounded="card" />
-										<Skeleton h="14" rounded="card" />
-										<Skeleton h="14" rounded="card" />
-									</Stack>
-								) : filteredQuests.length === 0 ? (
-									<EmptyState
-										title="No quests found"
-										description="Create a new daily quest or habit loop using the button above."
-										icon={
-											<Icon as={LuTarget} boxSize={6} />
-										}
-									/>
-								) : (
-									<Stack gap={2.5} pt={1}>
-										{filteredQuests.map((tq) => {
-											const isToggling =
-												(completeQuest.isPending &&
-													completeQuest.variables
-														?.id === tq.quest.id) ||
-												(undoCompleteQuest.isPending &&
-													undoCompleteQuest.variables
-														?.id === tq.quest.id);
-
-											return (
-												<Flex
-													key={tq.quest.id}
-													align="center"
-													justify="space-between"
-													p={3.5}
-													rounded="card"
-													bg={
-														tq.completed
-															? "bg.muted"
-															: "bg.panel"
-													}
-													borderWidth="1px"
-													borderColor="border.glass"
-													cursor="pointer"
-													opacity={
-														isToggling ? 0.7 : 1
-													}
-													transition="all 0.15s ease-out"
-													onClick={() =>
-														!isToggling &&
-														handleToggleQuest(tq)
-													}
-													_hover={{
-														transform:
-															"translateY(-1px)",
-														shadow: "glass",
-													}}
-												>
-													<HStack gap={3}>
-														<Circle
-															size="6"
-															bg={
-																tq.completed
-																	? "mint.solid"
-																	: "transparent"
-															}
-															borderWidth={
-																tq.completed
-																	? 0
-																	: "2px"
-															}
-															borderColor={
-																tq.completed
-																	? "transparent"
-																	: "border"
-															}
-															color={
-																tq.completed
-																	? "mint.contrast"
-																	: "transparent"
-															}
-														>
-															{isToggling ? (
-																<Spinner
-																	size="xs"
-																	color="fg"
-																/>
-															) : tq.completed ? (
-																<Icon
-																	as={
-																		LuCircleCheck
-																	}
-																	boxSize={
-																		3.5
-																	}
-																/>
-															) : null}
-														</Circle>
-														<Stack gap={0.5}>
-															<Text
-																fontSize="sm"
-																fontWeight={
-																	tq.completed
-																		? "normal"
-																		: "semibold"
-																}
-																textDecoration={
-																	tq.completed
-																		? "line-through"
-																		: "none"
-																}
-																color={
-																	tq.completed
-																		? "fg.muted"
-																		: "fg"
-																}
-															>
-																{tq.quest.title}
-															</Text>
-															{tq.quest.notes ? (
-																<Text
-																	fontSize="xs"
-																	color="fg.muted"
-																	truncate
-																	maxW="360px"
-																>
-																	{
-																		tq.quest
-																			.notes
-																	}
-																</Text>
-															) : null}
-														</Stack>
-													</HStack>
-
-													<HStack gap={2}>
-														{tq.quest.streak > 0 ? (
-															<HStack
-																gap={1}
-																bg="bg.muted"
-																px={2}
-																py={0.5}
-																rounded="pill"
-																fontSize="10px"
-															>
-																<Icon
-																	as={LuFlame}
-																	color="mint.fg"
-																	boxSize={3}
-																/>
-																<Text fontWeight="bold">
-																	{
-																		tq.quest
-																			.streak
-																	}
-																	d
-																</Text>
-															</HStack>
-														) : null}
-														<Badge
-															size="xs"
-															rounded="pill"
-															variant="subtle"
-														>
-															+
-															{tq.quest.exp_value}{" "}
-															EXP
-														</Badge>
-														<Badge
-															size="xs"
-															rounded="pill"
-															variant="subtle"
-														>
-															{tq.quest.category}
-														</Badge>
-													</HStack>
-												</Flex>
-											);
-										})}
-									</Stack>
-								)}
-							</Stack>
-						</Box>
-
-						{/* 2. EXP & Activity Trend Chart */}
-						<Box {...glassCard} p={{ base: 5, md: 6 }}>
-							<HStack justify="space-between" mb={4}>
-								<Stack gap={0.5}>
-									<Heading size="md">Reward Momentum</Heading>
-									<Text fontSize="xs" color="fg.muted">
-										Recent daily EXP and PX points earned
-									</Text>
-								</Stack>
-								<Icon
-									as={LuSparkles}
-									boxSize={4}
-									color="mint.fg"
-								/>
-							</HStack>
-
-							<ChartRoot chart={activityChart} h="180px" w="full">
-								<ResponsiveContainer width="100%" height="100%">
-									<AreaChart
-										data={activityChart.data}
-										margin={{
-											top: 10,
-											right: 10,
-											left: -20,
-											bottom: 0,
-										}}
-									>
-										<defs>
-											<ChartGradient
-												id="exp-grad"
-												stops={[
-													{
-														offset: "0%",
-														color: "mint.solid",
-														opacity: 0.4,
-													},
-													{
-														offset: "100%",
-														color: "mint.solid",
-														opacity: 0,
-													},
-												]}
-											/>
-											<ChartGradient
-												id="px-grad"
-												stops={[
-													{
-														offset: "0%",
-														color: "purple.solid",
-														opacity: 0.35,
-													},
-													{
-														offset: "100%",
-														color: "purple.solid",
-														opacity: 0,
-													},
-												]}
-											/>
-										</defs>
-										<CartesianGrid
-											strokeDasharray="3 3"
-											vertical={false}
-											opacity={0.2}
-										/>
-										<XAxis
-											dataKey="day"
-											tickLine={false}
-											axisLine={false}
-											tick={{ fontSize: 11 }}
-										/>
-										<YAxis
-											tickLine={false}
-											axisLine={false}
-											tick={{ fontSize: 11 }}
-										/>
-										<Tooltip content={<ChartTooltip />} />
-										<Area
-											type="monotone"
-											dataKey={activityChart.key("exp")}
-											stroke={activityChart.color(
-												"mint.solid",
-											)}
-											fill="url(#exp-grad)"
-											strokeWidth={2}
-										/>
-										<Area
-											type="monotone"
-											dataKey={activityChart.key("px")}
-											stroke={activityChart.color(
-												"purple.solid",
-											)}
-											fill="url(#px-grad)"
-											strokeWidth={2}
-										/>
-									</AreaChart>
-								</ResponsiveContainer>
-							</ChartRoot>
-						</Box>
-					</Stack>
-
-					{/* Right Column: Hero Intelligence & Biomarkers */}
-					<Stack gap={6}>
-						{/* 1. RPG Attribute Radar & Matrix */}
-						<Box {...glassCard} p={5}>
-							<HStack justify="space-between" mb={2}>
-								<Stack gap={0.5}>
-									<Heading size="md">Hero Attributes</Heading>
-									<Text fontSize="xs" color="fg.muted">
-										RPG profile built from daily discipline
-									</Text>
-								</Stack>
-								<Icon
-									as={LuShield}
-									boxSize={4}
-									color="cyan.fg"
-								/>
-							</HStack>
-
-							<Flex justify="center" align="center" py={2}>
-								<AttributeRadar
-									values={attributes}
-									max={maxAttr}
-									size={260}
-								/>
-							</Flex>
-
-							{/* Attribute Breakdown Matrix List */}
-							<VStack gap={1.5} align="stretch" mt={3}>
-								{ATTRIBUTE_CONFIG.map((attr) => {
-									const val = attributes[attr.key] ?? 0;
-									const percent = Math.min(
-										100,
-										Math.round((val / maxAttr) * 100),
-									);
-
-									return (
-										<Box
-											key={attr.key}
-											bg="bg.panel"
-											px={3}
-											py={2}
-											rounded="pill"
-											borderWidth="1px"
-											borderColor="border.glass"
-											transition="all 0.15s ease-out"
-											_hover={{
-												transform: "translateX(2px)",
-												bg: "bg.muted",
-											}}
-										>
-											<HStack
-												justify="space-between"
-												fontSize="xs"
-											>
-												<HStack gap={2}>
-													<Icon
-														as={attr.icon}
-														boxSize={3.5}
-														color={attr.color}
-													/>
-													<Text fontWeight="semibold">
-														{attr.label}
-													</Text>
-												</HStack>
-												<HStack gap={2.5}>
-													<Box
-														w="72px"
-														h="1.5"
-														bg="bg.muted"
-														rounded="pill"
-														overflow="hidden"
-													>
-														<Box
-															h="full"
-															w={`${Math.max(8, percent)}%`}
-															bg={attr.color}
-															rounded="pill"
-														/>
-													</Box>
-													<Text
-														fontWeight="bold"
-														fontFamily="mono"
-														w="20px"
-														textAlign="right"
-													>
-														{val}
-													</Text>
-												</HStack>
-											</HStack>
-										</Box>
-									);
-								})}
-							</VStack>
-						</Box>
-
-						{/* 2. Daily Bio-Protocol (Health) */}
-						<Box {...glassCard} p={5}>
-							<Flex justify="space-between" align="center" mb={3}>
-								<HStack gap={2}>
-									<Icon
-										as={LuActivity}
-										boxSize={4}
-										color="mint.fg"
-									/>
-									<Heading size="md">
-										Daily Health Vitals
-									</Heading>
-								</HStack>
-								<Button size="xs" variant="ghost" asChild>
-									<Link to="/health">
-										<HStack gap={1}>
-											<Text fontSize="xs">
-												View details
-											</Text>
-											<Icon
-												as={LuArrowRight}
-												boxSize={3}
-											/>
-										</HStack>
-									</Link>
-								</Button>
-							</Flex>
-
-							<SimpleGrid columns={2} gap={3} mb={3}>
 								<Box
-									bg="bg.panel"
-									p={3}
-									rounded="card"
-									borderWidth="1px"
-									borderColor="border.glass"
-								>
-									<HStack
-										justify="space-between"
-										color="fg.muted"
-									>
-										<Text
-											fontSize="10px"
-											fontWeight="semibold"
-											textTransform="uppercase"
-										>
-											Steps
-										</Text>
-										<Icon
-											as={LuFootprints}
-											boxSize={3.5}
-											color="blue.fg"
-										/>
-									</HStack>
-									<Text
-										fontSize="lg"
-										fontWeight="bold"
-										mt={1}
-									>
-										{stepsMetric?.value
-											? Math.round(
-													stepsMetric.value,
-												).toLocaleString()
-											: "8,420"}
-									</Text>
-									<Text fontSize="10px" color="fg.muted">
-										Target: 10,000
-									</Text>
-								</Box>
-
-								<Box
-									bg="bg.panel"
-									p={3}
-									rounded="card"
-									borderWidth="1px"
-									borderColor="border.glass"
-								>
-									<HStack
-										justify="space-between"
-										color="fg.muted"
-									>
-										<Text
-											fontSize="10px"
-											fontWeight="semibold"
-											textTransform="uppercase"
-										>
-											Sleep
-										</Text>
-										<Icon
-											as={LuBed}
-											boxSize={3.5}
-											color="mint.fg"
-										/>
-									</HStack>
-									<Text
-										fontSize="lg"
-										fontWeight="bold"
-										mt={1}
-									>
-										{sleepMetric?.value
-											? `${Math.floor(sleepMetric.value / 60)}h ${Math.round(sleepMetric.value % 60)}m`
-											: "7h 45m"}
-									</Text>
-									<Text fontSize="10px" color="fg.muted">
-										Optimal deep phase
-									</Text>
-								</Box>
-							</SimpleGrid>
-
-							{/* Fact-based health reward status */}
-							<Box
-								bg="bg.muted"
-								p={3}
-								rounded="card"
-								borderWidth="1px"
-								borderColor="border.glass"
-							>
-								<HStack justify="space-between">
-									<Stack gap={0}>
-										<Text
-											fontSize="xs"
-											fontWeight="semibold"
-										>
-											Daily Health Rewards
-										</Text>
-										<Text fontSize="10px" color="fg.muted">
-											Settles automatically at end of day
-										</Text>
-									</Stack>
-									<Badge
-										variant="subtle"
-										size="sm"
-										rounded="pill"
-									>
-										~{provisionalExp || 120} EXP (Pending)
-									</Badge>
-								</HStack>
-							</Box>
-						</Box>
-
-						{/* 3. Finance & Economy Snapshot */}
-						<Box {...glassCard} p={5}>
-							<Flex justify="space-between" align="center" mb={3}>
-								<HStack gap={2}>
-									<Icon
-										as={LuWallet}
-										boxSize={4}
-										color="fg.muted"
-									/>
-									<Heading size="md">Monthly Finance</Heading>
-								</HStack>
-								<Button size="xs" variant="ghost" asChild>
-									<Link to="/game/finance">
-										<HStack gap={1}>
-											<Text fontSize="xs">Manage</Text>
-											<Icon
-												as={LuArrowRight}
-												boxSize={3}
-											/>
-										</HStack>
-									</Link>
-								</Button>
-							</Flex>
-
-							{financeLoading ? (
-								<Skeleton h="16" rounded="card" />
-							) : financeSummary ? (
-								<Stack gap={2.5}>
-									<HStack justify="space-between">
-										<Text fontSize="xs" color="fg.muted">
-											Savings Rate
-										</Text>
-										<Text fontSize="sm" fontWeight="bold">
-											{Math.round(
-												financeSummary.savings_rate *
-													100,
-											)}
-											%
-										</Text>
-									</HStack>
-									<Box
-										h="2"
-										rounded="pill"
-										bg="bg.muted"
-										overflow="hidden"
-									>
-										<Box
-											h="full"
-											w={`${Math.max(0, Math.min(100, Math.round(financeSummary.savings_rate * 100)))}%`}
-											bg="mint.solid"
-											rounded="pill"
-										/>
-									</Box>
-									<HStack
-										justify="space-between"
-										fontSize="xs"
-										color="fg.muted"
-										pt={1}
-									>
-										<Text>
-											Income: $
-											{financeSummary.income.toLocaleString()}
-										</Text>
-										<Text>
-											Spend: $
-											{financeSummary.expense.toLocaleString()}
-										</Text>
-									</HStack>
-									<HStack
-										justify="space-between"
-										bg="bg.muted"
-										p={2.5}
-										rounded="pill"
-										mt={1}
-									>
-										<Text
-											fontSize="xs"
-											fontWeight="semibold"
-										>
-											Projected Conversion
-										</Text>
-										<Badge
-											size="sm"
-											rounded="pill"
-											variant="subtle"
-										>
-											+{financeSummary.projected_exp} EXP
-										</Badge>
-									</HStack>
-								</Stack>
-							) : null}
-						</Box>
-
-						{/* 4. Duolingo Practice Status */}
-						<Box {...glassCard} p={5}>
-							<Flex justify="space-between" align="center">
-								<HStack gap={3}>
-									<Box
-										p={2.5}
-										rounded="pill"
-										bg="bg.muted"
-										color="fg.muted"
-									>
-										<Icon as={LuLeaf} boxSize={4} />
-									</Box>
-									<Stack gap={0}>
-										<Text
-											fontSize="sm"
-											fontWeight="semibold"
-										>
-											{duolingoStatus?.username ||
-												"Duolingo"}
-										</Text>
-										<Text fontSize="xs" color="fg.muted">
-											{duolingoStatus
-												? `${duolingoStatus.streak} day streak · ${duolingoStatus.xp} XP`
-												: "Connect language practice"}
-										</Text>
-									</Stack>
-								</HStack>
-								<Circle
-									asChild
-									size="8"
-									bg="bg.panel"
-									borderWidth="1px"
-									borderColor="border.glass"
-									_hover={{ transform: "scale(1.1)" }}
-								>
-									<Link to="/settings/duolingo">
-										<Icon
-											as={LuArrowUpRight}
-											boxSize={4}
-											color="fg.muted"
-										/>
-									</Link>
-								</Circle>
-							</Flex>
-						</Box>
-					</Stack>
-				</Grid>
-			</Stack>
-
-			{/* Chakra Bottom Dialog for Quest Creation */}
-			<DialogRoot
-				open={isCreateOpen}
-				onOpenChange={(details) => setIsCreateOpen(details.open)}
-				placement="bottom"
-			>
-				<DialogContent
-					maxW="2xl"
-					roundedTop="2xl"
-					roundedBottom="none"
-					bg="bg.panel"
-					borderWidth="1px"
-					borderColor="border.glass"
-					shadow="float"
-					p={{ base: 4, md: 6 }}
-				>
-					<DialogHeader pb={2}>
-						<Stack gap={0.5}>
-							<DialogTitle fontSize="lg">
-								Create New Quest
-							</DialogTitle>
-							<DialogDescription fontSize="xs" color="fg.muted">
-								Configure cadence, category, and reward point
-								calculation.
-							</DialogDescription>
-						</Stack>
-					</DialogHeader>
-
-					<DialogBody py={3}>
-						<form
-							id="dashboard-create-quest-form"
-							noValidate
-							onSubmit={handleCreateQuest}
-						>
-							<Stack gap={3.5}>
-								<Field label="Quest Title" required>
-									<Input
-										placeholder="e.g. 45m TypeScript deep work"
-										value={title}
-										onChange={(e) =>
-											setTitle(e.target.value)
-										}
-										rounded="pill"
-										bg="bg.muted"
-										borderColor="border"
-										fontSize="sm"
-									/>
-								</Field>
-
-								<Grid
-									templateColumns={{
-										base: "1fr",
-										sm: "1fr 1fr",
-									}}
-									gap={3}
-								>
-									<Field label="Category" required>
-										<SearchableSelect
-											items={QUEST_CATEGORIES}
-											value={category}
-											onValueChange={setCategory}
-											placeholder="Select category..."
-											searchPlaceholder="Search category..."
-										/>
-									</Field>
-
-									<Field label="Cadence (Frequency)" required>
-										<SearchableSelect
-											items={CADENCE_OPTIONS}
-											value={cadence}
-											onValueChange={(val) =>
-												setCadence(val as QuestCadence)
-											}
-											placeholder="Frequency"
-										/>
-									</Field>
-								</Grid>
-
-								<Grid
-									templateColumns={{
-										base: "1fr",
-										sm: "1fr 1fr",
-									}}
-									gap={3}
-								>
-									<Field label="Effort Level" required>
-										<SearchableSelect
-											items={EFFORT_OPTIONS}
-											value={effort}
-											onValueChange={(val) =>
-												setEffort(val as QuestEffort)
-											}
-											placeholder="Effort"
-										/>
-									</Field>
-
-									<Stack gap={2}>
-										<Field
-											label="Task Duration (Minutes)"
-											required
-										>
-											<Input
-												type="number"
-												min={1}
-												max={480}
-												value={minutes}
-												onChange={(e) =>
-													setMinutes(
-														Math.max(
-															1,
-															Number(
-																e.target.value,
-															) || 1,
-														),
-													)
-												}
-												rounded="pill"
-												bg="bg.muted"
-												borderColor="border"
-												fontSize="sm"
-											/>
-										</Field>
-										{/* Quick Duration Preset Chips */}
-										<HStack gap={1.5} wrap="wrap">
-											{[15, 30, 45, 60, 90, 120].map(
-												(m) => (
-													<Button
-														key={m}
-														type="button"
-														size="xs"
-														rounded="pill"
-														variant={
-															minutes === m
-																? "solid"
-																: "outline"
-														}
-														colorPalette={
-															minutes === m
-																? "mint"
-																: undefined
-														}
-														onClick={() =>
-															setMinutes(m)
-														}
-													>
-														{m}m
-													</Button>
-												),
-											)}
-										</HStack>
-									</Stack>
-								</Grid>
-
-								{/* Reward System & Duration Scaling */}
-								<Box
+									h="3.5"
+									rounded="pill"
 									bg="bg.muted"
-									p={3}
-									rounded="card"
-									borderWidth="1px"
-									borderColor="border.glass"
+									overflow="hidden"
 								>
-									<HStack justify="space-between" mb={2}>
-										<HStack gap={2}>
-											<Icon
-												as={LuSparkles}
-												boxSize={4}
-												color="mint.fg"
-											/>
-											<Text
-												fontSize="xs"
-												fontWeight="semibold"
-											>
-												EXP Progression Reward
-											</Text>
-										</HStack>
-										<Button
-											type="button"
-											size="xs"
-											rounded="pill"
-											variant={
-												isScored ? "solid" : "outline"
-											}
-											colorPalette={
-												isScored ? "mint" : undefined
-											}
-											onClick={() =>
-												setIsScored(!isScored)
-											}
-										>
-											{isScored ? "EXP Active" : "No EXP"}
-										</Button>
-									</HStack>
-
-									{isScored && (
-										<Stack gap={2} pt={1}>
-											<HStack justify="space-between">
-												<Text
-													fontSize="xs"
-													color="fg.muted"
-												>
-													Reward Mode
-												</Text>
-												<Button
-													type="button"
-													size="xs"
-													variant="ghost"
-													onClick={() =>
-														setIsCustomReward(
-															!isCustomReward,
-														)
-													}
-												>
-													{isCustomReward
-														? "Manual EXP"
-														: "Auto Duration-Scaled Rate"}
-												</Button>
-											</HStack>
-
-											{isCustomReward ? (
-												<Box>
-													<Field label="Custom EXP">
-														<Input
-															type="number"
-															min={0}
-															value={customExp}
-															onChange={(e) =>
-																setCustomExp(
-																	e.target
-																		.value,
-																)
-															}
-															rounded="pill"
-															fontSize="xs"
-														/>
-													</Field>
-												</Box>
-											) : (
-												<Stack
-													gap={1.5}
-													bg="bg.panel"
-													p={2.5}
-													rounded="card"
-													borderWidth="1px"
-													borderColor="border.glass"
-												>
-													<HStack
-														justify="space-between"
-														fontSize="xs"
-													>
-														<Text color="fg.muted">
-															Duration-Scaled
-															Yield ({minutes}m @{" "}
-															{effort}):
-														</Text>
-														{isPreviewFetching ? (
-															<Skeleton
-																h="5"
-																w="20"
-																rounded="pill"
-															/>
-														) : (
-															<Badge
-																size="sm"
-																rounded="pill"
-																variant="subtle"
-															>
-																+
-																{pricePreview?.exp ??
-																	0}{" "}
-																EXP (+
-																{pricePreview?.px ??
-																	0}{" "}
-																PX)
-															</Badge>
-														)}
-													</HStack>
-													{minutes >= 60 && (
-														<HStack
-															gap={1.5}
-															pt={0.5}
-														>
-															<Icon
-																as={LuZap}
-																boxSize={3}
-																color="mint.fg"
-															/>
-															<Text
-																fontSize="11px"
-																color="mint.fg"
-																fontWeight="medium"
-															>
-																Deep Focus
-																active: +20%
-																bonus multiplier
-																on completion
-															</Text>
-														</HStack>
-													)}
-												</Stack>
-											)}
-										</Stack>
-									)}
-								</Box>
-
-								<Field label="Notes / Checklist (Optional)">
-									<Input
-										placeholder="Context, subtasks or URL link"
-										value={notes}
-										onChange={(e) =>
-											setNotes(e.target.value)
-										}
+									<Box
+										h="full"
+										w="45%"
 										rounded="pill"
-										bg="bg.muted"
-										borderColor="border"
-										fontSize="sm"
+										bg="bg.solid"
 									/>
-								</Field>
+								</Box>
 							</Stack>
-						</form>
-					</DialogBody>
 
-					<DialogFooter pt={3}>
-						<Button
-							variant="ghost"
-							size="sm"
-							onClick={() => setIsCreateOpen(false)}
-						>
-							Cancel
-						</Button>
-						<PillButton
-							type="submit"
-							form="dashboard-create-quest-form"
-							variant="dark"
-							icon={LuPlus}
-							loading={createQuest.isPending}
-						>
-							Create Quest
-						</PillButton>
-					</DialogFooter>
-
-					<DialogCloseTrigger />
-				</DialogContent>
-			</DialogRoot>
-		</Container>
+							<HStack align="baseline" gap={2} mt={5}>
+								<Text
+									fontSize={{ base: "3.2rem", xl: "3.8rem" }}
+									fontWeight="bold"
+									letterSpacing="-0.04em"
+									lineHeight="1"
+								>
+									35
+								</Text>
+								<Text
+									fontSize={{ base: "3.2rem", xl: "3.8rem" }}
+									color="fg.muted"
+									fontWeight="light"
+									lineHeight="1"
+								>
+									/
+								</Text>
+								<Text
+									fontSize={{ base: "3.2rem", xl: "3.8rem" }}
+									fontWeight="bold"
+									letterSpacing="-0.04em"
+									lineHeight="1"
+								>
+									82
+								</Text>
+								<Text
+									fontSize="sm"
+									color="fg.muted"
+									pl={3}
+									fontWeight="medium"
+								>
+									Total target
+								</Text>
+							</HStack>
+						</Box>
+					</Flex>
+				</GridItem>
+			</Grid>
+		</Box>
 	);
 };
 
