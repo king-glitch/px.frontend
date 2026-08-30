@@ -19,9 +19,13 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({
 	onUse,
 }) => {
 	const { t } = useTranslation();
+	const isDeprecated = Boolean(
+		item.deprecated || !shopItem || shopItem.archived,
+	);
 	const isCosmetic = shopItem?.kind === "cosmetic";
 	const slotType = shopItem?.slot?.split(":")[0] || "accessory";
 	const isEquipped =
+		!isDeprecated &&
 		Boolean(avatar?.equipped?.[slotType]) &&
 		avatar?.equipped?.[slotType] === item.shop_item_id;
 
@@ -32,7 +36,7 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({
 					<HStack justify="space-between">
 						<Text fontWeight="bold" fontSize="sm">
 							{shopItem?.name ||
-								t("routes.heroes.inventory.card.mysteryItem")}
+								t("routes.heroes.inventory.card.deprecatedItem")}
 						</Text>
 						<HStack gap={1}>
 							{item.quantity > 1 && (
@@ -44,7 +48,7 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({
 									x{item.quantity}
 								</Badge>
 							)}
-							{item.deprecated && (
+							{isDeprecated && (
 								<Badge
 									size="xs"
 									rounded="pill"
@@ -56,7 +60,7 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({
 									)}
 								</Badge>
 							)}
-							{isCosmetic && (
+							{isCosmetic && !isDeprecated && (
 								<Badge
 									size="xs"
 									rounded="pill"
@@ -77,7 +81,11 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({
 
 					<Text fontSize="xs" color="fg.muted" lineHeight="tall">
 						{shopItem?.description ||
-							t("routes.heroes.inventory.card.noDesc")}
+							(isDeprecated
+								? t(
+										"routes.heroes.inventory.card.deprecatedDesc",
+									)
+								: t("routes.heroes.inventory.card.noDesc"))}
 					</Text>
 				</Stack>
 
@@ -85,10 +93,10 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({
 					size="xs"
 					variant={isEquipped ? "outline" : "dark"}
 					w="full"
-					disabled={item.deprecated}
-					onClick={() => onUse(item.id)}
+					disabled={isDeprecated}
+					onClick={() => !isDeprecated && onUse(item.id)}
 				>
-					{item.deprecated
+					{isDeprecated
 						? t("routes.heroes.inventory.card.deprecated")
 						: isCosmetic
 							? isEquipped

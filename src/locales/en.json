@@ -713,6 +713,8 @@
 				"card": {
 					"mysteryItem": "Mystery Item",
 					"deprecated": "Deprecated",
+					"deprecatedItem": "Deprecated Item",
+					"deprecatedDesc": "This item is no longer available in the active catalog.",
 					"equipped": "Equipped",
 					"cosmetic": "Cosmetic",
 					"noDesc": "No item description available.",
