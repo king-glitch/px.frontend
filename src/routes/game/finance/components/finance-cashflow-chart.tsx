@@ -19,6 +19,7 @@ import {
 	YAxis,
 } from "recharts";
 import { ChartRoot, ChartTooltip, useChart } from "@chakra-ui/charts";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -38,11 +39,20 @@ export const FinanceCashflowChart: React.FC<FinanceCashflowChartProps> = ({
 	period,
 	data,
 }) => {
+	const { t } = useTranslation();
 	const cashflowChart = useChart({
 		data,
 		series: [
-			{ name: "income", color: "mint.solid", label: "Income" },
-			{ name: "expense", color: "slate", label: "Expense" },
+			{
+				name: "income",
+				color: "mint.solid",
+				label: t("routes.finance.cashflowChart.income"),
+			},
+			{
+				name: "expense",
+				color: "slate",
+				label: t("routes.finance.cashflowChart.expense"),
+			},
 		],
 	});
 
@@ -50,9 +60,11 @@ export const FinanceCashflowChart: React.FC<FinanceCashflowChartProps> = ({
 		<Box {...glassCard} p={{ base: 5, md: 6 }}>
 			<HStack justify="space-between" mb={4}>
 				<Stack gap={0.5}>
-					<Heading size="md">Monthly Cashflow</Heading>
+					<Heading size="md">
+						{t("routes.finance.cashflowChart.heading")}
+					</Heading>
 					<Text fontSize="xs" color="fg.muted">
-						Daily income vs expense activity for {period}
+						{t("routes.finance.cashflowChart.subtitle", { period })}
 					</Text>
 				</Stack>
 				<Icon as={LuBanknote} boxSize={4} color="fg.muted" />
@@ -66,7 +78,7 @@ export const FinanceCashflowChart: React.FC<FinanceCashflowChartProps> = ({
 					color="fg.muted"
 				>
 					<Text fontSize="xs">
-						No transactions recorded for this period.
+						{t("routes.finance.cashflowChart.empty")}
 					</Text>
 				</Flex>
 			) : (

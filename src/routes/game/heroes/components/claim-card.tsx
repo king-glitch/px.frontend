@@ -3,6 +3,7 @@ import { Badge, Box, HStack, Stack, Text } from "@chakra-ui/react";
 import { PillButton } from "@/components/ui/pill-button";
 import type { Claim } from "@/api";
 import { glassCard } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface ClaimCardProps {
 	claim: Claim;
@@ -10,17 +11,11 @@ interface ClaimCardProps {
 }
 
 export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onRedeem }) => {
-	const isClaimed = Boolean(claim.redeemed_at);
+	const { t } = useTranslation();
+	const isClaimed = Boolean(claim.redeemed_at) || claim.status === "redeemed";
 
 	return (
-		<Box
-			p={4}
-			rounded="card"
-			bg="bg.panel"
-			borderWidth="1px"
-			borderColor="border.glass"
-			{...glassCard}
-		>
+		<Box p={4} {...glassCard} bg="bg.panel">
 			<Stack gap={3} justify="space-between" h="full">
 				<Stack gap={1.5}>
 					<HStack justify="space-between">
@@ -33,15 +28,11 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onRedeem }) => {
 							colorPalette={isClaimed ? "gray" : "mint"}
 							variant={isClaimed ? "subtle" : "solid"}
 						>
-							{isClaimed ? "Redeemed" : "Ready to Claim"}
+							{isClaimed
+								? t("routes.heroes.claim.card.redeemed")
+								: t("routes.heroes.claim.card.readyToClaim")}
 						</Badge>
 					</HStack>
-
-					{claim.description && (
-						<Text fontSize="xs" color="fg.muted" lineHeight="tall">
-							{claim.description}
-						</Text>
-					)}
 
 					<HStack
 						justify="space-between"
@@ -49,13 +40,11 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onRedeem }) => {
 						color="fg.muted"
 						pt={1}
 					>
-						<Text>Paid: {claim.price_px.toLocaleString()} PX</Text>
-						{claim.real_cost && (
-							<Text>
-								Value: {claim.currency || "$"}
-								{claim.real_cost}
-							</Text>
-						)}
+						<Text>
+							{t("routes.heroes.claim.card.paid", {
+								px: (claim.price_paid || 0).toLocaleString(),
+							})}
+						</Text>
 					</HStack>
 				</Stack>
 
@@ -66,7 +55,9 @@ export const ClaimCard: React.FC<ClaimCardProps> = ({ claim, onRedeem }) => {
 					disabled={isClaimed}
 					onClick={() => onRedeem(claim.id)}
 				>
-					{isClaimed ? "Claim Completed" : "Mark as Redeemed"}
+					{isClaimed
+						? t("routes.heroes.claim.card.completed")
+						: t("routes.heroes.claim.card.markRedeemed")}
 				</PillButton>
 			</Stack>
 		</Box>

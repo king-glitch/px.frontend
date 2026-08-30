@@ -2,6 +2,7 @@ import React from "react";
 import { Box, Heading, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { usePrefersReducedMotion } from "./hooks";
+import { useTranslation } from "@/lib/i18n";
 
 const fadeIn = keyframes({
 	from: { opacity: 0 },
@@ -49,6 +50,7 @@ export const LevelUpOverlay: React.FC<LevelUpOverlayProps> = ({
 	open,
 	onDone,
 }) => {
+	const { t } = useTranslation();
 	const reducedMotion = usePrefersReducedMotion();
 
 	React.useEffect(() => {
@@ -134,7 +136,7 @@ export const LevelUpOverlay: React.FC<LevelUpOverlayProps> = ({
 					textTransform="uppercase"
 					color="mint.fg"
 				>
-					Level Up
+					{t("components.game.levelUp.title")}
 				</Text>
 				<Heading fontSize="7xl" color="white" lineHeight="1">
 					{level}

@@ -1,5 +1,6 @@
 import { apiDelete, apiGet, apiPost, apiPut } from "@/api/client";
 import type {
+	Avatar,
 	AwardHealthDayRequest,
 	AwardResult,
 	Buff,
@@ -198,6 +199,22 @@ export const gameService = {
 		return apiPost<{ result: PurchaseResult }>(
 			`/game/shop/items/${id}/purchase`,
 		);
+	},
+
+	/**
+	 * Path: GET /api/v1/game/avatar
+	 */
+	async getAvatar(): Promise<{ avatar: Avatar }> {
+		return apiGet<{ avatar: Avatar }>("/game/avatar");
+	},
+
+	/**
+	 * Path: PUT /api/v1/game/avatar
+	 */
+	async updateAvatar(
+		equipped: Record<string, string>,
+	): Promise<{ avatar: Avatar }> {
+		return apiPut<{ avatar: Avatar }>("/game/avatar", { equipped });
 	},
 
 	/**

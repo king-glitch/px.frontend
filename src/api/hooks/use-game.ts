@@ -324,6 +324,25 @@ export function useInventory() {
 }
 
 /**
+ * Mutation to equip/unequip cosmetic items on the player's avatar.
+ */
+export function useUpdateAvatar() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (equipped: Record<string, string>) => {
+			const res = await gameService.updateAvatar(equipped);
+			return res.avatar;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.game.playerSummary(),
+			});
+		},
+	});
+}
+
+/**
  * Mutation to use a consumable inventory item.
  */
 export function useUseInventoryItem() {

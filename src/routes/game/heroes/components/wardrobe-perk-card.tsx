@@ -10,6 +10,7 @@ import {
 } from "@chakra-ui/react";
 import type { PerkID } from "@/api";
 import type { AvatarSlot } from "@/components/game";
+import { useTranslation } from "@/lib/i18n";
 
 interface WardrobePerkCardProps {
 	perkId: PerkID;
@@ -38,6 +39,7 @@ export const WardrobePerkCard: React.FC<WardrobePerkCardProps> = ({
 	isEquipped,
 	onToggle,
 }) => {
+	const { t } = useTranslation();
 	const isUnlocked = perkRank > 0;
 
 	return (
@@ -67,7 +69,11 @@ export const WardrobePerkCard: React.FC<WardrobePerkCardProps> = ({
 							colorPalette={isUnlocked ? "mint" : "gray"}
 							variant="subtle"
 						>
-							{isUnlocked ? `Rank ${perkRank}` : "Locked"}
+							{isUnlocked
+								? t("routes.heroes.wardrobe.perkCard.rank", {
+										rank: perkRank,
+									})
+								: t("routes.heroes.wardrobe.perkCard.locked")}
 						</Badge>
 					</HStack>
 					<Text fontSize="11px" color="fg.muted">
@@ -92,10 +98,12 @@ export const WardrobePerkCard: React.FC<WardrobePerkCardProps> = ({
 					}
 				>
 					{!isUnlocked
-						? "Unlock in Skill Tree"
+						? t("routes.heroes.wardrobe.perkCard.unlockInTree")
 						: isEquipped
-							? "Unequip"
-							: "Equip to Rabbit"}
+							? t("routes.heroes.wardrobe.perkCard.unequip")
+							: t(
+									"routes.heroes.wardrobe.perkCard.equipToRabbit",
+								)}
 				</Button>
 			</Stack>
 		</Box>

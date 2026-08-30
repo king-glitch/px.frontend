@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { LuArrowUpRight } from "react-icons/lu";
 import { holoGlassCard } from "./holo-card";
+import { useTranslation } from "@/lib/i18n";
 
 interface QuestsSummaryCardProps {
 	pendingToday: number;
@@ -27,6 +28,7 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 	isLoading,
 	isError,
 }) => {
+	const { t } = useTranslation();
 	return (
 		<Box
 			{...holoGlassCard}
@@ -52,10 +54,12 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 			) : isError ? (
 				<Stack gap={2} h="full" justify="center">
 					<Text fontSize="sm" color="red.fg" fontWeight="medium">
-						Failed to load quests
+						{t(
+							"components.dashboard.questsSummaryCard.failedToLoad",
+						)}
 					</Text>
 					<Text fontSize="xs" color="fg.muted">
-						Try refreshing the page
+						{t("common.errors.tryRefresh")}
 					</Text>
 				</Stack>
 			) : (
@@ -81,7 +85,7 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 							fontWeight="semibold"
 							color="fg.muted"
 						>
-							To do
+							{t("components.dashboard.questsSummaryCard.todo")}
 						</Text>
 						<HStack align="baseline" gap={2} mt={4}>
 							<Text
@@ -100,7 +104,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 								color="fg.muted"
 								fontWeight="medium"
 							>
-								tasks
+								{t(
+									"components.dashboard.questsSummaryCard.tasks",
+								)}
 							</Text>
 						</HStack>
 					</Box>
@@ -117,7 +123,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 							fontWeight="semibold"
 							color="fg.muted"
 						>
-							On going
+							{t(
+								"components.dashboard.questsSummaryCard.ongoing",
+							)}
 						</Text>
 						<Circle
 							size="8"
@@ -151,7 +159,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 								color="fg.muted"
 								fontWeight="medium"
 							>
-								tasks
+								{t(
+									"components.dashboard.questsSummaryCard.tasks",
+								)}
 							</Text>
 						</HStack>
 					</Box>
@@ -168,7 +178,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 							fontWeight="semibold"
 							color="fg.muted"
 						>
-							Complete
+							{t(
+								"components.dashboard.questsSummaryCard.complete",
+							)}
 						</Text>
 						<HStack
 							bg={{
@@ -209,7 +221,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 									color="fg.muted"
 									fontWeight="medium"
 								>
-									tasks
+									{t(
+										"components.dashboard.questsSummaryCard.tasks",
+									)}
 								</Text>
 							</HStack>
 							<Circle size="6" bg="bg.muted" color="fg">

@@ -5,12 +5,14 @@ import { PillButton } from "@/components/ui/pill-button";
 import type { Player } from "@/api";
 import { CatalogGrid } from "./catalog-grid";
 import { AddRewardDialog } from "./add-reward-dialog";
+import { useTranslation } from "@/lib/i18n";
 
 interface ShopSectionProps {
 	player: Player;
 }
 
 export const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
+	const { t } = useTranslation();
 	const [shopTab, setShopTab] = useState<string>("reward");
 	const [isAddRewardOpen, setIsAddRewardOpen] = useState(false);
 
@@ -19,11 +21,10 @@ export const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 			<Flex justify="space-between" align="center" wrap="wrap" gap={3}>
 				<Stack gap={0.5}>
 					<Text fontSize="lg" fontWeight="bold">
-						Reward Shop
+						{t("routes.heroes.shop.title")}
 					</Text>
 					<Text fontSize="xs" color="fg.muted">
-						Redeem PX points for real-life self-rewards, powerful
-						consumables, and cyber cosmetics.
+						{t("routes.heroes.shop.subtitle")}
 					</Text>
 				</Stack>
 
@@ -60,7 +61,9 @@ export const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 							>
 								<HStack gap={1.5}>
 									<Icon as={LuGift} boxSize={3.5} />
-									<Text>Real-World</Text>
+									<Text>
+										{t("routes.heroes.shop.tabs.reward")}
+									</Text>
 								</HStack>
 							</Tabs.Trigger>
 
@@ -78,7 +81,11 @@ export const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 							>
 								<HStack gap={1.5}>
 									<Icon as={LuSparkles} boxSize={3.5} />
-									<Text>Consumables</Text>
+									<Text>
+										{t(
+											"routes.heroes.shop.tabs.consumable",
+										)}
+									</Text>
 								</HStack>
 							</Tabs.Trigger>
 
@@ -96,7 +103,9 @@ export const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 							>
 								<HStack gap={1.5}>
 									<Icon as={LuShirt} boxSize={3.5} />
-									<Text>Cosmetics</Text>
+									<Text>
+										{t("routes.heroes.shop.tabs.cosmetic")}
+									</Text>
 								</HStack>
 							</Tabs.Trigger>
 						</Tabs.List>
@@ -108,7 +117,7 @@ export const ShopSection: React.FC<ShopSectionProps> = ({ player }) => {
 						icon={LuPlus}
 						onClick={() => setIsAddRewardOpen(true)}
 					>
-						New Reward
+						{t("routes.heroes.shop.newReward")}
 					</PillButton>
 				</HStack>
 			</Flex>

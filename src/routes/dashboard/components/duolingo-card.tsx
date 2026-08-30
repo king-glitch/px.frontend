@@ -12,6 +12,7 @@ import { Link } from "react-router";
 import { LuArrowUpRight, LuLeaf } from "react-icons/lu";
 import type { DuolingoStatus } from "@/api/types";
 import { holoGlassCard } from "./holo-card";
+import { useTranslation } from "@/lib/i18n";
 
 interface DuolingoCardProps {
 	status?: DuolingoStatus | null;
@@ -24,6 +25,7 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 	isLoading,
 	isError,
 }) => {
+	const { t } = useTranslation();
 	return (
 		<Box
 			{...holoGlassCard}
@@ -40,10 +42,10 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 			) : isError ? (
 				<Stack gap={2} h="full" justify="center">
 					<Text fontSize="sm" color="red.fg" fontWeight="medium">
-						Failed to load Duolingo data
+						{t("components.dashboard.duolingoCard.failedToLoad")}
 					</Text>
 					<Text fontSize="xs" color="fg.muted">
-						Try refreshing the page
+						{t("common.errors.tryRefresh")}
 					</Text>
 				</Stack>
 			) : (
@@ -51,7 +53,10 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 					<HStack gap={1.5} color="fg.muted">
 						<Icon as={LuLeaf} boxSize={4} color="mint.fg" />
 						<Text fontSize="sm" fontWeight="semibold">
-							{status?.username || "Duolingo"}
+							{status?.username ||
+								t(
+									"components.dashboard.duolingoCard.defaultUsername",
+								)}
 						</Text>
 					</HStack>
 					<Circle
@@ -69,7 +74,13 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 						<Link
 							to={status ? "/settings" : "/settings/duolingo"}
 							title={
-								status ? "Manage Duolingo" : "Connect Duolingo"
+								status
+									? t(
+											"components.dashboard.duolingoCard.manage",
+										)
+									: t(
+											"components.dashboard.duolingoCard.connect",
+										)
 							}
 						>
 							<Icon as={LuArrowUpRight} boxSize={4.5} />
@@ -92,7 +103,7 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 							color="fg.muted"
 							fontWeight="medium"
 						>
-							streak
+							{t("components.dashboard.duolingoCard.streak")}
 						</Text>
 					</HStack>
 					<Text
@@ -103,7 +114,9 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 					>
 						{status
 							? `${status.rank > 0 ? `#${status.rank} rank · ` : ""}${status.xp} XP`
-							: "Link account"}
+							: t(
+									"components.dashboard.duolingoCard.linkAccount",
+								)}
 					</Text>
 				</>
 			)}

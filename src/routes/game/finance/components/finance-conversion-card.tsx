@@ -11,6 +11,7 @@ import {
 import { LuRocket, LuSparkles } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import type { FinanceSummary } from "@/api/types";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -34,6 +35,8 @@ export const FinanceConversionCard: React.FC<FinanceConversionCardProps> = ({
 	isPending,
 	onConvert,
 }) => {
+	const { t } = useTranslation();
+
 	if (!summary) return null;
 
 	return (
@@ -44,11 +47,13 @@ export const FinanceConversionCard: React.FC<FinanceConversionCardProps> = ({
 						<Icon as={LuRocket} boxSize={5} />
 					</Box>
 					<Stack gap={0.5}>
-						<Heading size="md">Convert Period to Hero EXP</Heading>
+						<Heading size="md">
+							{t("routes.finance.conversionCard.heading")}
+						</Heading>
 						<Text fontSize="xs" color="fg.muted">
-							Converts logged financial discipline (+
-							{summary.projected_exp} projected EXP) into
-							character growth. One-time per monthly cycle.
+							{t("routes.finance.conversionCard.description", {
+								exp: summary.projected_exp,
+							})}
 						</Text>
 					</Stack>
 				</HStack>
@@ -62,8 +67,10 @@ export const FinanceConversionCard: React.FC<FinanceConversionCardProps> = ({
 						<Icon as={LuSparkles} boxSize={4} />
 						<Text>
 							{alreadyConverted
-								? "Converted"
-								: `Convert Period (+${summary.projected_exp} EXP)`}
+								? t("routes.finance.conversionCard.converted")
+								: t("routes.finance.conversionCard.convert", {
+										exp: summary.projected_exp,
+									})}
 						</Text>
 					</HStack>
 				</Button>

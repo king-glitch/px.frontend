@@ -19,6 +19,7 @@ import {
 	YAxis,
 } from "recharts";
 import { ChartRoot, ChartTooltip, useChart } from "@chakra-ui/charts";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -38,18 +39,27 @@ export const FinanceCategoryChart: React.FC<FinanceCategoryChartProps> = ({
 	period,
 	data,
 }) => {
+	const { t } = useTranslation();
 	const categoryChart = useChart({
 		data,
-		series: [{ name: "amount", color: "mint.solid", label: "Spend" }],
+		series: [
+			{
+				name: "amount",
+				color: "mint.solid",
+				label: t("routes.finance.categoryChart.spend"),
+			},
+		],
 	});
 
 	return (
 		<Box {...glassCard} p={{ base: 5, md: 6 }}>
 			<HStack justify="space-between" mb={4}>
 				<Stack gap={0.5}>
-					<Heading size="md">Expense Breakdown</Heading>
+					<Heading size="md">
+						{t("routes.finance.categoryChart.heading")}
+					</Heading>
 					<Text fontSize="xs" color="fg.muted">
-						Top spending categories in {period}
+						{t("routes.finance.categoryChart.subtitle", { period })}
 					</Text>
 				</Stack>
 				<Icon as={LuLayers} boxSize={4} color="fg.muted" />
@@ -63,7 +73,7 @@ export const FinanceCategoryChart: React.FC<FinanceCategoryChartProps> = ({
 					color="fg.muted"
 				>
 					<Text fontSize="xs">
-						No expense categories recorded yet.
+						{t("routes.finance.categoryChart.empty")}
 					</Text>
 				</Flex>
 			) : (

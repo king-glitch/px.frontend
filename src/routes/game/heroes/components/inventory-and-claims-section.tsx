@@ -18,6 +18,7 @@ import {
 	useClaims,
 	useShopCatalog,
 	useUseInventoryItem,
+	useUpdateAvatar,
 	useRedeemClaim,
 	type Buff,
 	type Avatar,
@@ -27,6 +28,7 @@ import { glassCard } from "./perks-data";
 import { ActiveBuffsMatrix } from "./active-buffs-matrix";
 import { InventoryCard } from "./inventory-card";
 import { ClaimCard } from "./claim-card";
+import { useTranslation } from "@/lib/i18n";
 
 interface InventoryAndClaimsSectionProps {
 	player: Player;
@@ -37,10 +39,12 @@ interface InventoryAndClaimsSectionProps {
 export const InventoryAndClaimsSection: React.FC<
 	InventoryAndClaimsSectionProps
 > = ({ activeBuffs, avatar }) => {
+	const { t } = useTranslation();
 	const { data: inventory, isLoading: invLoading } = useInventory();
 	const { data: claims, isLoading: claimsLoading } = useClaims();
 	const { data: allCatalog } = useShopCatalog();
 	const useItem = useUseInventoryItem();
+	const updateAvatar = useUpdateAvatar();
 	const redeemClaim = useRedeemClaim();
 
 	const confirmUseItem = useConfirm<string>();
@@ -51,13 +55,39 @@ export const InventoryAndClaimsSection: React.FC<
 		try {
 			await useItem.mutateAsync(confirmUseItem.target);
 			toaster.create({
-				title: "Item Used!",
+				title: t("routes.heroes.inventory.toasts.itemUsed"),
 				type: "success",
 			});
 			confirmUseItem.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to use item",
+				title: t("routes.heroes.inventory.toasts.failedUse"),
+				description: err instanceof ApiError ? err.message : undefined,
+				type: "error",
+			});
+		}
+	};
+
+	const handleToggleEquip = async (shopItemId: string, slotType: string) => {
+		const isEquipped = avatar?.equipped?.[slotType] === shopItemId;
+		const equipped = { ...(avatar?.equipped ?? {}) };
+		if (isEquipped) {
+			delete equipped[slotType];
+		} else {
+			equipped[slotType] = shopItemId;
+		}
+
+		try {
+			await updateAvatar.mutateAsync(equipped);
+			toaster.create({
+				title: isEquipped
+					? t("routes.heroes.inventory.toasts.itemUnequipped")
+					: t("routes.heroes.inventory.toasts.itemEquipped"),
+				type: "success",
+			});
+		} catch (err) {
+			toaster.create({
+				title: t("routes.heroes.inventory.toasts.failedEquip"),
 				description: err instanceof ApiError ? err.message : undefined,
 				type: "error",
 			});
@@ -69,14 +99,16 @@ export const InventoryAndClaimsSection: React.FC<
 		try {
 			await redeemClaim.mutateAsync(confirmRedeem.target);
 			toaster.create({
-				title: "Reward Claim Redeemed!",
-				description: "Enjoy your real-world reward!",
+				title: t("routes.heroes.inventory.toasts.claimRedeemed"),
+				description: t(
+					"routes.heroes.inventory.toasts.claimRedeemedDesc",
+				),
 				type: "success",
 			});
 			confirmRedeem.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to redeem claim",
+				title: t("routes.heroes.inventory.toasts.failedRedeem"),
 				description: err instanceof ApiError ? err.message : undefined,
 				type: "error",
 			});
@@ -93,11 +125,10 @@ export const InventoryAndClaimsSection: React.FC<
 				<HStack justify="space-between" mb={3}>
 					<Stack gap={0.5}>
 						<Text fontSize="md" fontWeight="bold">
-							Inventory Bag
+							{t("routes.heroes.inventory.bag.title")}
 						</Text>
 						<Text fontSize="xs" color="fg.muted">
-							Manage and use consumables or equip cyber avatar
-							cosmetics.
+							{t("routes.heroes.inventory.bag.subtitle")}
 						</Text>
 					</Stack>
 					<Icon as={LuPackage} boxSize={4} color="fg.muted" />
@@ -118,8 +149,8 @@ export const InventoryAndClaimsSection: React.FC<
 					</Grid>
 				) : !inventory || inventory.length === 0 ? (
 					<EmptyState
-						title="Your bag is empty"
-						description="Purchase consumables like Streak Shields or cosmetics from the Shop."
+						title={t("routes.heroes.inventory.bag.emptyTitle")}
+						description={t("routes.heroes.inventory.bag.emptyDesc")}
 						icon={<Icon as={LuPackage} boxSize={6} />}
 					/>
 				) : (
@@ -141,7 +172,16 @@ export const InventoryAndClaimsSection: React.FC<
 									item={inv}
 									shopItem={shopItem}
 									avatar={avatar}
-									onUse={(id) => confirmUseItem.ask(id)}
+									onUse={() =>
+										shopItem?.kind === "cosmetic"
+											? handleToggleEquip(
+													inv.shop_item_id,
+													shopItem.slot?.split(
+														":",
+													)[0] || "accessory",
+												)
+											: confirmUseItem.ask(inv.id)
+									}
 								/>
 							);
 						})}
@@ -154,10 +194,10 @@ export const InventoryAndClaimsSection: React.FC<
 				<HStack justify="space-between" mb={3}>
 					<Stack gap={0.5}>
 						<Text fontSize="md" fontWeight="bold">
-							Real-World Reward Claims
+							{t("routes.heroes.inventory.claims.title")}
 						</Text>
 						<Text fontSize="xs" color="fg.muted">
-							Track real-world rewards purchased with PX points.
+							{t("routes.heroes.inventory.claims.subtitle")}
 						</Text>
 					</Stack>
 					<Icon as={LuClipboardList} boxSize={4} color="fg.muted" />
@@ -178,8 +218,10 @@ export const InventoryAndClaimsSection: React.FC<
 					</Grid>
 				) : !claims || claims.length === 0 ? (
 					<EmptyState
-						title="No reward claims yet"
-						description="When you buy real-life rewards from the shop, they appear here."
+						title={t("routes.heroes.inventory.claims.emptyTitle")}
+						description={t(
+							"routes.heroes.inventory.claims.emptyDesc",
+						)}
 						icon={<Icon as={LuClipboardList} boxSize={6} />}
 					/>
 				) : (
@@ -206,9 +248,9 @@ export const InventoryAndClaimsSection: React.FC<
 			<ConfirmDialog
 				open={confirmUseItem.open}
 				onOpenChange={confirmUseItem.onOpenChange}
-				title="Use Consumable Item"
-				description="Are you sure you want to consume this item? Its effects or buffs will activate immediately."
-				confirmLabel="Use Item"
+				title={t("routes.heroes.inventory.dialogs.useTitle")}
+				description={t("routes.heroes.inventory.dialogs.useDesc")}
+				confirmLabel={t("routes.heroes.inventory.dialogs.useConfirm")}
 				loading={useItem.isPending}
 				onConfirm={handleUseItemConfirm}
 			/>
@@ -217,9 +259,11 @@ export const InventoryAndClaimsSection: React.FC<
 			<ConfirmDialog
 				open={confirmRedeem.open}
 				onOpenChange={confirmRedeem.onOpenChange}
-				title="Mark Claim as Redeemed"
-				description="Have you fulfilled/enjoyed this real-world reward in your life?"
-				confirmLabel="Mark as Redeemed"
+				title={t("routes.heroes.inventory.dialogs.redeemTitle")}
+				description={t("routes.heroes.inventory.dialogs.redeemDesc")}
+				confirmLabel={t(
+					"routes.heroes.inventory.dialogs.redeemConfirm",
+				)}
 				loading={redeemClaim.isPending}
 				onConfirm={handleRedeemConfirm}
 			/>

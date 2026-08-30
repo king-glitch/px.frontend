@@ -2,6 +2,7 @@ import React, { useMemo, useState } from "react";
 import {
 	Badge,
 	Box,
+	Button,
 	Flex,
 	HStack,
 	Heading,
@@ -17,14 +18,15 @@ import {
 	LuTrendingDown,
 	LuTrendingUp,
 } from "react-icons/lu";
-import { Button } from "@/components/ui/button";
 import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
+import { PillButton } from "@/components/ui/pill-button";
 import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
 import { useDeleteFinanceEntry, useFinanceEntries } from "@/api";
 import { CreateEntryDialog } from "./create-entry-dialog";
 import { EntryItemRow } from "./entry-item-row";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -40,6 +42,7 @@ interface EntriesSectionProps {
 }
 
 export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
+	const { t } = useTranslation();
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(10);
 	const [filterDirection, setFilterDirection] = useState<string>("all");
@@ -58,17 +61,17 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 		try {
 			await deleteEntry.mutateAsync(confirmDelete.target);
 			toaster.create({
-				title: "Entry deleted",
+				title: t("routes.finance.entries.deleted"),
 				type: "success",
 			});
 			confirmDelete.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to delete entry",
+				title: t("routes.finance.entries.failedToDelete"),
 				description:
 					err instanceof ApiError
 						? err.message
-						: "An error occurred while deleting the entry",
+						: t("routes.finance.entries.failedToDeleteDescription"),
 				type: "error",
 			});
 		}
@@ -100,21 +103,20 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 					gap={3}
 				>
 					<Stack gap={0.5}>
-						<Heading size="md">Transaction History</Heading>
+						<Heading size="md">
+							{t("routes.finance.entries.heading")}
+						</Heading>
 						<Text fontSize="xs" color="fg.muted">
-							Manage and review your logged expenses and income.
+							{t("routes.finance.entries.subtitle")}
 						</Text>
 					</Stack>
-					<Button
+					<PillButton
 						variant="dark"
-						size="sm"
+						icon={LuPlus}
 						onClick={() => setIsAdding(!isAdding)}
 					>
-						<HStack gap={1.5}>
-							<Icon as={LuPlus} boxSize={3.5} />
-							<Text>Log Entry</Text>
-						</HStack>
-					</Button>
+						{t("routes.finance.entries.logEntry")}
+					</PillButton>
 				</Flex>
 
 				{/* Add Entry Card */}
@@ -145,7 +147,7 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 							}
 							onClick={() => setFilterDirection("all")}
 						>
-							All
+							{t("routes.finance.entries.filterAll")}
 						</Button>
 						<Button
 							size="xs"
@@ -163,7 +165,9 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 						>
 							<HStack gap={1}>
 								<Icon as={LuTrendingDown} boxSize={3} />
-								<Text>Expenses</Text>
+								<Text>
+									{t("routes.finance.entries.filterExpenses")}
+								</Text>
 							</HStack>
 						</Button>
 						<Button
@@ -180,13 +184,17 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 						>
 							<HStack gap={1}>
 								<Icon as={LuTrendingUp} boxSize={3} />
-								<Text>Income</Text>
+								<Text>
+									{t("routes.finance.entries.filterIncome")}
+								</Text>
 							</HStack>
 						</Button>
 					</HStack>
 
 					<Input
-						placeholder="Search notes or category..."
+						placeholder={t(
+							"routes.finance.entries.searchPlaceholder",
+						)}
 						size="sm"
 						w={{ base: "full", sm: "220px" }}
 						rounded="pill"
@@ -207,8 +215,10 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 					</Stack>
 				) : filteredEntries.length === 0 ? (
 					<EmptyState
-						title="No transactions found"
-						description="Log your daily coffee, rent, or salary to start tracking cashflow."
+						title={t("routes.finance.entries.emptyTitle")}
+						description={t(
+							"routes.finance.entries.emptyDescription",
+						)}
 						icon={<Icon as={LuBanknote} boxSize={6} />}
 					/>
 				) : (
@@ -227,9 +237,14 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 				{entriesData && entriesData.count > pageSize && (
 					<Flex justify="space-between" align="center" pt={2}>
 						<Text fontSize="xs" color="fg.muted">
-							Showing {(page - 1) * pageSize + 1} -{" "}
-							{Math.min(page * pageSize, entriesData.count)} of{" "}
-							{entriesData.count} entries
+							{t("routes.finance.entries.showing", {
+								from: (page - 1) * pageSize + 1,
+								to: Math.min(
+									page * pageSize,
+									entriesData.count,
+								),
+								total: entriesData.count,
+							})}
 						</Text>
 						<HStack gap={2}>
 							<Button
@@ -238,10 +253,10 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 								disabled={page <= 1}
 								onClick={() => setPage((p) => p - 1)}
 							>
-								Previous
+								{t("routes.finance.entries.previous")}
 							</Button>
 							<Badge size="sm" variant="subtle">
-								Page {page}
+								{t("routes.finance.entries.page", { page })}
 							</Badge>
 							<Button
 								size="xs"
@@ -249,7 +264,7 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 								disabled={page * pageSize >= entriesData.count}
 								onClick={() => setPage((p) => p + 1)}
 							>
-								Next
+								{t("routes.finance.entries.next")}
 							</Button>
 						</HStack>
 					</Flex>
@@ -260,10 +275,12 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 			<ConfirmDialog
 				open={confirmDelete.open}
 				onOpenChange={confirmDelete.onOpenChange}
-				title="Delete Transaction"
-				description="Are you sure you want to permanently remove this transaction record?"
-				confirmLabel="Delete"
-				confirmColorPalette="red"
+				title={t("routes.finance.entries.deleteDialogTitle")}
+				description={t(
+					"routes.finance.entries.deleteDialogDescription",
+				)}
+				confirmLabel={t("routes.finance.entries.deleteConfirmLabel")}
+				destructive
 				loading={deleteEntry.isPending}
 				onConfirm={handleDeleteConfirm}
 			/>

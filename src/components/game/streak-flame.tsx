@@ -3,6 +3,7 @@ import { HStack, Icon, Text } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { LuFlame } from "react-icons/lu";
 import { usePrefersReducedMotion } from "./hooks";
+import { useTranslation } from "@/lib/i18n";
 
 const emberPulse = keyframes({
 	"0%, 100%": { transform: "scale(1)", opacity: 0.85 },
@@ -22,6 +23,7 @@ export const StreakFlame: React.FC<StreakFlameProps> = ({
 	days,
 	size = 16,
 }) => {
+	const { t } = useTranslation();
 	const reducedMotion = usePrefersReducedMotion();
 	const active = days > 0;
 	const clampedDays = Math.max(0, Math.min(PLATEAU_DAYS, days));
@@ -43,7 +45,8 @@ export const StreakFlame: React.FC<StreakFlameProps> = ({
 				}
 			/>
 			<Text fontSize="xs" fontWeight="bold">
-				{days}d
+				{days}
+				{t("common.units.daysShort")}
 			</Text>
 		</HStack>
 	);

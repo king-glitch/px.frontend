@@ -21,6 +21,7 @@ import {
 } from "react-icons/lu";
 import type { PerkID } from "@/api";
 import { glassCard } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface HeroMultipliersGridProps {
 	perks: Array<{ perk_id: PerkID; rank: number }>;
@@ -31,6 +32,7 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 	perks,
 	totalAttributesSum,
 }) => {
+	const { t } = useTranslation();
 	const diligenceRank =
 		perks.find((p) => p.perk_id === "diligence")?.rank ?? 0;
 	const merchantRank = perks.find((p) => p.perk_id === "merchant")?.rank ?? 0;
@@ -49,15 +51,18 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 		<Stack gap={3}>
 			<HStack justify="space-between" wrap="wrap" gap={2}>
 				<Stack gap={0.5}>
-					<Heading size="md">Active Hero Multipliers</Heading>
+					<Heading size="md">
+						{t("routes.heroes.multipliers.title")}
+					</Heading>
 					<Text fontSize="xs" color="fg.muted">
-						Live permanent bonuses gained from your invested talent
-						perks and attribute power.
+						{t("routes.heroes.multipliers.subtitle")}
 					</Text>
 				</Stack>
 				<HStack gap={2}>
 					<Badge size="sm" rounded="pill" variant="subtle">
-						{totalInvestedPoints} Points Invested
+						{t("routes.heroes.multipliers.pointsInvested", {
+							count: totalInvestedPoints,
+						})}
 					</Badge>
 					<Badge
 						size="sm"
@@ -65,7 +70,9 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 						variant="surface"
 						colorPalette="mint"
 					>
-						{totalAttributesSum} Total Attributes
+						{t("routes.heroes.multipliers.totalAttributes", {
+							count: totalAttributesSum,
+						})}
 					</Badge>
 				</HStack>
 			</HStack>
@@ -78,7 +85,7 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 							fontWeight="semibold"
 							textTransform="uppercase"
 						>
-							Quest EXP
+							{t("routes.heroes.multipliers.questExp.label")}
 						</Text>
 						<Icon as={LuZap} boxSize={3.5} color="mint.fg" />
 					</HStack>
@@ -91,8 +98,10 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 					</Text>
 					<Text fontSize="10px" color="fg.muted">
 						{diligenceRank > 0
-							? `+${diligenceRank * 5}% daily exp`
-							: "Rank 0 (Base 1.0x)"}
+							? t("routes.heroes.multipliers.questExp.note", {
+									percent: diligenceRank * 5,
+								})
+							: t("routes.heroes.multipliers.rankZeroBase")}
 					</Text>
 				</Box>
 
@@ -103,7 +112,7 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 							fontWeight="semibold"
 							textTransform="uppercase"
 						>
-							PX Yield
+							{t("routes.heroes.multipliers.pxYield.label")}
 						</Text>
 						<Icon as={LuCoins} boxSize={3.5} color="mint.fg" />
 					</HStack>
@@ -116,8 +125,10 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 					</Text>
 					<Text fontSize="10px" color="fg.muted">
 						{merchantRank > 0
-							? `+${merchantRank * 5}% task px`
-							: "Rank 0 (Base 1.0x)"}
+							? t("routes.heroes.multipliers.pxYield.note", {
+									percent: merchantRank * 5,
+								})
+							: t("routes.heroes.multipliers.rankZeroBase")}
 					</Text>
 				</Box>
 
@@ -128,7 +139,7 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 							fontWeight="semibold"
 							textTransform="uppercase"
 						>
-							Deep Focus
+							{t("routes.heroes.multipliers.deepFocus.label")}
 						</Text>
 						<Icon as={LuTarget} boxSize={3.5} color="mint.fg" />
 					</HStack>
@@ -141,8 +152,10 @@ export const HeroMultipliersGrid: React.FC<HeroMultipliersGridProps> = ({
 					</Text>
 					<Text fontSize="10px" color="fg.muted">
 						{deepFocusRank > 0
-							? `+${deepFocusRank * 20}% 60m+ exp`
-							: "Rank 0 (Base 1.0x)"}
+							? t("routes.heroes.multipliers.deepFocus.note", {
+									percent: deepFocusRank * 20,
+								})
+							: t("routes.heroes.multipliers.rankZeroBase")}
 					</Text>
 				</Box>
 

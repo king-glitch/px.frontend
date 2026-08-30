@@ -19,6 +19,7 @@ import {
 } from "@/components/game";
 import type { Player } from "@/api";
 import { glassCard } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface HeroProgressionCardProps {
 	player: Player;
@@ -35,6 +36,7 @@ export const HeroProgressionCard: React.FC<HeroProgressionCardProps> = ({
 	onOpenAscend,
 	onOpenWardrobe,
 }) => {
+	const { t } = useTranslation();
 	const expFraction = expToNext > 0 ? player.exp_into_level / expToNext : 0;
 	const canAscend = player.level >= 50;
 
@@ -66,11 +68,15 @@ export const HeroProgressionCard: React.FC<HeroProgressionCardProps> = ({
 
 				<HStack gap={2}>
 					<Badge size="sm" rounded="pill" variant="subtle">
-						Level {player.level}
+						{t("routes.heroes.progression.level", {
+							level: player.level,
+						})}
 					</Badge>
 					{player.ascensions > 0 && (
 						<Badge size="sm" rounded="pill" variant="subtle">
-							Ascension {player.ascensions}
+							{t("routes.heroes.progression.ascension", {
+								ascensions: player.ascensions,
+							})}
 						</Badge>
 					)}
 				</HStack>
@@ -91,7 +97,7 @@ export const HeroProgressionCard: React.FC<HeroProgressionCardProps> = ({
 						size="xs"
 						onClick={onOpenAscend}
 					>
-						Ascend Hero
+						{t("routes.heroes.progression.ascendHero")}
 					</PillButton>
 				)}
 
@@ -104,7 +110,9 @@ export const HeroProgressionCard: React.FC<HeroProgressionCardProps> = ({
 				>
 					<HStack gap={1.5}>
 						<Icon as={LuShirt} boxSize={3.5} color="mint.fg" />
-						<Text>Wardrobe & Perks</Text>
+						<Text>
+							{t("routes.heroes.progression.wardrobeAndPerks")}
+						</Text>
 					</HStack>
 				</Button>
 			</Stack>

@@ -1,7 +1,14 @@
 import React, { useState } from "react";
-import { Grid, HStack, Icon, Input, Stack, Text } from "@chakra-ui/react";
+import {
+	Button,
+	Grid,
+	HStack,
+	Icon,
+	Input,
+	Stack,
+	Text,
+} from "@chakra-ui/react";
 import { LuTrendingDown, LuTrendingUp } from "react-icons/lu";
-import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/field";
 import {
 	SearchableSelect,
@@ -14,75 +21,44 @@ import { toaster } from "@/components/ui/toaster";
 import { handleFormApiError } from "@/utils/form-error";
 import { useCreateFinanceEntry } from "@/api";
 import type { FinanceDirection } from "@/api/types";
+import { useTranslation, type TFunction } from "@/lib/i18n";
 
-const INCOME_CATEGORIES: SearchableSelectItem[] = [
-	{
-		label: "Salary",
-		value: "Salary",
-		description: "Primary employment income",
-	},
-	{
-		label: "Freelance",
-		value: "Freelance",
-		description: "Side gigs & contract work",
-	},
-	{
-		label: "Investment",
-		value: "Investment",
-		description: "Dividends, interest, capital gains",
-	},
-	{
-		label: "Gift",
-		value: "Gift",
-		description: "Received gifts & allowances",
-	},
-	{ label: "Other", value: "Other", description: "Uncategorized income" },
-];
+const INCOME_CATEGORY_KEYS = [
+	["salary", "Salary"],
+	["freelance", "Freelance"],
+	["investment", "Investment"],
+	["gift", "Gift"],
+	["other", "Other"],
+] as const;
 
-const EXPENSE_CATEGORIES: SearchableSelectItem[] = [
-	{ label: "Rent", value: "Rent", description: "Housing & lease payments" },
-	{
-		label: "Groceries",
-		value: "Groceries",
-		description: "Supermarket & food supplies",
-	},
-	{
-		label: "Dining Out",
-		value: "Dining Out",
-		description: "Restaurants & cafes",
-	},
-	{
-		label: "Utilities",
-		value: "Utilities",
-		description: "Electricity, water, internet",
-	},
-	{
-		label: "Transport",
-		value: "Transport",
-		description: "Fuel, transit, ride-sharing",
-	},
-	{
-		label: "Entertainment",
-		value: "Entertainment",
-		description: "Movies, games, streaming",
-	},
-	{
-		label: "Shopping",
-		value: "Shopping",
-		description: "Clothing, gadgets, misc goods",
-	},
-	{
-		label: "Health",
-		value: "Health",
-		description: "Medical, gym, pharmacy",
-	},
-	{
-		label: "Education",
-		value: "Education",
-		description: "Courses, books, tuition",
-	},
-	{ label: "Other", value: "Other", description: "Uncategorized expenses" },
-];
+const EXPENSE_CATEGORY_KEYS = [
+	["rent", "Rent"],
+	["groceries", "Groceries"],
+	["diningOut", "Dining Out"],
+	["utilities", "Utilities"],
+	["transport", "Transport"],
+	["entertainment", "Entertainment"],
+	["shopping", "Shopping"],
+	["health", "Health"],
+	["education", "Education"],
+	["other", "Other"],
+] as const;
+
+function getIncomeCategories(t: TFunction): SearchableSelectItem[] {
+	return INCOME_CATEGORY_KEYS.map(([key, value]) => ({
+		label: t(`routes.finance.categories.income.${key}.label`),
+		value,
+		description: t(`routes.finance.categories.income.${key}.description`),
+	}));
+}
+
+function getExpenseCategories(t: TFunction): SearchableSelectItem[] {
+	return EXPENSE_CATEGORY_KEYS.map(([key, value]) => ({
+		label: t(`routes.finance.categories.expense.${key}.label`),
+		value,
+		description: t(`routes.finance.categories.expense.${key}.description`),
+	}));
+}
 
 function today(): string {
 	return new Date().toISOString().slice(0, 10);
@@ -91,7 +67,7 @@ function today(): string {
 const entryFormSchema = z.object({
 	direction: z.enum(["income", "expense"]),
 	amount: z
-		.number({ invalid_type_error: "Amount must be a number" })
+		.number({ message: "Amount must be a number" })
 		.positive("Amount must be positive"),
 	category: z.string().min(1, "Category is required"),
 	occurred_on: z.string().min(1, "Date is required"),
@@ -107,6 +83,12 @@ interface CreateEntryDialogProps {
 export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 	onClose,
 }) => {
+	const { t } = useTranslation();
+	const INCOME_CATEGORIES = React.useMemo(() => getIncomeCategories(t), [t]);
+	const EXPENSE_CATEGORIES = React.useMemo(
+		() => getExpenseCategories(t),
+		[t],
+	);
 	const createEntry = useCreateFinanceEntry();
 	const [activeTab, setActiveTab] = useState<FinanceDirection>("expense");
 
@@ -136,13 +118,17 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 			await createEntry.mutateAsync({
 				direction: activeTab,
 				amount: values.amount,
+				currency: "USD",
 				category: values.category.trim(),
 				occurred_on: values.occurred_on,
 				note: values.note?.trim() || undefined,
 			});
 			toaster.create({
-				title: "Entry Logged",
-				description: `Logged $${values.amount} for ${values.category}`,
+				title: t("routes.finance.createEntry.logged"),
+				description: t("routes.finance.createEntry.loggedDescription", {
+					amount: values.amount,
+					category: values.category,
+				}),
 				type: "success",
 			});
 			reset({
@@ -182,7 +168,9 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 					>
 						<HStack gap={1.5}>
 							<Icon as={LuTrendingDown} boxSize={3.5} />
-							<Text>Expense</Text>
+							<Text>
+								{t("routes.finance.createEntry.expense")}
+							</Text>
 						</HStack>
 					</Button>
 					<Button
@@ -196,14 +184,16 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 					>
 						<HStack gap={1.5}>
 							<Icon as={LuTrendingUp} boxSize={3.5} />
-							<Text>Income</Text>
+							<Text>
+								{t("routes.finance.createEntry.income")}
+							</Text>
 						</HStack>
 					</Button>
 				</HStack>
 
 				<Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
 					<Field
-						label="Amount ($)"
+						label={t("routes.finance.createEntry.amount")}
 						required
 						invalid={Boolean(errors.amount)}
 						errorText={errors.amount?.message}
@@ -211,7 +201,9 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 						<Input
 							type="number"
 							step="0.01"
-							placeholder="e.g. 45.50"
+							placeholder={t(
+								"routes.finance.createEntry.amountPlaceholder",
+							)}
 							rounded="pill"
 							bg="bg.muted"
 							{...register("amount", { valueAsNumber: true })}
@@ -219,7 +211,7 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 					</Field>
 
 					<Field
-						label="Category"
+						label={t("routes.finance.createEntry.category")}
 						required
 						invalid={Boolean(errors.category)}
 						errorText={errors.category?.message}
@@ -236,14 +228,16 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 									shouldValidate: true,
 								})
 							}
-							placeholder="Select category"
+							placeholder={t(
+								"routes.finance.createEntry.selectCategory",
+							)}
 						/>
 					</Field>
 				</Grid>
 
 				<Grid templateColumns={{ base: "1fr", md: "1fr 1fr" }} gap={3}>
 					<Field
-						label="Date"
+						label={t("routes.finance.createEntry.date")}
 						required
 						invalid={Boolean(errors.occurred_on)}
 						errorText={errors.occurred_on?.message}
@@ -256,9 +250,11 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 						/>
 					</Field>
 
-					<Field label="Note / Merchant (Optional)">
+					<Field label={t("routes.finance.createEntry.note")}>
 						<Input
-							placeholder="e.g. Dinner with team"
+							placeholder={t(
+								"routes.finance.createEntry.notePlaceholder",
+							)}
 							rounded="pill"
 							bg="bg.muted"
 							{...register("note")}
@@ -268,15 +264,15 @@ export const CreateEntryDialog: React.FC<CreateEntryDialogProps> = ({
 
 				<HStack justify="flex-end" gap={2} pt={2}>
 					<Button variant="ghost" size="sm" onClick={onClose}>
-						Cancel
+						{t("routes.finance.createEntry.cancel")}
 					</Button>
 					<Button
-						variant="dark"
+						variant="solid"
 						size="sm"
 						type="submit"
 						loading={isSubmitting}
 					>
-						Save Entry
+						{t("routes.finance.createEntry.saveEntry")}
 					</Button>
 				</HStack>
 			</Stack>

@@ -19,6 +19,7 @@ import { useDeleteFinanceBudget, useFinanceBudgets } from "@/api";
 import type { FinanceEntry } from "@/api/types";
 import { BudgetCard } from "./budget-card";
 import { CreateBudgetDialog } from "./create-budget-dialog";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -36,6 +37,7 @@ interface BudgetsSectionProps {
 export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 	periodEntries,
 }) => {
+	const { t } = useTranslation();
 	const [isAdding, setIsAdding] = useState(false);
 	const { data: budgets = [], isLoading: budgetsLoading } =
 		useFinanceBudgets();
@@ -60,17 +62,17 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 		try {
 			await deleteBudget.mutateAsync(confirmDeleteBudget.target);
 			toaster.create({
-				title: "Budget target deleted",
+				title: t("routes.finance.budgets.deleted"),
 				type: "success",
 			});
 			confirmDeleteBudget.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to delete budget",
+				title: t("routes.finance.budgets.failedToDelete"),
 				description:
 					err instanceof ApiError
 						? err.message
-						: "An error occurred while deleting the budget target",
+						: t("routes.finance.budgets.failedToDeleteDescription"),
 				type: "error",
 			});
 		}
@@ -81,9 +83,11 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 			<Stack gap={5}>
 				<HStack justify="space-between" align="center">
 					<Stack gap={0.5}>
-						<Heading size="md">Monthly Budget Targets</Heading>
+						<Heading size="md">
+							{t("routes.finance.budgets.heading")}
+						</Heading>
 						<Text fontSize="xs" color="fg.muted">
-							Set spending limits per category to stay on track.
+							{t("routes.finance.budgets.subtitle")}
 						</Text>
 					</Stack>
 					<Button
@@ -93,7 +97,7 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 					>
 						<HStack gap={1.5}>
 							<Icon as={LuPlus} boxSize={3.5} />
-							<Text>Add Target</Text>
+							<Text>{t("routes.finance.budgets.addTarget")}</Text>
 						</HStack>
 					</Button>
 				</HStack>
@@ -121,8 +125,10 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 					</SimpleGrid>
 				) : budgets.length === 0 ? (
 					<EmptyState
-						title="No budget targets set"
-						description="Add monthly limits for categories like Groceries or Rent to monitor your discipline."
+						title={t("routes.finance.budgets.emptyTitle")}
+						description={t(
+							"routes.finance.budgets.emptyDescription",
+						)}
 						icon={<Icon as={LuPiggyBank} boxSize={6} />}
 					/>
 				) : (
@@ -143,10 +149,12 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 			<ConfirmDialog
 				open={confirmDeleteBudget.open}
 				onOpenChange={confirmDeleteBudget.onOpenChange}
-				title="Delete Budget Target"
-				description="Are you sure you want to remove this category budget limit?"
-				confirmLabel="Delete"
-				confirmColorPalette="red"
+				title={t("routes.finance.budgets.deleteDialogTitle")}
+				description={t(
+					"routes.finance.budgets.deleteDialogDescription",
+				)}
+				confirmLabel={t("routes.finance.budgets.deleteConfirmLabel")}
+				destructive
 				loading={deleteBudget.isPending}
 				onConfirm={handleDeleteConfirm}
 			/>

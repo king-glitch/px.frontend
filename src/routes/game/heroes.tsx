@@ -22,12 +22,14 @@ import { HeroSidebar } from "./heroes/components/hero-sidebar";
 import { HeroOverviewSection } from "./heroes/components/hero-overview-section";
 import { AscendModal } from "./heroes/components/ascend-modal";
 import { PERK_DEFS, glassCard } from "./heroes/components/perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 export { PERK_COSMETIC_MAP } from "./heroes/components/perks-data";
 
 type HeroSection = "overview" | "shop" | "inventory";
 
 export const Heroes: React.FC = () => {
+	const { t } = useTranslation();
 	const { user } = useAuthContext();
 	const { data: summary, isLoading, isError } = usePlayerSummary();
 	const { section } = useParams<{ section?: string }>();
@@ -68,14 +70,16 @@ export const Heroes: React.FC = () => {
 		try {
 			await spendPerk.mutateAsync(perkId);
 			toaster.create({
-				title: "Skill Point Allocated",
-				description: `Upgraded perk: ${PERK_DEFS.find((p) => p.id === perkId)?.label}`,
+				title: t("routes.heroes.main.spend.success.title"),
+				description: t("routes.heroes.main.spend.success.description", {
+					perk: PERK_DEFS.find((p) => p.id === perkId)?.label ?? "",
+				}),
 				type: "success",
 			});
 			confirmSpendPerk.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to spend skill point",
+				title: t("routes.heroes.main.spend.failed.title"),
 				description: err instanceof ApiError ? err.message : undefined,
 				type: "error",
 			});
@@ -87,11 +91,14 @@ export const Heroes: React.FC = () => {
 	const handleAscend = async () => {
 		try {
 			await ascend.mutateAsync();
-			toaster.create({ title: "Hero Ascended!", type: "success" });
+			toaster.create({
+				title: t("routes.heroes.main.ascend.success.title"),
+				type: "success",
+			});
 			setAscendOpen(false);
 		} catch (err) {
 			toaster.create({
-				title: "Failed to ascend",
+				title: t("routes.heroes.main.ascend.failed.title"),
 				description: err instanceof ApiError ? err.message : undefined,
 				type: "error",
 			});
@@ -120,8 +127,7 @@ export const Heroes: React.FC = () => {
 			<Container maxW="7xl" py={{ base: 4, md: 8 }}>
 				<Box {...glassCard} p={8}>
 					<Text color="fg.muted">
-						Couldn&apos;t load your character sheet. Try refreshing
-						the page.
+						{t("routes.heroes.main.load.error")}
 					</Text>
 				</Box>
 			</Container>
@@ -205,9 +211,17 @@ export const Heroes: React.FC = () => {
 			<ConfirmDialog
 				open={confirmSpendPerk.open}
 				onOpenChange={confirmSpendPerk.onOpenChange}
-				title="Upgrade Talent Perk"
-				description={`Spend 1 skill point to upgrade ${PERK_DEFS.find((p) => p.id === confirmSpendPerk.target)?.label}?`}
-				confirmLabel="Upgrade"
+				title={t("routes.heroes.main.upgrade.dialog.title")}
+				description={t(
+					"routes.heroes.main.upgrade.dialog.description",
+					{
+						perk:
+							PERK_DEFS.find(
+								(p) => p.id === confirmSpendPerk.target,
+							)?.label ?? "",
+					},
+				)}
+				confirmLabel={t("routes.heroes.main.upgrade.dialog.confirm")}
 				loading={spendPerk.isPending}
 				onConfirm={() =>
 					confirmSpendPerk.target &&

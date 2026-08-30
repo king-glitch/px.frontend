@@ -24,12 +24,14 @@ import { HeroSnapshotCard } from "./dashboard/components/hero-snapshot-card";
 import { HabitsCard } from "./dashboard/components/habits-card";
 import { TodayPulseCard } from "./dashboard/components/today-pulse-card";
 import { OutlinePill } from "./dashboard/components/holo-card";
+import { useTranslation } from "@/lib/i18n";
 
 function todayISO(): string {
 	return new Date().toISOString().split("T")[0];
 }
 
 export const Index: React.FC = () => {
+	const { t } = useTranslation();
 	const {
 		data: duolingoStatus,
 		isLoading: duolingoLoading,
@@ -142,10 +144,12 @@ export const Index: React.FC = () => {
 					<Stack gap={3.5} pb={3} position="relative" zIndex={2}>
 						<HStack gap={2.5}>
 							<Text fontSize="lg" fontWeight="bold">
-								Daily
+								{t("routes.index.dailyPrefix")}
 							</Text>
 							<Text fontSize="lg">
-								<OutlinePill>summary</OutlinePill>
+								<OutlinePill>
+									{t("routes.index.dailyHighlight")}
+								</OutlinePill>
 							</Text>
 						</HStack>
 

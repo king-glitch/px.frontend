@@ -29,8 +29,7 @@ import { toaster } from "@/components/ui/toaster";
 import { type AvatarSlot } from "@/components/game";
 import { ApiError } from "@/api/client";
 import {
-	useUseInventoryItem,
-	useInventory,
+	useUpdateAvatar,
 	type Player,
 	type PerkID,
 	type ShopItem,
@@ -43,6 +42,7 @@ import { PERK_COSMETIC_MAP } from "./perks-data";
 import { WardrobePreview } from "./wardrobe-preview";
 import { WardrobeItemCard } from "./wardrobe-item-card";
 import { WardrobePerkCard } from "./wardrobe-perk-card";
+import { useTranslation } from "@/lib/i18n";
 
 interface WardrobeModalProps {
 	open: boolean;
@@ -53,14 +53,6 @@ interface WardrobeModalProps {
 	equipped: Partial<Record<AvatarSlot, string>>;
 }
 
-const CATEGORIES = [
-	{ id: "head", label: "Hats (11)", icon: LuCrown },
-	{ id: "glasses", label: "Glasses (7)", icon: LuGlasses },
-	{ id: "accessory", label: "Accessories (7)", icon: LuShirt },
-	{ id: "skin", label: "Skins (8)", icon: LuPalette },
-	{ id: "perks", label: "Perk Mastery (8)", icon: LuSparkles },
-];
-
 export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 	open,
 	onOpenChange,
@@ -69,11 +61,42 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 	cosmetics = [],
 	equipped,
 }) => {
+	const { t } = useTranslation();
 	const [activeTab, setActiveTab] = useState<string>("head");
 	const [previewSlots, setPreviewSlots] =
 		useState<Partial<Record<AvatarSlot, string>>>(equipped);
-	const useItem = useUseInventoryItem();
-	const { data: inventory = [] } = useInventory();
+	const updateAvatar = useUpdateAvatar();
+
+	const CATEGORIES = useMemo(
+		() => [
+			{
+				id: "head",
+				label: t("routes.heroes.wardrobe.categories.head"),
+				icon: LuCrown,
+			},
+			{
+				id: "glasses",
+				label: t("routes.heroes.wardrobe.categories.glasses"),
+				icon: LuGlasses,
+			},
+			{
+				id: "accessory",
+				label: t("routes.heroes.wardrobe.categories.accessory"),
+				icon: LuShirt,
+			},
+			{
+				id: "skin",
+				label: t("routes.heroes.wardrobe.categories.skin"),
+				icon: LuPalette,
+			},
+			{
+				id: "perks",
+				label: t("routes.heroes.wardrobe.categories.perks"),
+				icon: LuSparkles,
+			},
+		],
+		[t],
+	);
 
 	// Keep previewSlots synced when modal opens
 	React.useEffect(() => {
@@ -105,39 +128,50 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 		} else {
 			nextSlots[item.slot] = item.id;
 		}
-		setPreviewSlots(nextSlots);
 
-		// If this item corresponds to an inventory cosmetic, trigger backend equip/unequip
+		// Cosmetics backed by a real shop item persist to the avatar; pure
+		// perk-unlock cosmetics stay local-only preview.
 		const shopItem = cosmetics.find(
 			(c) => c.slot === `${item.slot}:${item.id}`,
 		);
 		if (shopItem) {
-			const invItem = inventory.find(
-				(i) => i.shop_item_id === shopItem.id,
-			);
-			if (invItem) {
-				try {
-					await useItem.mutateAsync(invItem.id);
-					toaster.create({
-						title: isCurrentlyEquipped
-							? `Unequipped ${item.name}`
-							: `Equipped ${item.name}!`,
-						type: "success",
-					});
-				} catch (err) {
-					toaster.create({
-						title: "Failed to equip item",
-						description:
-							err instanceof ApiError ? err.message : undefined,
-						type: "error",
-					});
-				}
+			const equippedPayload: Record<string, string> = {};
+			for (const [slot, id] of Object.entries(nextSlots)) {
+				const match = cosmetics.find((c) => c.slot === `${slot}:${id}`);
+				if (match) equippedPayload[slot] = match.id;
+			}
+
+			try {
+				await updateAvatar.mutateAsync(equippedPayload);
+				setPreviewSlots(nextSlots);
+				toaster.create({
+					title: isCurrentlyEquipped
+						? t("routes.heroes.wardrobe.toasts.unequipped", {
+								name: item.name,
+							})
+						: t("routes.heroes.wardrobe.toasts.equipped", {
+								name: item.name,
+							}),
+					type: "success",
+				});
+			} catch (err) {
+				toaster.create({
+					title: t("routes.heroes.wardrobe.toasts.failedEquip"),
+					description:
+						err instanceof ApiError ? err.message : undefined,
+					type: "error",
+				});
 			}
 		} else if (item.requiredPerk) {
+			setPreviewSlots(nextSlots);
 			toaster.create({
 				title: isCurrentlyEquipped
-					? `Unequipped ${item.name}`
-					: `Equipped Perk Cosmetic: ${item.name}!`,
+					? t("routes.heroes.wardrobe.toasts.unequipped", {
+							name: item.name,
+						})
+					: t("routes.heroes.wardrobe.toasts.equippedPerk", {
+							name: item.name,
+						}),
 				type: "success",
 			});
 		}
@@ -161,12 +195,10 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 				<DialogHeader pb={2}>
 					<Stack gap={0.5}>
 						<DialogTitle fontSize="lg">
-							Wardrobe & Perk Customization
+							{t("routes.heroes.wardrobe.title")}
 						</DialogTitle>
 						<DialogDescription fontSize="xs" color="fg.muted">
-							Equip pixel-art hats, glasses, skins, and unlock
-							exclusive perk prestige customizations for your
-							13×13 rabbit.
+							{t("routes.heroes.wardrobe.subtitle")}
 						</DialogDescription>
 					</Stack>
 				</DialogHeader>
@@ -272,7 +304,7 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 						rounded="pill"
 						onClick={() => onOpenChange(false)}
 					>
-						Close
+						{t("routes.heroes.wardrobe.close")}
 					</Button>
 				</DialogFooter>
 				<DialogCloseTrigger />

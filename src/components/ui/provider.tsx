@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/color-mode";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/auth-context";
+import { I18nProvider } from "@/lib/i18n";
 
 export function Provider(props: ColorModeProviderProps) {
 	const [queryClient] = useState(
@@ -34,10 +35,12 @@ export function Provider(props: ColorModeProviderProps) {
 					enableSystem={false}
 					{...props}
 				>
-					<AuthProvider>
-						{props.children}
-						<Toaster />
-					</AuthProvider>
+					<I18nProvider>
+						<AuthProvider>
+							{props.children}
+							<Toaster />
+						</AuthProvider>
+					</I18nProvider>
 				</ColorModeProvider>
 			</ChakraProvider>
 		</QueryClientProvider>

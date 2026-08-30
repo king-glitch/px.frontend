@@ -225,6 +225,7 @@ export interface InventoryItem extends ModelBase {
 	shop_item_id: ObjectID;
 	effect: ConsumableEffect;
 	quantity: number;
+	deprecated: boolean;
 }
 
 export interface Claim extends ModelBase {

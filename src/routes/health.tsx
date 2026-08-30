@@ -28,6 +28,7 @@ import {
 } from "react-icons/lu";
 import { PillButton } from "@/components/ui/pill-button";
 import { useHealthDay } from "@/api";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -39,6 +40,7 @@ const glassCard = {
 } as const;
 
 export const HealthRoute: React.FC = () => {
+	const { t } = useTranslation();
 	const today = new Date().toISOString().split("T")[0];
 	const { data: healthSummary, isLoading } = useHealthDay(today);
 
@@ -87,7 +89,7 @@ export const HealthRoute: React.FC = () => {
 								fontWeight="semibold"
 								textTransform="uppercase"
 							>
-								Energy & Recovery
+								{t("routes.health.cards.energyRecovery")}
 							</Text>
 							<Circle size="7" bg="bg.muted" color="fg.muted">
 								<Icon as={LuActivity} boxSize={4} />
@@ -100,11 +102,11 @@ export const HealthRoute: React.FC = () => {
 									: "92%"}
 							</Heading>
 							<Text fontSize="xs" color="fg.muted">
-								+45 EXP
+								+45 {t("common.units.exp")}
 							</Text>
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							HRV baseline optimal
+							{t("routes.health.cards.hrvBaseline")}
 						</Text>
 					</Box>
 
@@ -115,7 +117,7 @@ export const HealthRoute: React.FC = () => {
 								fontWeight="semibold"
 								textTransform="uppercase"
 							>
-								Daily Steps
+								{t("routes.health.cards.dailySteps")}
 							</Text>
 							<Circle size="7" bg="bg.muted" color="fg.muted">
 								<Icon as={LuFootprints} boxSize={4} />
@@ -139,7 +141,7 @@ export const HealthRoute: React.FC = () => {
 							</Text>
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							Movement progress
+							{t("routes.health.cards.movementProgress")}
 						</Text>
 					</Box>
 
@@ -150,7 +152,7 @@ export const HealthRoute: React.FC = () => {
 								fontWeight="semibold"
 								textTransform="uppercase"
 							>
-								Sleep Quality
+								{t("routes.health.cards.sleepQuality")}
 							</Text>
 							<Circle size="7" bg="bg.muted" color="fg.muted">
 								<Icon as={LuBed} boxSize={4} />
@@ -163,14 +165,14 @@ export const HealthRoute: React.FC = () => {
 									: "7h 48m"}
 							</Heading>
 							<Text fontSize="xs" color="fg.muted">
-								Score{" "}
+								{t("routes.health.cards.score")}{" "}
 								{sleepMetric?.score
 									? Math.round(sleepMetric.score * 100)
 									: 88}
 							</Text>
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							Sleep recovery phase
+							{t("routes.health.cards.sleepRecovery")}
 						</Text>
 					</Box>
 
@@ -181,7 +183,7 @@ export const HealthRoute: React.FC = () => {
 								fontWeight="semibold"
 								textTransform="uppercase"
 							>
-								Active Burn
+								{t("routes.health.cards.activeBurn")}
 							</Text>
 							<Circle size="7" bg="bg.muted" color="fg.muted">
 								<Icon as={LuFlame} boxSize={4} />
@@ -194,11 +196,11 @@ export const HealthRoute: React.FC = () => {
 									: 640}
 							</Heading>
 							<Text fontSize="xs" color="fg.muted">
-								kcal
+								{t("routes.health.cards.kcal")}
 							</Text>
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							Active calorie output
+							{t("routes.health.cards.activeCalorieOutput")}
 						</Text>
 					</Box>
 				</SimpleGrid>
@@ -220,20 +222,25 @@ export const HealthRoute: React.FC = () => {
 				>
 					<Flex justify="space-between" align="center">
 						<Stack gap={0.5}>
-							<Heading size="lg">Bio-Protocol & Vitals</Heading>
+							<Heading size="lg">
+								{t("routes.health.protocol.heading")}
+							</Heading>
 							<Text fontSize="xs" color="fg.muted">
-								Daily physiological readiness and workout
-								tracking
+								{t("routes.health.protocol.subtitle")}
 							</Text>
 						</Stack>
 						{healthSummary?.exp_awarded ? (
 							<Badge size="lg" rounded="pill" variant="subtle">
-								Settled +{healthSummary.exp_awarded} EXP (+
-								{healthSummary.px_awarded} PX)
+								{t("routes.health.protocol.settled")} +
+								{healthSummary.exp_awarded}{" "}
+								{t("common.units.exp")} (+
+								{healthSummary.px_awarded}{" "}
+								{t("common.units.px")})
 							</Badge>
 						) : (
 							<Badge size="lg" rounded="pill" variant="subtle">
-								Award Pending: ~{totalExp || 120} EXP
+								{t("routes.health.protocol.awardPending")}
+								{totalExp || 120} {t("common.units.exp")}
 							</Badge>
 						)}
 					</Flex>
@@ -266,7 +273,9 @@ export const HealthRoute: React.FC = () => {
 											fontSize="sm"
 											fontWeight="semibold"
 										>
-											Resting Heart Rate
+											{t(
+												"routes.health.protocol.restingHeartRate",
+											)}
 										</Text>
 									</HStack>
 									<Text fontSize="sm" fontWeight="bold">
@@ -274,8 +283,9 @@ export const HealthRoute: React.FC = () => {
 									</Text>
 								</HStack>
 								<Text fontSize="xs" color="fg.muted">
-									Consistently in the high performance tier
-									for recovery.
+									{t(
+										"routes.health.protocol.restingHeartRateNote",
+									)}
 								</Text>
 							</Box>
 
@@ -298,7 +308,9 @@ export const HealthRoute: React.FC = () => {
 											fontSize="sm"
 											fontWeight="semibold"
 										>
-											Hydration
+											{t(
+												"routes.health.protocol.hydration",
+											)}
 										</Text>
 									</HStack>
 									<Text fontSize="sm" fontWeight="bold">
@@ -306,8 +318,7 @@ export const HealthRoute: React.FC = () => {
 									</Text>
 								</HStack>
 								<Text fontSize="xs" color="fg.muted">
-									Electrolyte balance replenished after
-									morning workout.
+									{t("routes.health.protocol.hydrationNote")}
 								</Text>
 							</Box>
 
@@ -330,7 +341,9 @@ export const HealthRoute: React.FC = () => {
 											fontSize="sm"
 											fontWeight="semibold"
 										>
-											Protein Target
+											{t(
+												"routes.health.protocol.proteinTarget",
+											)}
 										</Text>
 									</HStack>
 									<Text fontSize="sm" fontWeight="bold">
@@ -338,7 +351,7 @@ export const HealthRoute: React.FC = () => {
 									</Text>
 								</HStack>
 								<Text fontSize="xs" color="fg.muted">
-									High-density whole foods protocol.
+									{t("routes.health.protocol.proteinNote")}
 								</Text>
 							</Box>
 
@@ -361,7 +374,9 @@ export const HealthRoute: React.FC = () => {
 											fontSize="sm"
 											fontWeight="semibold"
 										>
-											Aerobic Capacity
+											{t(
+												"routes.health.protocol.aerobicCapacity",
+											)}
 										</Text>
 									</HStack>
 									<Text fontSize="sm" fontWeight="bold">
@@ -369,7 +384,7 @@ export const HealthRoute: React.FC = () => {
 									</Text>
 								</HStack>
 								<Text fontSize="xs" color="fg.muted">
-									Zone 2 endurance training maintained.
+									{t("routes.health.protocol.aerobicNote")}
 								</Text>
 							</Box>
 						</SimpleGrid>
@@ -387,10 +402,12 @@ export const HealthRoute: React.FC = () => {
 						<>
 							<Box {...glassCard} p={5}>
 								<Heading size="md" mb={2}>
-									Recovery Index
+									{t("routes.health.sidebar.recoveryIndex")}
 								</Heading>
 								<Text fontSize="xs" color="fg.muted" mb={4}>
-									Combined biomarker readiness
+									{t(
+										"routes.health.sidebar.recoverySubtitle",
+									)}
 								</Text>
 								<Stack gap={3}>
 									<Box>
@@ -400,7 +417,9 @@ export const HealthRoute: React.FC = () => {
 											mb={1}
 										>
 											<Text fontWeight="medium">
-												Sleep Phase
+												{t(
+													"routes.health.sidebar.sleepPhase",
+												)}
 											</Text>
 											<Text color="fg.muted">88%</Text>
 										</Flex>
@@ -425,7 +444,9 @@ export const HealthRoute: React.FC = () => {
 											mb={1}
 										>
 											<Text fontWeight="medium">
-												HRV Trend
+												{t(
+													"routes.health.sidebar.hrvTrend",
+												)}
 											</Text>
 											<Text color="fg.muted">92%</Text>
 										</Flex>
@@ -453,11 +474,16 @@ export const HealthRoute: React.FC = () => {
 										color="fg.muted"
 										boxSize={4}
 									/>
-									<Heading size="md">Adaptive Target</Heading>
+									<Heading size="md">
+										{t(
+											"routes.health.sidebar.adaptiveTarget",
+										)}
+									</Heading>
 								</HStack>
 								<Text fontSize="xs" color="fg.muted" mb={4}>
-									Dynamic training targets computed from your
-									recovery baseline.
+									{t(
+										"routes.health.sidebar.adaptiveSubtitle",
+									)}
 								</Text>
 								<PillButton
 									size="sm"
@@ -465,7 +491,7 @@ export const HealthRoute: React.FC = () => {
 									w="full"
 									icon={LuActivity}
 								>
-									Sync Bio-Data
+									{t("routes.health.sidebar.syncBioData")}
 								</PillButton>
 							</Box>
 						</>

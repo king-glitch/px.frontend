@@ -2,6 +2,7 @@ import React from "react";
 import { Box } from "@chakra-ui/react";
 import { keyframes } from "@emotion/react";
 import { usePrefersReducedMotion } from "./hooks";
+import { useTranslation } from "@/lib/i18n";
 
 export type AvatarSlot = "body" | "head" | "glasses" | "accessory" | "skin";
 
@@ -108,6 +109,7 @@ export const HeroAvatar: React.FC<HeroAvatarProps> = ({
 	slots,
 	equipped,
 }) => {
+	const { t } = useTranslation();
 	const activeSlots = slots || equipped || {};
 	const reducedMotion = usePrefersReducedMotion();
 	const shouldAnimate = animated && !reducedMotion;
@@ -143,7 +145,7 @@ export const HeroAvatar: React.FC<HeroAvatarProps> = ({
 				height={size}
 				shapeRendering="crispEdges"
 				role="img"
-				aria-label="Pixel rabbit avatar"
+				aria-label={t("components.game.avatar.ariaLabel")}
 				style={{ display: "block", overflow: "visible" }}
 			>
 				{/* 8-bit Animated Sprite Group */}

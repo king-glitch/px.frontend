@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, HStack, Text, VStack } from "@chakra-ui/react";
 import { usePrefersReducedMotion } from "./hooks";
+import { useTranslation } from "@/lib/i18n";
 
 const SPRING_EASE = "cubic-bezier(0.34, 1.56, 0.64, 1)";
 
@@ -49,6 +50,7 @@ export const ExpBar: React.FC<ExpBarProps> = ({
 	expIntoLevel,
 	expToNext,
 }) => {
+	const { t } = useTranslation();
 	const reducedMotion = usePrefersReducedMotion();
 	const targetPercent = Math.max(
 		0,
@@ -89,9 +91,11 @@ export const ExpBar: React.FC<ExpBarProps> = ({
 	return (
 		<VStack align="stretch" gap={1.5} w="full">
 			<HStack justify="space-between" fontSize="xs" color="fg.muted">
-				<Text fontWeight="semibold">Level {level}</Text>
+				<Text fontWeight="semibold">
+					{t("components.game.expBar.level")} {level}
+				</Text>
 				<Text>
-					{displayedExp} / {expToNext} EXP
+					{displayedExp} / {expToNext} {t("common.units.exp")}
 				</Text>
 			</HStack>
 			<Box h="3" rounded="pill" bg="bg.muted" overflow="hidden">
@@ -118,6 +122,7 @@ export const LevelRing: React.FC<LevelRingProps> = ({
 	progress,
 	size = 64,
 }) => {
+	const { t } = useTranslation();
 	const reducedMotion = usePrefersReducedMotion();
 	const strokeWidth = Math.max(3, size * 0.07);
 	const radius = size / 2 - strokeWidth;
@@ -131,7 +136,7 @@ export const LevelRing: React.FC<LevelRingProps> = ({
 			height={size}
 			viewBox={`0 0 ${size} ${size}`}
 			role="img"
-			aria-label={`Level ${level}`}
+			aria-label={`${t("components.game.expBar.level")} ${level}`}
 		>
 			<Box
 				as="circle"

@@ -16,6 +16,7 @@ import {
 	getPerkUpgradeGain,
 	glassCard,
 } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface TalentPerkTreeProps {
 	player: Player;
@@ -30,14 +31,17 @@ export const TalentPerkTree: React.FC<TalentPerkTreeProps> = ({
 	pendingPerk,
 	onSelectPerkToUpgrade,
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<Stack gap={3}>
 			<HStack justify="space-between">
 				<Stack gap={0.5}>
-					<Heading size="md">Talent Perk Tree</Heading>
+					<Heading size="md">
+						{t("routes.heroes.talentTree.title")}
+					</Heading>
 					<Text fontSize="xs" color="fg.muted">
-						Spend skill points earned from leveling up to activate
-						permanent multipliers.
+						{t("routes.heroes.talentTree.subtitle")}
 					</Text>
 				</Stack>
 				<Badge
@@ -46,7 +50,9 @@ export const TalentPerkTree: React.FC<TalentPerkTreeProps> = ({
 					variant="surface"
 					colorPalette={player.skill_points > 0 ? "mint" : "gray"}
 				>
-					{player.skill_points} Points Available
+					{t("routes.heroes.talentTree.pointsAvailable", {
+						count: player.skill_points,
+					})}
 				</Badge>
 			</HStack>
 
@@ -140,7 +146,9 @@ export const TalentPerkTree: React.FC<TalentPerkTreeProps> = ({
 										>
 											<HStack justify="space-between">
 												<Text color="fg.muted">
-													Current:
+													{t(
+														"routes.heroes.talentTree.current",
+													)}
 												</Text>
 												<Text
 													fontWeight="bold"
@@ -159,7 +167,9 @@ export const TalentPerkTree: React.FC<TalentPerkTreeProps> = ({
 											{!atMax && (
 												<HStack justify="space-between">
 													<Text color="fg.muted">
-														Next rank:
+														{t(
+															"routes.heroes.talentTree.nextRank",
+														)}
 													</Text>
 													<Text
 														fontWeight="semibold"
@@ -185,10 +195,21 @@ export const TalentPerkTree: React.FC<TalentPerkTreeProps> = ({
 										}
 									>
 										{atMax
-											? "Max Rank"
+											? t(
+													"routes.heroes.talentTree.maxRank",
+												)
 											: player.skill_points === 0
-												? "0 Skill Points"
-												: `Upgrade (+${getPerkUpgradeGain(def.id)})`}
+												? t(
+														"routes.heroes.talentTree.zeroPoints",
+													)
+												: t(
+														"routes.heroes.talentTree.upgrade",
+														{
+															gain: getPerkUpgradeGain(
+																def.id,
+															),
+														},
+													)}
 									</PillButton>
 								</Stack>
 							</Box>

@@ -1,6 +1,7 @@
 import React from "react";
 import { Badge, Box, Button, HStack, Stack, Text } from "@chakra-ui/react";
 import type { CustomizationDef } from "./wardrobe-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface WardrobeItemCardProps {
 	item: CustomizationDef;
@@ -15,6 +16,8 @@ export const WardrobeItemCard: React.FC<WardrobeItemCardProps> = ({
 	isEquipped,
 	onToggle,
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<Box
 			p={3}
@@ -36,12 +39,14 @@ export const WardrobeItemCard: React.FC<WardrobeItemCardProps> = ({
 								colorPalette="mint"
 								variant="solid"
 							>
-								Equipped
+								{t("routes.heroes.wardrobe.itemCard.equipped")}
 							</Badge>
 						)}
 						{item.requiredPerk && !isUnlocked && (
 							<Badge size="xs" rounded="pill" variant="subtle">
-								Perk: {item.requiredPerk}
+								{t("routes.heroes.wardrobe.itemCard.perk", {
+									perk: item.requiredPerk,
+								})}
 							</Badge>
 						)}
 					</HStack>
@@ -59,10 +64,10 @@ export const WardrobeItemCard: React.FC<WardrobeItemCardProps> = ({
 					onClick={() => onToggle(item)}
 				>
 					{!isUnlocked
-						? "Locked by Perk"
+						? t("routes.heroes.wardrobe.itemCard.locked")
 						: isEquipped
-							? "Unequip"
-							: "Equip"}
+							? t("routes.heroes.wardrobe.itemCard.unequip")
+							: t("routes.heroes.wardrobe.itemCard.equip")}
 				</Button>
 			</Stack>
 		</Box>

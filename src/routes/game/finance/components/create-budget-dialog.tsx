@@ -12,56 +12,33 @@ import { z } from "zod";
 import { toaster } from "@/components/ui/toaster";
 import { handleFormApiError } from "@/utils/form-error";
 import { useCreateFinanceBudget } from "@/api";
+import { useTranslation, type TFunction } from "@/lib/i18n";
 
-const EXPENSE_CATEGORIES: SearchableSelectItem[] = [
-	{ label: "Rent", value: "Rent", description: "Housing & lease payments" },
-	{
-		label: "Groceries",
-		value: "Groceries",
-		description: "Supermarket & food supplies",
-	},
-	{
-		label: "Dining Out",
-		value: "Dining Out",
-		description: "Restaurants & cafes",
-	},
-	{
-		label: "Utilities",
-		value: "Utilities",
-		description: "Electricity, water, internet",
-	},
-	{
-		label: "Transport",
-		value: "Transport",
-		description: "Fuel, transit, ride-sharing",
-	},
-	{
-		label: "Entertainment",
-		value: "Entertainment",
-		description: "Movies, games, streaming",
-	},
-	{
-		label: "Shopping",
-		value: "Shopping",
-		description: "Clothing, gadgets, misc goods",
-	},
-	{
-		label: "Health",
-		value: "Health",
-		description: "Medical, gym, pharmacy",
-	},
-	{
-		label: "Education",
-		value: "Education",
-		description: "Courses, books, tuition",
-	},
-	{ label: "Other", value: "Other", description: "Uncategorized expenses" },
-];
+const EXPENSE_CATEGORY_KEYS = [
+	["rent", "Rent"],
+	["groceries", "Groceries"],
+	["diningOut", "Dining Out"],
+	["utilities", "Utilities"],
+	["transport", "Transport"],
+	["entertainment", "Entertainment"],
+	["shopping", "Shopping"],
+	["health", "Health"],
+	["education", "Education"],
+	["other", "Other"],
+] as const;
+
+function getExpenseCategories(t: TFunction): SearchableSelectItem[] {
+	return EXPENSE_CATEGORY_KEYS.map(([key, value]) => ({
+		label: t(`routes.finance.categories.expense.${key}.label`),
+		value,
+		description: t(`routes.finance.categories.expense.${key}.description`),
+	}));
+}
 
 const budgetFormSchema = z.object({
 	category: z.string().min(1, "Category is required"),
 	monthly_limit: z
-		.number({ invalid_type_error: "Limit must be a number" })
+		.number({ message: "Limit must be a number" })
 		.positive("Limit must be positive"),
 });
 
@@ -74,6 +51,11 @@ interface CreateBudgetDialogProps {
 export const CreateBudgetDialog: React.FC<CreateBudgetDialogProps> = ({
 	onClose,
 }) => {
+	const { t } = useTranslation();
+	const EXPENSE_CATEGORIES = React.useMemo(
+		() => getExpenseCategories(t),
+		[t],
+	);
 	const createBudget = useCreateFinanceBudget();
 
 	const {
@@ -98,7 +80,7 @@ export const CreateBudgetDialog: React.FC<CreateBudgetDialogProps> = ({
 				monthly_limit: values.monthly_limit,
 			});
 			toaster.create({
-				title: "Budget Target Created",
+				title: t("routes.finance.createBudget.created"),
 				type: "success",
 			});
 			reset();
@@ -112,7 +94,7 @@ export const CreateBudgetDialog: React.FC<CreateBudgetDialogProps> = ({
 		<form onSubmit={handleSubmit(onSubmit)}>
 			<Stack gap={3}>
 				<Field
-					label="Category"
+					label={t("routes.finance.createBudget.category")}
 					required
 					invalid={Boolean(errors.category)}
 					errorText={errors.category?.message}
@@ -125,19 +107,23 @@ export const CreateBudgetDialog: React.FC<CreateBudgetDialogProps> = ({
 								shouldValidate: true,
 							})
 						}
-						placeholder="Select expense category"
+						placeholder={t(
+							"routes.finance.createBudget.selectCategory",
+						)}
 					/>
 				</Field>
 
 				<Field
-					label="Monthly Limit ($)"
+					label={t("routes.finance.createBudget.monthlyLimit")}
 					required
 					invalid={Boolean(errors.monthly_limit)}
 					errorText={errors.monthly_limit?.message}
 				>
 					<Input
 						type="number"
-						placeholder="e.g. 500"
+						placeholder={t(
+							"routes.finance.createBudget.limitPlaceholder",
+						)}
 						rounded="pill"
 						bg="bg.muted"
 						{...register("monthly_limit", {
@@ -148,7 +134,7 @@ export const CreateBudgetDialog: React.FC<CreateBudgetDialogProps> = ({
 
 				<HStack justify="flex-end" gap={2} pt={2}>
 					<Button variant="ghost" size="sm" onClick={onClose}>
-						Cancel
+						{t("routes.finance.createBudget.cancel")}
 					</Button>
 					<Button
 						variant="dark"
@@ -156,7 +142,7 @@ export const CreateBudgetDialog: React.FC<CreateBudgetDialogProps> = ({
 						type="submit"
 						loading={isSubmitting}
 					>
-						Set Target
+						{t("routes.finance.createBudget.setTarget")}
 					</Button>
 				</HStack>
 			</Stack>

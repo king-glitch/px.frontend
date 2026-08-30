@@ -1,6 +1,7 @@
 import React from "react";
 import { Flex, Heading, Input, Stack, Text } from "@chakra-ui/react";
 import { Field } from "@/components/ui/field";
+import { useTranslation } from "@/lib/i18n";
 
 interface FinanceHeaderProps {
 	period: string;
@@ -11,16 +12,19 @@ export const FinanceHeader: React.FC<FinanceHeaderProps> = ({
 	period,
 	onPeriodChange,
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<Flex justify="space-between" align="flex-end" wrap="wrap" gap={3}>
 			<Stack gap={1}>
-				<Heading size="2xl">Finance & Economy</Heading>
+				<Heading size="2xl">
+					{t("routes.finance.header.heading")}
+				</Heading>
 				<Text color="fg.muted" fontSize="sm">
-					Log transactions, track budget limits, and convert monthly
-					discipline into hero EXP.
+					{t("routes.finance.header.subtitle")}
 				</Text>
 			</Stack>
-			<Field label="Active Period" w="auto">
+			<Field label={t("routes.finance.header.activePeriod")} w="auto">
 				<Input
 					type="month"
 					value={period}

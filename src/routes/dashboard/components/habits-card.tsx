@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import type { TodayQuest } from "@/api/types";
 import { OutlinePill, holoGlassCard } from "./holo-card";
+import { useTranslation } from "@/lib/i18n";
 
 interface HabitsCardProps {
 	todayQuests: TodayQuest[];
@@ -25,13 +26,17 @@ export const HabitsCard: React.FC<HabitsCardProps> = ({
 	isError,
 	todayLabel,
 }) => {
+	const { t } = useTranslation();
 	return (
 		<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
 			<Heading fontSize="xl" fontWeight="normal" letterSpacing="-0.03em">
-				Habit <OutlinePill>tracker</OutlinePill>
+				{t("components.dashboard.habitsCard.titlePrefix")}{" "}
+				<OutlinePill>
+					{t("components.dashboard.habitsCard.titleHighlight")}
+				</OutlinePill>
 			</Heading>
 			<Text fontSize="sm" color="fg.muted" mt={1}>
-				Today, {todayLabel}
+				{t("components.dashboard.habitsCard.today")} {todayLabel}
 			</Text>
 
 			{isLoading ? (
@@ -43,10 +48,10 @@ export const HabitsCard: React.FC<HabitsCardProps> = ({
 			) : isError ? (
 				<Stack gap={2} mt={4}>
 					<Text fontSize="sm" color="red.fg" fontWeight="medium">
-						Failed to load today's quests
+						{t("components.dashboard.habitsCard.failedToLoad")}
 					</Text>
 					<Text fontSize="xs" color="fg.muted">
-						Try refreshing the page
+						{t("common.errors.tryRefresh")}
 					</Text>
 				</Stack>
 			) : (
@@ -74,7 +79,7 @@ export const HabitsCard: React.FC<HabitsCardProps> = ({
 								fontWeight="medium"
 								whiteSpace="nowrap"
 							>
-								No quests scheduled today
+								{t("components.dashboard.habitsCard.noQuests")}
 							</Text>
 						</HStack>
 					) : (
@@ -135,7 +140,7 @@ export const HabitsCard: React.FC<HabitsCardProps> = ({
 									{tq.completed
 										? tq.exp_awarded
 										: tq.quest.exp_value}{" "}
-									EXP
+									{t("common.units.exp")}
 								</Text>
 							</HStack>
 						))

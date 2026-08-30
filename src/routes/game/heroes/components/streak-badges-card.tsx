@@ -4,6 +4,7 @@ import { LuFlame, LuShieldCheck } from "react-icons/lu";
 import { StreakFlame } from "@/components/game";
 import type { Buff, Player } from "@/api";
 import { BUFF_LABEL, glassCard } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface StreakBadgesCardProps {
 	player: Player;
@@ -16,6 +17,8 @@ export const StreakBadgesCard: React.FC<StreakBadgesCardProps> = ({
 	activeBuffs,
 	secondWindRank,
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<Box {...glassCard} p={4.5}>
 			<Stack gap={3}>
@@ -28,11 +31,13 @@ export const StreakBadgesCard: React.FC<StreakBadgesCardProps> = ({
 							textTransform="uppercase"
 							letterSpacing="0.05em"
 						>
-							Streak & Badges
+							{t("routes.heroes.streak.title")}
 						</Text>
 					</HStack>
 					<Badge size="xs" rounded="pill" variant="subtle">
-						Best: {player.longest_streak}d
+						{t("routes.heroes.streak.best", {
+							days: player.longest_streak,
+						})}
 					</Badge>
 				</HStack>
 
@@ -50,10 +55,12 @@ export const StreakBadgesCard: React.FC<StreakBadgesCardProps> = ({
 						<Stack gap={0}>
 							<Text fontSize="sm" fontWeight="bold">
 								{player.streak}{" "}
-								{player.streak === 1 ? "Day" : "Days"}
+								{player.streak === 1
+									? t("routes.heroes.streak.daysSingle")
+									: t("routes.heroes.streak.daysPlural")}
 							</Text>
 							<Text fontSize="10px" color="fg.muted">
-								Active Streak
+								{t("routes.heroes.streak.activeStreak")}
 							</Text>
 						</Stack>
 					</HStack>
@@ -64,7 +71,7 @@ export const StreakBadgesCard: React.FC<StreakBadgesCardProps> = ({
 							variant="surface"
 							colorPalette="mint"
 						>
-							Shielded
+							{t("routes.heroes.streak.shielded")}
 						</Badge>
 					)}
 				</HStack>
@@ -87,8 +94,8 @@ export const StreakBadgesCard: React.FC<StreakBadgesCardProps> = ({
 						<Icon as={LuShieldCheck} boxSize={3.5} />
 						<Text fontSize="11px">
 							{secondWindRank > 0
-								? "Second Wind talent active"
-								: "No active consumable buffs"}
+								? t("routes.heroes.streak.secondWindActive")
+								: t("routes.heroes.streak.noActiveBuffs")}
 						</Text>
 					</HStack>
 				)}

@@ -17,8 +17,10 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useAuthContext } from "@/contexts/auth-context";
 import { type RegisterFormData, registerSchema } from "@/api/schemas";
 import { handleFormApiError } from "@/utils/form-error";
+import { useTranslation } from "@/lib/i18n";
 
 export const Register: React.FC = () => {
+	const { t } = useTranslation();
 	const {
 		isAuthenticated,
 		isLoading,
@@ -64,9 +66,11 @@ export const Register: React.FC = () => {
 		<Container maxW="md" py={12}>
 			<Stack gap={6}>
 				<Stack gap={1}>
-					<Heading size="xl">Register</Heading>
+					<Heading size="xl">
+						{t("routes.auth.register.heading")}
+					</Heading>
 					<Text color="fg.muted">
-						Create a new account to get started.
+						{t("routes.auth.register.subtitle")}
 					</Text>
 				</Stack>
 
@@ -79,13 +83,15 @@ export const Register: React.FC = () => {
 						)}
 
 						<Field
-							label="Username"
+							label={t("routes.auth.register.username")}
 							errorText={errors.username?.message}
 							invalid={Boolean(errors.username)}
 							required
 						>
 							<Input
-								placeholder="Username (e.g. alice)"
+								placeholder={t(
+									"routes.auth.register.usernamePlaceholder",
+								)}
 								{...register("username")}
 								autoComplete="username"
 								autoFocus
@@ -93,26 +99,28 @@ export const Register: React.FC = () => {
 						</Field>
 
 						<Field
-							label="Password"
+							label={t("routes.auth.register.password")}
 							errorText={errors.password?.message}
 							invalid={Boolean(errors.password)}
 							required
 						>
 							<PasswordInput
-								placeholder="Password"
+								placeholder={t("routes.auth.register.password")}
 								{...register("password")}
 								autoComplete="new-password"
 							/>
 						</Field>
 
 						<Field
-							label="Confirm Password"
+							label={t("routes.auth.register.confirmPassword")}
 							errorText={errors.confirmPassword?.message}
 							invalid={Boolean(errors.confirmPassword)}
 							required
 						>
 							<PasswordInput
-								placeholder="Confirm Password"
+								placeholder={t(
+									"routes.auth.register.confirmPassword",
+								)}
 								{...register("confirmPassword")}
 								autoComplete="new-password"
 							/>
@@ -123,13 +131,15 @@ export const Register: React.FC = () => {
 							loading={isSubmitting}
 							width="full"
 						>
-							Register
+							{t("routes.auth.register.submit")}
 						</Button>
 					</Stack>
 				</form>
 
 				<HStack justify="center" fontSize="sm">
-					<Text color="fg.muted">Already have an account?</Text>
+					<Text color="fg.muted">
+						{t("routes.auth.register.hasAccount")}
+					</Text>
 					<Link
 						asChild
 						color="fg"
@@ -137,7 +147,7 @@ export const Register: React.FC = () => {
 						textDecoration="underline"
 					>
 						<RouterLink to="/authentication/login">
-							Login
+							{t("routes.auth.register.login")}
 						</RouterLink>
 					</Link>
 				</HStack>

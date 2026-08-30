@@ -20,12 +20,14 @@ import { FinanceStatTiles } from "./finance/components/finance-stat-tiles";
 import { FinanceConversionCard } from "./finance/components/finance-conversion-card";
 import { FinanceCashflowChart } from "./finance/components/finance-cashflow-chart";
 import { FinanceCategoryChart } from "./finance/components/finance-category-chart";
+import { useTranslation } from "@/lib/i18n";
 
 function currentPeriod(): string {
 	return new Date().toISOString().slice(0, 7);
 }
 
 export const Finance: React.FC = () => {
+	const { t } = useTranslation();
 	const [period, setPeriod] = useState(currentPeriod);
 	const {
 		data: summary,
@@ -60,18 +62,21 @@ export const Finance: React.FC = () => {
 				void fly(targetRef.current, award.px, "px");
 			}
 			toaster.create({
-				title: "Period converted to EXP",
-				description: `+${award.exp} EXP and +${award.px} PX awarded!`,
+				title: t("routes.finance.convert.success"),
+				description: t("routes.finance.convert.successDescription", {
+					exp: award.exp,
+					px: award.px,
+				}),
 				type: "success",
 			});
 			confirmConvert.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to convert period",
+				title: t("routes.finance.convert.failed"),
 				description:
 					err instanceof ApiError
 						? err.message
-						: "An error occurred while converting the period",
+						: t("routes.finance.convert.failedDescription"),
 				type: "error",
 			});
 		}
@@ -173,9 +178,12 @@ export const Finance: React.FC = () => {
 			<ConfirmDialog
 				open={confirmConvert.open}
 				onOpenChange={confirmConvert.onOpenChange}
-				title="Convert Period to Hero EXP"
-				description={`Converting ${period} is irreversible and can only be performed once per month. This will award +${summary?.projected_exp ?? 0} EXP based on your logged income, expenses, and savings rate.`}
-				confirmLabel="Convert to EXP"
+				title={t("routes.finance.convert.dialogTitle")}
+				description={t("routes.finance.convert.dialogDescription", {
+					period,
+					exp: summary?.projected_exp ?? 0,
+				})}
+				confirmLabel={t("routes.finance.convert.confirmLabel")}
 				loading={convert.isPending}
 				onConfirm={handleExecuteConvert}
 			/>

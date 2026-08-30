@@ -3,6 +3,7 @@ import { Box, Flex, HStack, Skeleton, Stack, Text } from "@chakra-ui/react";
 import { ExpBar, HeroAvatar, LevelRing, StreakFlame } from "@/components/game";
 import type { PlayerSummary } from "@/api/types";
 import { holoGlassCard } from "./holo-card";
+import { useTranslation } from "@/lib/i18n";
 
 interface HeroSnapshotCardProps {
 	summary?: PlayerSummary;
@@ -15,6 +16,7 @@ export const HeroSnapshotCard: React.FC<HeroSnapshotCardProps> = ({
 	isLoading,
 	isError,
 }) => {
+	const { t } = useTranslation();
 	const player = summary?.player;
 
 	return (
@@ -28,10 +30,12 @@ export const HeroSnapshotCard: React.FC<HeroSnapshotCardProps> = ({
 			) : isError ? (
 				<Stack gap={2}>
 					<Text fontSize="sm" color="red.fg" fontWeight="medium">
-						Failed to load player data
+						{t(
+							"components.dashboard.heroSnapshotCard.failedToLoad",
+						)}
 					</Text>
 					<Text fontSize="xs" color="fg.muted">
-						Try refreshing the page
+						{t("common.errors.tryRefresh")}
 					</Text>
 				</Stack>
 			) : (
@@ -76,8 +80,18 @@ export const HeroSnapshotCard: React.FC<HeroSnapshotCardProps> = ({
 									color="fg.muted"
 								>
 									{player?.ascensions
-										? `${player.ascensions} ascension${player.ascensions === 1 ? "" : "s"}`
-										: "Hero"}
+										? `${player.ascensions} ${
+												player.ascensions === 1
+													? t(
+															"components.dashboard.heroSnapshotCard.ascension",
+														)
+													: t(
+															"components.dashboard.heroSnapshotCard.ascensions",
+														)
+											}`
+										: t(
+												"components.dashboard.heroSnapshotCard.hero",
+											)}
 								</Text>
 								<Text
 									fontSize="lg"
@@ -85,7 +99,8 @@ export const HeroSnapshotCard: React.FC<HeroSnapshotCardProps> = ({
 									letterSpacing="-0.02em"
 									lineHeight="1"
 								>
-									{(player?.px ?? 0).toLocaleString()} PX
+									{(player?.px ?? 0).toLocaleString()}{" "}
+									{t("common.units.px")}
 								</Text>
 							</Stack>
 						</HStack>

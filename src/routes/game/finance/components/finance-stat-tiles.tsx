@@ -9,6 +9,7 @@ import {
 } from "react-icons/lu";
 import type { FinanceSummary } from "@/api/types";
 import { StatTile } from "./stat-tile";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -34,6 +35,8 @@ export const FinanceStatTiles: React.FC<FinanceStatTilesProps> = ({
 	period,
 	targetRef,
 }) => {
+	const { t } = useTranslation();
+
 	if (isLoading) {
 		return (
 			<SimpleGrid columns={{ base: 1, sm: 2, lg: 5 }} gap={3}>
@@ -48,7 +51,7 @@ export const FinanceStatTiles: React.FC<FinanceStatTilesProps> = ({
 		return (
 			<Box {...glassCard} p={6}>
 				<Text color="fg.muted" fontSize="sm">
-					Couldn&apos;t load the summary for period {period}.
+					{t("routes.finance.statTiles.loadError", { period })}
 				</Text>
 			</Box>
 		);
@@ -57,31 +60,31 @@ export const FinanceStatTiles: React.FC<FinanceStatTilesProps> = ({
 	return (
 		<SimpleGrid columns={{ base: 1, sm: 2, lg: 5 }} gap={3}>
 			<StatTile
-				label="Total Income"
+				label={t("routes.finance.statTiles.totalIncome")}
 				value={`$${summary.income.toLocaleString()}`}
 				icon={LuTrendingUp}
 				iconColor="fg.muted"
 			/>
 			<StatTile
-				label="Total Expense"
+				label={t("routes.finance.statTiles.totalExpense")}
 				value={`$${summary.expense.toLocaleString()}`}
 				icon={LuTrendingDown}
 				iconColor="fg.muted"
 			/>
 			<StatTile
-				label="Savings Rate"
+				label={t("routes.finance.statTiles.savingsRate")}
 				value={`${Math.round(summary.savings_rate * 100)}%`}
 				icon={LuPercent}
 				iconColor="fg.muted"
 			/>
 			<StatTile
-				label="Days Logged"
+				label={t("routes.finance.statTiles.daysLogged")}
 				value={`${summary.days_logged} / ${summary.days_in_period}`}
 				icon={LuCalendarDays}
 				iconColor="fg.muted"
 			/>
 			<StatTile
-				label="Projected EXP"
+				label={t("routes.finance.statTiles.projectedExp")}
 				value={`+${summary.projected_exp}`}
 				icon={LuSparkles}
 				iconColor="fg.muted"

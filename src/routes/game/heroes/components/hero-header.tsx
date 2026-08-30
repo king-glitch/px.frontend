@@ -12,6 +12,7 @@ import { LuClipboardList, LuCoins } from "react-icons/lu";
 import { PillButton } from "@/components/ui/pill-button";
 import type { Player } from "@/api";
 import { glassCard } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface HeroHeaderProps {
 	player: Player;
@@ -22,22 +23,29 @@ export const HeroHeader: React.FC<HeroHeaderProps> = ({
 	player,
 	onOpenLedger,
 }) => {
+	const { t } = useTranslation();
 	return (
 		<Flex justify="space-between" align="center" wrap="wrap" gap={3}>
 			<Stack gap={1}>
 				<HStack gap={3}>
-					<Heading size="2xl">Hero Command Hub</Heading>
+					<Heading size="2xl">
+						{t("routes.heroes.header.title")}
+					</Heading>
 					<Badge size="md" rounded="pill" variant="subtle">
-						Lv {player.level}
+						{t("routes.heroes.header.level", {
+							level: player.level,
+						})}
 					</Badge>
 					{player.ascensions > 0 && (
 						<Badge size="md" rounded="pill" variant="subtle">
-							Ascension {player.ascensions}
+							{t("routes.heroes.header.ascension", {
+								count: player.ascensions,
+							})}
 						</Badge>
 					)}
 				</HStack>
 				<Text color="fg.muted" fontSize="sm">
-					Progression, talent perks, reward shop, and cyber inventory.
+					{t("routes.heroes.header.subtitle")}
 				</Text>
 			</Stack>
 
@@ -48,7 +56,7 @@ export const HeroHeader: React.FC<HeroHeaderProps> = ({
 					icon={LuClipboardList}
 					onClick={onOpenLedger}
 				>
-					Ledger History
+					{t("routes.heroes.header.ledgerHistory")}
 				</PillButton>
 
 				<HStack {...glassCard} px={4} py={2} gap={2} bg="bg.panel">
@@ -57,7 +65,7 @@ export const HeroHeader: React.FC<HeroHeaderProps> = ({
 						{player.px.toLocaleString()} PX
 					</Text>
 					<Text fontSize="xs" color="fg.muted">
-						available
+						{t("routes.heroes.header.available")}
 					</Text>
 				</HStack>
 			</HStack>

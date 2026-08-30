@@ -19,10 +19,12 @@ import {
 	useShopCatalog,
 	usePurchaseItem,
 	useDeleteShopItem,
+	useInventory,
 	type ShopItemKind,
 	type ShopItem,
 	type Player,
 } from "@/api";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -39,7 +41,9 @@ interface CatalogGridProps {
 }
 
 export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
+	const { t } = useTranslation();
 	const { data: items, isLoading } = useShopCatalog(kind);
+	const { data: inventory } = useInventory();
 	const purchase = usePurchaseItem();
 	const deleteItem = useDeleteShopItem();
 
@@ -51,14 +55,21 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 		try {
 			await purchase.mutateAsync(confirmPurchase.target.id);
 			toaster.create({
-				title: `Purchased ${confirmPurchase.target.name}!`,
-				description: `Deducted ${confirmPurchase.target.price_px} PX points.`,
+				title: t("routes.heroes.catalog.toasts.purchaseSuccess", {
+					name: confirmPurchase.target.name,
+				}),
+				description: t(
+					"routes.heroes.catalog.toasts.purchaseSuccessDesc",
+					{
+						price: confirmPurchase.target.price_px,
+					},
+				),
 				type: "success",
 			});
 			confirmPurchase.close();
 		} catch (err) {
 			toaster.create({
-				title: "Purchase failed",
+				title: t("routes.heroes.catalog.toasts.purchaseFailed"),
 				description: err instanceof ApiError ? err.message : undefined,
 				type: "error",
 			});
@@ -70,13 +81,13 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 		try {
 			await deleteItem.mutateAsync(confirmDelete.target);
 			toaster.create({
-				title: "Item removed from shop",
+				title: t("routes.heroes.catalog.toasts.deleteSuccess"),
 				type: "success",
 			});
 			confirmDelete.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to delete item",
+				title: t("routes.heroes.catalog.toasts.deleteFailed"),
 				description: err instanceof ApiError ? err.message : undefined,
 				type: "error",
 			});
@@ -104,8 +115,8 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 		return (
 			<Box {...glassCard} p={6}>
 				<EmptyState
-					title="No items in this category"
-					description="Add your own custom real-life rewards using the button above or check back later."
+					title={t("routes.heroes.catalog.empty.title")}
+					description={t("routes.heroes.catalog.empty.description")}
 					icon={<Icon as={LuPackage} boxSize={6} />}
 				/>
 			</Box>
@@ -125,7 +136,14 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 				{items.map((item) => {
 					const locked = item.level_required > (player?.level ?? 0);
 					const unaffordable = item.price_px > (player?.px ?? 0);
-					const disabled = locked || unaffordable;
+					const owned =
+						item.kind === "cosmetic" &&
+						inventory?.some(
+							(inv) =>
+								inv.shop_item_id === item.id &&
+								inv.quantity > 0,
+						);
+					const disabled = locked || unaffordable || owned;
 
 					// Check if description has expiration tag
 					const expiryMatch = item.description?.match(
@@ -195,7 +213,12 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 												rounded="pill"
 												variant="subtle"
 											>
-												Req Lv {item.level_required}
+												{t(
+													"routes.heroes.catalog.badges.reqLevel",
+													{
+														level: item.level_required,
+													},
+												)}
 											</Badge>
 										)}
 										{item.system && (
@@ -204,7 +227,9 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 												rounded="pill"
 												variant="subtle"
 											>
-												System Item
+												{t(
+													"routes.heroes.catalog.badges.systemItem",
+												)}
 											</Badge>
 										)}
 										{expiryMatch && (
@@ -219,7 +244,12 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 														boxSize={3}
 													/>
 													<Text>
-														Exp: {expiryMatch[1]}
+														{t(
+															"routes.heroes.catalog.badges.exp",
+															{
+																date: expiryMatch[1],
+															},
+														)}
 													</Text>
 												</HStack>
 											</Badge>
@@ -235,10 +265,23 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 									onClick={() => confirmPurchase.ask(item)}
 								>
 									{locked
-										? `Locked (Lv ${item.level_required})`
-										: unaffordable
-											? "Insufficient PX"
-											: "Purchase"}
+										? t(
+												"routes.heroes.catalog.buttons.locked",
+												{
+													level: item.level_required,
+												},
+											)
+										: owned
+											? t(
+													"routes.heroes.catalog.buttons.owned",
+												)
+											: unaffordable
+												? t(
+														"routes.heroes.catalog.buttons.unaffordable",
+													)
+												: t(
+														"routes.heroes.catalog.buttons.purchase",
+													)}
 								</PillButton>
 							</Stack>
 						</Box>
@@ -250,9 +293,16 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 			<ConfirmDialog
 				open={confirmPurchase.open}
 				onOpenChange={confirmPurchase.onOpenChange}
-				title="Purchase Shop Item"
-				description={`Spend ${confirmPurchase.target?.price_px.toLocaleString()} PX to purchase "${confirmPurchase.target?.name}"?`}
-				confirmLabel="Confirm Purchase"
+				title={t("routes.heroes.catalog.dialogs.purchaseTitle")}
+				description={t("routes.heroes.catalog.dialogs.purchaseDesc", {
+					price:
+						confirmPurchase.target?.price_px.toLocaleString() ??
+						"0",
+					name: confirmPurchase.target?.name ?? "",
+				})}
+				confirmLabel={t(
+					"routes.heroes.catalog.dialogs.purchaseConfirm",
+				)}
 				loading={purchase.isPending}
 				onConfirm={handlePurchaseConfirm}
 			/>
@@ -261,9 +311,9 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 			<ConfirmDialog
 				open={confirmDelete.open}
 				onOpenChange={confirmDelete.onOpenChange}
-				title="Delete Shop Item"
-				description="Are you sure you want to permanently remove this custom reward from your catalog?"
-				confirmLabel="Delete Item"
+				title={t("routes.heroes.catalog.dialogs.deleteTitle")}
+				description={t("routes.heroes.catalog.dialogs.deleteDesc")}
+				confirmLabel={t("routes.heroes.catalog.dialogs.deleteConfirm")}
 				destructive
 				loading={deleteItem.isPending}
 				onConfirm={handleDeleteConfirm}

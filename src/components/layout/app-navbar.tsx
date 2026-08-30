@@ -35,6 +35,7 @@ import {
 	LuWallet,
 } from "react-icons/lu";
 import { Link, useLocation, useNavigate } from "react-router";
+import { useTranslation } from "@/lib/i18n";
 
 export interface AppNavbarProps {
 	/** Optional additional content rendered in the center */
@@ -42,6 +43,7 @@ export interface AppNavbarProps {
 }
 
 export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
+	const { t } = useTranslation();
 	const { user, logout } = useAuthContext();
 	const { pathname } = useLocation();
 	const navigate = useNavigate();
@@ -74,31 +76,31 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 
 	const navPillars = [
 		{
-			label: "Overview",
+			label: t("components.layout.navbar.overview"),
 			to: "/dashboard",
 			icon: LuLayoutDashboard,
 			active: isOverview,
 		},
 		{
-			label: "Tasks & Habits",
+			label: t("common.nav.tasksHabits"),
 			to: "/tasks",
 			icon: LuCircleCheck,
 			active: isTasks,
 		},
 		{
-			label: "Health",
+			label: t("common.nav.health"),
 			to: "/health",
 			icon: LuActivity,
 			active: isHealth,
 		},
 		{
-			label: "Heroes",
+			label: t("components.layout.navbar.heroes"),
 			to: "/game/heroes",
 			icon: LuSwords,
 			active: isHeroes,
 		},
 		{
-			label: "Finance",
+			label: t("components.layout.navbar.finance"),
 			to: "/game/finance",
 			icon: LuWallet,
 			active: isFinance,
@@ -242,7 +244,11 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 					bg="bg.muted"
 					cursor="pointer"
 					onClick={toggleColorMode}
-					title={`Switch to ${colorMode === "light" ? "dark" : "light"} mode`}
+					title={
+						colorMode === "light"
+							? t("components.layout.navbar.switchToDark")
+							: t("components.layout.navbar.switchToLight")
+					}
 					transition="transform 0.15s ease-out"
 					_hover={{
 						bg: "bg.panel",
@@ -316,30 +322,11 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 									{user?.username}
 								</Text>
 								<Text fontSize="11px" color="fg.muted">
-									Signed in
+									{t("components.layout.navbar.signedIn")}
 								</Text>
 							</Stack>
 						</Box>
 						<MenuSeparator borderColor="border.glass" />
-						<MenuItem
-							value="heroes"
-							cursor="pointer"
-							rounded="xl"
-							px={3}
-							py={2}
-							fontSize="xs"
-							fontWeight="medium"
-							onClick={() => navigate("/game/heroes")}
-							_hover={{ bg: "bg.muted" }}
-						>
-							<Icon
-								as={LuSwords}
-								boxSize={4}
-								mr={2}
-								color="mint.fg"
-							/>
-							Heroes Command Hub
-						</MenuItem>
 						<MenuItem
 							value="settings"
 							cursor="pointer"
@@ -357,7 +344,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 								mr={2}
 								color="fg.muted"
 							/>
-							Settings
+							{t("common.nav.settings")}
 						</MenuItem>
 						<MenuSeparator borderColor="border.glass" />
 						<MenuItem
@@ -373,7 +360,7 @@ export const AppNavbar: React.FC<AppNavbarProps> = ({ children }) => {
 							_hover={{ bg: "red.subtle", color: "red.fg" }}
 						>
 							<Icon as={LuLogOut} boxSize={4} mr={2} />
-							Sign out
+							{t("components.layout.navbar.signOut")}
 						</MenuItem>
 					</MenuContent>
 				</MenuRoot>

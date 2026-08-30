@@ -25,6 +25,7 @@ import {
 	connectDuolingoSchema,
 } from "@/api/schemas";
 import { handleFormApiError } from "@/utils/form-error";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -36,6 +37,7 @@ const glassCard = {
 } as const;
 
 export const DuolingoConnectRoute: React.FC = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const connect = useConnectDuolingo();
 
@@ -78,7 +80,7 @@ export const DuolingoConnectRoute: React.FC = () => {
 					<Link to="/settings">
 						<Icon as={LuArrowLeft} boxSize={4} />
 						<Text fontSize="sm" fontWeight="semibold">
-							Back to Settings
+							{t("routes.settingsDuolingo.backToSettings")}
 						</Text>
 					</Link>
 				</HStack>
@@ -102,19 +104,20 @@ export const DuolingoConnectRoute: React.FC = () => {
 								<Stack gap={0.5}>
 									<HStack gap={2}>
 										<Heading size="lg">
-											Connect Duolingo
+											{t(
+												"routes.settingsDuolingo.heading",
+											)}
 										</Heading>
 										<Badge
 											size="xs"
 											rounded="pill"
 											variant="subtle"
 										>
-											Integration
+											{t("routes.settingsDuolingo.badge")}
 										</Badge>
 									</HStack>
 									<Text color="fg.muted" fontSize="sm">
-										Link your account to track streaks, XP,
-										and leagues
+										{t("routes.settingsDuolingo.subtitle")}
 									</Text>
 								</Stack>
 							</HStack>
@@ -138,13 +141,17 @@ export const DuolingoConnectRoute: React.FC = () => {
 								)}
 
 								<Field
-									label="Duolingo Username"
+									label={t(
+										"routes.settingsDuolingo.username",
+									)}
 									required
 									invalid={Boolean(errors.bot_username)}
 									errorText={errors.bot_username?.message}
 								>
 									<Input
-										placeholder="e.g. duousername"
+										placeholder={t(
+											"routes.settingsDuolingo.usernamePlaceholder",
+										)}
 										{...register("bot_username")}
 										autoComplete="username"
 										autoFocus
@@ -153,13 +160,17 @@ export const DuolingoConnectRoute: React.FC = () => {
 								</Field>
 
 								<Field
-									label="Duolingo Password"
+									label={t(
+										"routes.settingsDuolingo.password",
+									)}
 									required
 									invalid={Boolean(errors.bot_password)}
 									errorText={errors.bot_password?.message}
 								>
 									<PasswordInput
-										placeholder="Your Duolingo password"
+										placeholder={t(
+											"routes.settingsDuolingo.passwordPlaceholder",
+										)}
 										{...register("bot_password")}
 										autoComplete="current-password"
 										rounded="xl"
@@ -182,9 +193,9 @@ export const DuolingoConnectRoute: React.FC = () => {
 										mt={0.5}
 									/>
 									<Text fontSize="xs" color="fg.muted">
-										Your credentials are used solely to
-										establish a secure synchronization
-										session with Duolingo.
+										{t(
+											"routes.settingsDuolingo.securityNote",
+										)}
 									</Text>
 								</HStack>
 
@@ -196,7 +207,7 @@ export const DuolingoConnectRoute: React.FC = () => {
 										flex="1"
 										onClick={() => navigate("/settings")}
 									>
-										Cancel
+										{t("routes.settingsDuolingo.cancel")}
 									</Button>
 									<Button
 										type="submit"
@@ -206,7 +217,9 @@ export const DuolingoConnectRoute: React.FC = () => {
 											connect.isPending || isSubmitting
 										}
 									>
-										Connect Account
+										{t(
+											"routes.settingsDuolingo.connectAccount",
+										)}
 									</Button>
 								</HStack>
 							</Stack>

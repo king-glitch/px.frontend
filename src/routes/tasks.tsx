@@ -90,6 +90,8 @@ import {
 	registerRewardFlightTarget,
 	useRewardFlight,
 } from "@/components/game";
+import { useTranslation } from "@/lib/i18n";
+import type { TFunction } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -100,162 +102,107 @@ const glassCard = {
 	backdropFilter: "blur(30px) saturate(1.4)",
 } as const;
 
-const QUEST_CATEGORIES: SearchableSelectItem[] = [
-	{
-		label: "Work & Career",
-		value: "work",
-		description: "Deep work, coding & execution",
-	},
-	{
-		label: "Health & Fitness",
-		value: "health",
-		description: "Workouts, nutrition & recovery",
-	},
-	{
-		label: "Learning & Skills",
-		value: "learning",
-		description: "Reading, study & practice",
-	},
-	{
-		label: "Chores & Life Ops",
-		value: "chores",
-		description: "Errands, cleaning & admin",
-	},
-	{
-		label: "Mindfulness",
-		value: "mindfulness",
-		description: "Meditation, journaling & rest",
-	},
-	{
-		label: "Social & Community",
-		value: "social",
-		description: "Family, friends & networking",
-	},
-	{
-		label: "Finance & Wealth",
-		value: "finance",
-		description: "Budgeting, investing & review",
-	},
-];
+const CATEGORY_KEYS = [
+	"work",
+	"health",
+	"learning",
+	"chores",
+	"mindfulness",
+	"social",
+	"finance",
+] as const;
 
-const FILTER_CATEGORIES: SearchableSelectItem[] = [
-	{ label: "All Categories", value: "All", description: "Show all quests" },
-	{
-		label: "Work & Career",
-		value: "work",
-		description: "Deep work & execution",
-	},
-	{
-		label: "Health & Fitness",
-		value: "health",
-		description: "Workouts & recovery",
-	},
-	{
-		label: "Learning & Skills",
-		value: "learning",
-		description: "Reading & study",
-	},
-	{
-		label: "Chores & Life Ops",
-		value: "chores",
-		description: "Errands & cleaning",
-	},
-	{
-		label: "Mindfulness",
-		value: "mindfulness",
-		description: "Meditation & calm",
-	},
-	{
-		label: "Social & Community",
-		value: "social",
-		description: "Family & friends",
-	},
-	{
-		label: "Finance & Wealth",
-		value: "finance",
-		description: "Budgeting & savings",
-	},
-];
+function getQuestCategories(t: TFunction): SearchableSelectItem[] {
+	return CATEGORY_KEYS.map((key) => ({
+		label: t(`routes.tasks.categories.${key}.label`),
+		value: key,
+		description: t(`routes.tasks.categories.${key}.fullDescription`),
+	}));
+}
 
-const CADENCE_OPTIONS: SearchableSelectItem[] = [
-	{
-		label: "Daily Loop",
-		value: "daily",
-		description: "Resets every 24 hours",
-	},
-	{
-		label: "Weekly Quest",
-		value: "weekly",
-		description: "Resets on Mondays",
-	},
-	{
-		label: "Monthly Goal",
-		value: "monthly",
-		description: "Resets on 1st of month",
-	},
-	{
-		label: "One-Time Task",
-		value: "one_off",
-		description: "Completes once permanently",
-	},
-];
+function getFilterCategories(t: TFunction): SearchableSelectItem[] {
+	return [
+		{
+			label: t("routes.tasks.filterAll.label"),
+			value: "All",
+			description: t("routes.tasks.filterAll.description"),
+		},
+		...CATEGORY_KEYS.map((key) => ({
+			label: t(`routes.tasks.categories.${key}.label`),
+			value: key,
+			description: t(`routes.tasks.categories.${key}.filterDescription`),
+		})),
+	];
+}
 
-const EFFORT_OPTIONS: SearchableSelectItem[] = [
-	{
-		label: "Trivial Effort (Instant)",
-		value: "trivial",
-		description: "~5 minutes",
-	},
-	{
-		label: "Light Effort (Quick Win)",
-		value: "light",
-		description: "~15 minutes",
-	},
-	{
-		label: "Moderate Effort (Standard)",
-		value: "moderate",
-		description: "~30-45 minutes",
-	},
-	{
-		label: "Hard Effort (Deep Work)",
-		value: "hard",
-		description: "~60-90 minutes",
-	},
-	{
-		label: "Grueling Effort (Major Milestone)",
-		value: "grueling",
-		description: "2+ hours intense focus",
-	},
-];
+function getCadenceOptions(t: TFunction): SearchableSelectItem[] {
+	return (["daily", "weekly", "monthly", "one_off"] as const).map((key) => ({
+		label: t(`routes.tasks.cadence.${key}.label`),
+		value: key,
+		description: t(`routes.tasks.cadence.${key}.description`),
+	}));
+}
 
-function formatScheduleBadge(cadence: string, scheduleDays?: number[]): string {
+function getEffortOptions(t: TFunction): SearchableSelectItem[] {
+	return (["trivial", "light", "moderate", "hard", "grueling"] as const).map(
+		(key) => ({
+			label: t(`routes.tasks.effort.${key}.label`),
+			value: key,
+			description: t(`routes.tasks.effort.${key}.description`),
+		}),
+	);
+}
+
+const WEEK_DAY_KEYS = [
+	"sun",
+	"mon",
+	"tue",
+	"wed",
+	"thu",
+	"fri",
+	"sat",
+] as const;
+
+function formatScheduleBadge(
+	t: TFunction,
+	cadence: string,
+	scheduleDays?: number[],
+): string {
 	if (
 		!scheduleDays ||
 		scheduleDays.length === 0 ||
 		scheduleDays.length === 7
 	) {
-		if (cadence === "daily") return "Daily";
-		if (cadence === "weekly") return "Weekly (Flexible)";
-		if (cadence === "monthly") return "Monthly (Flexible)";
-		return "One-off";
+		if (cadence === "daily") return t("routes.tasks.schedule.daily");
+		if (cadence === "weekly")
+			return t("routes.tasks.schedule.weeklyFlexible");
+		if (cadence === "monthly")
+			return t("routes.tasks.schedule.monthlyFlexible");
+		return t("routes.tasks.schedule.oneOff");
 	}
 	if (
 		scheduleDays.length === 5 &&
 		[1, 2, 3, 4, 5].every((d) => scheduleDays.includes(d))
 	) {
-		return "Weekdays";
+		return t("routes.tasks.schedule.weekdays");
 	}
 	if (
 		scheduleDays.length === 2 &&
 		[0, 6].every((d) => scheduleDays.includes(d))
 	) {
-		return "Weekends";
+		return t("routes.tasks.schedule.weekends");
 	}
-	const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-	return scheduleDays.map((d) => dayNames[d]).join(", ");
+	return scheduleDays
+		.map((d) => t(`routes.tasks.schedule.days.${WEEK_DAY_KEYS[d]}`))
+		.join(", ");
 }
 
 export const TasksRoute: React.FC = () => {
+	const { t } = useTranslation();
+	const QUEST_CATEGORIES = React.useMemo(() => getQuestCategories(t), [t]);
+	const FILTER_CATEGORIES = React.useMemo(() => getFilterCategories(t), [t]);
+	const CADENCE_OPTIONS = React.useMemo(() => getCadenceOptions(t), [t]);
+	const EFFORT_OPTIONS = React.useMemo(() => getEffortOptions(t), [t]);
 	const { data: todayQuests = [], isLoading } = useTodayQuests();
 	const { data: summary } = usePlayerSummary();
 
@@ -369,7 +316,7 @@ export const TasksRoute: React.FC = () => {
 			} catch (err) {
 				if (err instanceof ApiError && err.violations?._error) {
 					toaster.create({
-						title: "Validation Error",
+						title: t("routes.tasks.toasts.validationError"),
 						description: err.violations._error.message,
 						type: "error",
 					});
@@ -387,7 +334,7 @@ export const TasksRoute: React.FC = () => {
 			} catch (err) {
 				if (err instanceof ApiError && err.violations?._error) {
 					toaster.create({
-						title: "Validation Error",
+						title: t("routes.tasks.toasts.validationError"),
 						description: err.violations._error.message,
 						type: "error",
 					});
@@ -443,17 +390,17 @@ export const TasksRoute: React.FC = () => {
 		try {
 			await deleteMutation.mutateAsync(confirmDelete.target);
 			toaster.create({
-				title: "Quest Deleted",
+				title: t("routes.tasks.toasts.questDeleted"),
 				type: "success",
 			});
 			confirmDelete.close();
 		} catch (err) {
 			toaster.create({
-				title: "Failed to delete quest",
+				title: t("routes.tasks.toasts.failedToDelete"),
 				description:
 					err instanceof ApiError
 						? err.message
-						: "Error deleting quest",
+						: t("routes.tasks.toasts.errorDeleting"),
 				type: "error",
 			});
 		}
@@ -496,7 +443,7 @@ export const TasksRoute: React.FC = () => {
 								fontWeight="semibold"
 								textTransform="uppercase"
 							>
-								Today&apos;s Progress
+								{t("routes.tasks.progressCard.title")}
 							</Text>
 							<Icon
 								as={LuCircleCheck}
@@ -507,7 +454,8 @@ export const TasksRoute: React.FC = () => {
 						<HStack align="baseline" gap={2} mt={2}>
 							<Heading size="2xl">{progressPercent}%</Heading>
 							<Text fontSize="xs" color="fg.muted">
-								{completedCount}/{todayQuests.length} completed
+								{completedCount}/{todayQuests.length}{" "}
+								{t("routes.tasks.progressCard.completed")}
 							</Text>
 						</HStack>
 					</Box>
@@ -519,7 +467,7 @@ export const TasksRoute: React.FC = () => {
 								fontWeight="semibold"
 								textTransform="uppercase"
 							>
-								Active Streak
+								{t("routes.tasks.streakCard.title")}
 							</Text>
 							<Icon as={LuFlame} boxSize={4} color="fg.muted" />
 						</HStack>
@@ -528,7 +476,7 @@ export const TasksRoute: React.FC = () => {
 								{summary?.player?.streak ?? 0}
 							</Heading>
 							<Text fontSize="xs" color="fg.muted">
-								days continuous
+								{t("routes.tasks.streakCard.daysContinuous")}
 							</Text>
 						</HStack>
 					</Box>
@@ -552,10 +500,11 @@ export const TasksRoute: React.FC = () => {
 					gap={3}
 				>
 					<Stack gap={0.5}>
-						<Heading size="lg">Tasks & Quest Loops</Heading>
+						<Heading size="lg">
+							{t("routes.tasks.header.heading")}
+						</Heading>
 						<Text fontSize="xs" color="fg.muted">
-							Execute daily routines, habits, and recurring goals
-							to earn EXP + PX rewards.
+							{t("routes.tasks.header.subtitle")}
 						</Text>
 					</Stack>
 
@@ -565,8 +514,12 @@ export const TasksRoute: React.FC = () => {
 								items={FILTER_CATEGORIES}
 								value={selectedTab}
 								onValueChange={setSelectedTab}
-								placeholder="Filter category..."
-								searchPlaceholder="Search category..."
+								placeholder={t(
+									"routes.tasks.header.filterPlaceholder",
+								)}
+								searchPlaceholder={t(
+									"routes.tasks.header.searchPlaceholder",
+								)}
 							/>
 						</Box>
 
@@ -576,7 +529,7 @@ export const TasksRoute: React.FC = () => {
 							icon={LuPlus}
 							onClick={handleOpenCreate}
 						>
-							New Quest
+							{t("routes.tasks.header.newQuest")}
 						</PillButton>
 					</HStack>
 				</Flex>
@@ -590,8 +543,8 @@ export const TasksRoute: React.FC = () => {
 					</Stack>
 				) : filteredQuests.length === 0 ? (
 					<EmptyState
-						title="No quests found in this view"
-						description="Create a new daily, weekly, or one-time quest using the button above."
+						title={t("routes.tasks.empty.title")}
+						description={t("routes.tasks.empty.description")}
 						icon={<Icon as={LuTarget} boxSize={6} />}
 					/>
 				) : (
@@ -724,6 +677,7 @@ export const TasksRoute: React.FC = () => {
 											variant="subtle"
 										>
 											{formatScheduleBadge(
+												t,
 												tq.quest.cadence,
 												tq.quest.schedule_days,
 											)}
@@ -734,7 +688,8 @@ export const TasksRoute: React.FC = () => {
 												rounded="pill"
 												variant="subtle"
 											>
-												+{tq.quest.exp_value} EXP
+												+{tq.quest.exp_value}{" "}
+												{t("common.units.exp")}
 											</Badge>
 										)}
 										<Badge
@@ -756,7 +711,9 @@ export const TasksRoute: React.FC = () => {
 													size="xs"
 													variant="ghost"
 													rounded="pill"
-													aria-label="Quest actions"
+													aria-label={t(
+														"routes.tasks.row.questActions",
+													)}
 												>
 													<Icon
 														as={LuEllipsisVertical}
@@ -791,7 +748,9 @@ export const TasksRoute: React.FC = () => {
 														mr={2}
 														color="mint.fg"
 													/>
-													Edit Quest
+													{t(
+														"routes.tasks.row.editQuest",
+													)}
 												</MenuItem>
 												<MenuItem
 													value="delete"
@@ -812,7 +771,9 @@ export const TasksRoute: React.FC = () => {
 														boxSize={3.5}
 														mr={2}
 													/>
-													Delete Quest
+													{t(
+														"routes.tasks.row.deleteQuest",
+													)}
 												</MenuItem>
 											</MenuContent>
 										</MenuRoot>
@@ -843,13 +804,13 @@ export const TasksRoute: React.FC = () => {
 						<Stack gap={0.5}>
 							<DialogTitle fontSize="lg">
 								{editingQuest
-									? "Edit Quest"
-									: "Create New Quest"}
+									? t("routes.tasks.dialog.editTitle")
+									: t("routes.tasks.dialog.createTitle")}
 							</DialogTitle>
 							<DialogDescription fontSize="xs" color="fg.muted">
 								{editingQuest
-									? "Update cadence, effort, duration or checklist notes."
-									: "Configure cadence, category, and reward point calculation."}
+									? t("routes.tasks.dialog.editSubtitle")
+									: t("routes.tasks.dialog.createSubtitle")}
 							</DialogDescription>
 						</Stack>
 					</DialogHeader>
@@ -868,13 +829,15 @@ export const TasksRoute: React.FC = () => {
 								)}
 
 								<Field
-									label="Quest Title"
+									label={t("routes.tasks.dialog.questTitle")}
 									required
 									invalid={Boolean(errors.title)}
 									errorText={errors.title?.message}
 								>
 									<Input
-										placeholder="e.g. 45m TypeScript deep work"
+										placeholder={t(
+											"routes.tasks.dialog.questTitlePlaceholder",
+										)}
 										{...register("title")}
 										rounded="pill"
 										bg="bg.muted"
@@ -891,7 +854,9 @@ export const TasksRoute: React.FC = () => {
 									gap={3}
 								>
 									<Field
-										label="Category"
+										label={t(
+											"routes.tasks.dialog.category",
+										)}
 										required
 										invalid={Boolean(errors.category)}
 										errorText={errors.category?.message}
@@ -906,13 +871,19 @@ export const TasksRoute: React.FC = () => {
 													{ shouldValidate: true },
 												)
 											}
-											placeholder="Select category..."
-											searchPlaceholder="Search category..."
+											placeholder={t(
+												"routes.tasks.dialog.selectCategory",
+											)}
+											searchPlaceholder={t(
+												"routes.tasks.header.searchPlaceholder",
+											)}
 										/>
 									</Field>
 
 									<Field
-										label="Cadence (Frequency)"
+										label={t(
+											"routes.tasks.dialog.cadenceFrequency",
+										)}
 										required
 										invalid={Boolean(errors.cadence)}
 										errorText={errors.cadence?.message}
@@ -927,7 +898,9 @@ export const TasksRoute: React.FC = () => {
 													{ shouldValidate: true },
 												)
 											}
-											placeholder="Frequency"
+											placeholder={t(
+												"routes.tasks.dialog.frequency",
+											)}
 										/>
 									</Field>
 								</Grid>
@@ -940,7 +913,9 @@ export const TasksRoute: React.FC = () => {
 									gap={3}
 								>
 									<Field
-										label="Effort Level"
+										label={t(
+											"routes.tasks.dialog.effortLevel",
+										)}
 										required
 										invalid={Boolean(errors.effort)}
 										errorText={errors.effort?.message}
@@ -955,13 +930,17 @@ export const TasksRoute: React.FC = () => {
 													{ shouldValidate: true },
 												)
 											}
-											placeholder="Effort"
+											placeholder={t(
+												"routes.tasks.dialog.effort",
+											)}
 										/>
 									</Field>
 
 									<Stack gap={2}>
 										<Field
-											label="Task Duration (Minutes)"
+											label={t(
+												"routes.tasks.dialog.durationMinutes",
+											)}
 											required
 											invalid={Boolean(errors.minutes)}
 											errorText={errors.minutes?.message}
@@ -1035,7 +1014,9 @@ export const TasksRoute: React.FC = () => {
 												fontSize="xs"
 												fontWeight="semibold"
 											>
-												EXP Progression Reward
+												{t(
+													"routes.tasks.dialog.expReward",
+												)}
 											</Text>
 										</HStack>
 										<Button
@@ -1052,7 +1033,13 @@ export const TasksRoute: React.FC = () => {
 												setValue("scored", !scored)
 											}
 										>
-											{scored ? "EXP Active" : "No EXP"}
+											{scored
+												? t(
+														"routes.tasks.dialog.expActive",
+													)
+												: t(
+														"routes.tasks.dialog.noExp",
+													)}
 										</Button>
 									</HStack>
 
@@ -1071,8 +1058,10 @@ export const TasksRoute: React.FC = () => {
 												fontSize="xs"
 											>
 												<Text color="fg.muted">
-													System reward ({minutes}m @{" "}
-													{effort}):
+													{t(
+														"routes.tasks.dialog.systemReward",
+														{ minutes, effort },
+													)}
 												</Text>
 												{isPreviewFetching ? (
 													<Skeleton
@@ -1088,10 +1077,11 @@ export const TasksRoute: React.FC = () => {
 													>
 														+
 														{pricePreview?.exp ?? 0}{" "}
-														EXP (+
+														{t("common.units.exp")}{" "}
+														(+
 														{pricePreview?.px ??
 															0}{" "}
-														PX)
+														{t("common.units.px")})
 													</Badge>
 												)}
 											</HStack>
@@ -1107,9 +1097,9 @@ export const TasksRoute: React.FC = () => {
 														color="mint.fg"
 														fontWeight="medium"
 													>
-														Deep Focus active: +20%
-														bonus multiplier on
-														completion
+														{t(
+															"routes.tasks.dialog.deepFocusActive",
+														)}
 													</Text>
 												</HStack>
 											)}
@@ -1118,7 +1108,11 @@ export const TasksRoute: React.FC = () => {
 								</Box>
 
 								{/* Active Schedule & Flexible Recurrence */}
-								<Field label="Active Schedule & Recurrence">
+								<Field
+									label={t(
+										"routes.tasks.dialog.activeSchedule",
+									)}
+								>
 									<Stack gap={2}>
 										<HStack
 											justify="space-between"
@@ -1129,10 +1123,16 @@ export const TasksRoute: React.FC = () => {
 												color="fg.muted"
 											>
 												{cadence === "daily"
-													? "Select specific days or run every day"
+													? t(
+															"routes.tasks.dialog.dailyHelp",
+														)
 													: cadence === "weekly"
-														? "Flexible weekly target or designated weekdays"
-														: "Flexible monthly target or designated days"}
+														? t(
+																"routes.tasks.dialog.weeklyHelp",
+															)
+														: t(
+																"routes.tasks.dialog.monthlyHelp",
+															)}
 											</Text>
 											<HStack gap={1.5}>
 												<Button
@@ -1152,8 +1152,12 @@ export const TasksRoute: React.FC = () => {
 													}
 												>
 													{cadence === "daily"
-														? "Every Day"
-														: "Any Day (Flexible)"}
+														? t(
+																"routes.tasks.dialog.everyDay",
+															)
+														: t(
+																"routes.tasks.dialog.anyDayFlexible",
+															)}
 												</Button>
 												<Button
 													type="button"
@@ -1177,7 +1181,9 @@ export const TasksRoute: React.FC = () => {
 														])
 													}
 												>
-													Weekdays
+													{t(
+														"routes.tasks.schedule.weekdays",
+													)}
 												</Button>
 												<Button
 													type="button"
@@ -1198,7 +1204,9 @@ export const TasksRoute: React.FC = () => {
 														setScheduleDays([0, 6])
 													}
 												>
-													Weekends
+													{t(
+														"routes.tasks.schedule.weekends",
+													)}
 												</Button>
 											</HStack>
 										</HStack>
@@ -1207,43 +1215,15 @@ export const TasksRoute: React.FC = () => {
 											gap={1.5}
 											justify="space-between"
 										>
-											{[
-												{
-													label: "S",
-													day: 0,
-													title: "Sunday",
-												},
-												{
-													label: "M",
-													day: 1,
-													title: "Monday",
-												},
-												{
-													label: "T",
-													day: 2,
-													title: "Tuesday",
-												},
-												{
-													label: "W",
-													day: 3,
-													title: "Wednesday",
-												},
-												{
-													label: "T",
-													day: 4,
-													title: "Thursday",
-												},
-												{
-													label: "F",
-													day: 5,
-													title: "Friday",
-												},
-												{
-													label: "S",
-													day: 6,
-													title: "Saturday",
-												},
-											].map((item) => {
+											{WEEK_DAY_KEYS.map((key, day) => ({
+												label: t(
+													`routes.tasks.schedule.daysShort.${key}`,
+												),
+												day,
+												title: t(
+													`routes.tasks.schedule.daysFull.${key}`,
+												),
+											})).map((item) => {
 												const isSelected =
 													scheduleDays.length === 0 ||
 													scheduleDays.includes(
@@ -1315,12 +1295,14 @@ export const TasksRoute: React.FC = () => {
 								</Field>
 
 								<Field
-									label="Notes / Checklist (Optional)"
+									label={t("routes.tasks.dialog.notes")}
 									invalid={Boolean(errors.notes)}
 									errorText={errors.notes?.message}
 								>
 									<Input
-										placeholder="Context, subtasks or URL link"
+										placeholder={t(
+											"routes.tasks.dialog.notesPlaceholder",
+										)}
 										{...register("notes")}
 										rounded="pill"
 										bg="bg.muted"
@@ -1338,7 +1320,7 @@ export const TasksRoute: React.FC = () => {
 							size="sm"
 							onClick={() => setIsCreateOpen(false)}
 						>
-							Cancel
+							{t("routes.tasks.dialog.cancel")}
 						</Button>
 						<PillButton
 							type="submit"
@@ -1351,7 +1333,9 @@ export const TasksRoute: React.FC = () => {
 									: createMutation.isPending
 							}
 						>
-							{editingQuest ? "Save Changes" : "Create Quest"}
+							{editingQuest
+								? t("routes.tasks.dialog.saveChanges")
+								: t("routes.tasks.dialog.createQuest")}
 						</PillButton>
 					</DialogFooter>
 
@@ -1363,9 +1347,9 @@ export const TasksRoute: React.FC = () => {
 			<ConfirmDialog
 				open={confirmDelete.open}
 				onOpenChange={confirmDelete.onOpenChange}
-				title="Delete Quest"
-				description="This quest will be permanently removed from your active quest board and progression schedule."
-				confirmLabel="Delete Quest"
+				title={t("routes.tasks.deleteDialog.title")}
+				description={t("routes.tasks.deleteDialog.description")}
+				confirmLabel={t("routes.tasks.deleteDialog.confirmLabel")}
 				destructive
 				loading={deleteMutation.isPending}
 				onConfirm={handleDeleteConfirm}

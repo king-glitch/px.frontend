@@ -28,6 +28,7 @@ import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
 import { useDisconnectDuolingo, useDuolingoStatus } from "@/api";
 import { useAuthContext } from "@/contexts/auth-context";
+import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -39,6 +40,7 @@ const glassCard = {
 } as const;
 
 export const Settings: React.FC = () => {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const { user } = useAuthContext();
 	const { data: status, isLoading } = useDuolingoStatus();
@@ -52,7 +54,7 @@ export const Settings: React.FC = () => {
 		} catch (err) {
 			if (err instanceof ApiError && err.violations?._error) {
 				toaster.create({
-					title: "Validation Error",
+					title: t("routes.settings.validationError"),
 					description: err.violations._error.message,
 					type: "error",
 				});
@@ -65,10 +67,9 @@ export const Settings: React.FC = () => {
 			<Stack gap={6}>
 				{/* Settings Header */}
 				<Stack gap={1}>
-					<Heading size="2xl">Settings</Heading>
+					<Heading size="2xl">{t("routes.settings.heading")}</Heading>
 					<Text color="fg.muted">
-						Manage integrations, connected accounts, and
-						preferences.
+						{t("routes.settings.subtitle")}
 					</Text>
 				</Stack>
 
@@ -104,11 +105,11 @@ export const Settings: React.FC = () => {
 										rounded="pill"
 										variant="subtle"
 									>
-										Active
+										{t("routes.settings.active")}
 									</Badge>
 								</HStack>
 								<Text fontSize="xs" color="fg.muted">
-									ID: {user?.id}
+									{t("routes.settings.idPrefix")} {user?.id}
 								</Text>
 							</Stack>
 						</HStack>
@@ -124,7 +125,7 @@ export const Settings: React.FC = () => {
 						letterSpacing="0.05em"
 						fontSize="xs"
 					>
-						Integrations
+						{t("routes.settings.integrations")}
 					</Heading>
 
 					<Box {...glassCard} p={{ base: 5, md: 7 }}>
@@ -148,19 +149,29 @@ export const Settings: React.FC = () => {
 								</Box>
 								<Stack gap={0.5}>
 									<HStack gap={2}>
-										<Heading size="sm">Duolingo</Heading>
+										<Heading size="sm">
+											{t("routes.settings.duolingo")}
+										</Heading>
 										<Badge size="sm" variant="subtle">
 											{isConnected
 												? status?.username
 													? `@${status.username}`
-													: "Connected"
-												: "Not connected"}
+													: t(
+															"routes.settings.connected",
+														)
+												: t(
+														"routes.settings.notConnected",
+													)}
 										</Badge>
 									</HStack>
 									<Text fontSize="xs" color="fg.muted">
 										{isConnected && status?.username
-											? `Connected as ${status.username} · Daily sync active`
-											: "Language learning streak & XP synchronization"}
+											? t("routes.settings.connectedAs", {
+													username: status.username,
+												})
+											: t(
+													"routes.settings.duolingoTagline",
+												)}
 									</Text>
 								</Stack>
 							</HStack>
@@ -173,7 +184,7 @@ export const Settings: React.FC = () => {
 										navigate("/settings/duolingo")
 									}
 								>
-									Connect
+									{t("routes.settings.connect")}
 								</Button>
 							)}
 						</Flex>
@@ -213,7 +224,7 @@ export const Settings: React.FC = () => {
 												fontWeight="semibold"
 												textTransform="uppercase"
 											>
-												XP
+												{t("routes.settings.xp")}
 											</Text>
 											<Icon
 												as={LuTrendingUp}
@@ -236,7 +247,7 @@ export const Settings: React.FC = () => {
 												fontWeight="semibold"
 												textTransform="uppercase"
 											>
-												Rank
+												{t("routes.settings.rank")}
 											</Text>
 											<Icon
 												as={LuTrophy}
@@ -247,7 +258,7 @@ export const Settings: React.FC = () => {
 										<Heading size="xl" mt={1}>
 											{status.rank > 0
 												? `#${status.rank}`
-												: "Unranked"}
+												: t("routes.settings.unranked")}
 										</Heading>
 									</Box>
 
@@ -261,7 +272,7 @@ export const Settings: React.FC = () => {
 												fontWeight="semibold"
 												textTransform="uppercase"
 											>
-												Streak
+												{t("routes.settings.streak")}
 											</Text>
 											<Icon
 												as={LuFlame}
@@ -284,7 +295,9 @@ export const Settings: React.FC = () => {
 												fontWeight="semibold"
 												textTransform="uppercase"
 											>
-												Longest streak
+												{t(
+													"routes.settings.longestStreak",
+												)}
 											</Text>
 											<Icon
 												as={LuFlame}
@@ -312,7 +325,7 @@ export const Settings: React.FC = () => {
 											boxSize={3.5}
 											mr={1}
 										/>
-										Reconnect
+										{t("routes.settings.reconnect")}
 									</Button>
 									<Button
 										variant="outline"
@@ -322,16 +335,14 @@ export const Settings: React.FC = () => {
 										loading={disconnect.isPending}
 										onClick={handleDisconnect}
 									>
-										Disconnect
+										{t("routes.settings.disconnect")}
 									</Button>
 								</HStack>
 							</Stack>
 						) : (
 							<Stack gap={4} pt={2}>
 								<Text color="fg.muted" fontSize="sm">
-									Connect your Duolingo account to track daily
-									language learning XP, league rankings, and
-									streaks on your dashboard.
+									{t("routes.settings.connectPrompt")}
 								</Text>
 								<Box pt={1}>
 									<Button
@@ -347,7 +358,9 @@ export const Settings: React.FC = () => {
 											mr={1.5}
 											color="fg.muted"
 										/>
-										Connect Duolingo Account
+										{t(
+											"routes.settings.connectDuolingoAccount",
+										)}
 									</Button>
 								</Box>
 							</Stack>

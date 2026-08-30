@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useLedger } from "@/api";
+import { useTranslation } from "@/lib/i18n";
 
 interface LedgerModalProps {
 	open: boolean;
@@ -35,6 +36,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 	open,
 	onOpenChange,
 }) => {
+	const { t } = useTranslation();
 	const [page, setPage] = useState(1);
 	const { data: ledger, isLoading } = useLedger(page, 10);
 
@@ -56,11 +58,10 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 				<DialogHeader pb={2}>
 					<Stack gap={0.5}>
 						<DialogTitle fontSize="lg">
-							EXP & PX Award Ledger
+							{t("routes.heroes.ledger.title")}
 						</DialogTitle>
 						<DialogDescription fontSize="xs" color="fg.muted">
-							Full audit history of all quest completions, health
-							rewards, streaks, and purchases.
+							{t("routes.heroes.ledger.subtitle")}
 						</DialogDescription>
 					</Stack>
 				</DialogHeader>
@@ -74,8 +75,8 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 						</Stack>
 					) : !ledger || ledger.entries.length === 0 ? (
 						<EmptyState
-							title="No ledger entries found"
-							description="Complete quests or earn rewards to populate your ledger."
+							title={t("routes.heroes.ledger.emptyTitle")}
+							description={t("routes.heroes.ledger.emptyDesc")}
 							icon={<Icon as={LuClipboardList} boxSize={6} />}
 						/>
 					) : (
@@ -117,7 +118,9 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 													fontWeight="semibold"
 												>
 													{entry.reason ||
-														"Reward Award"}
+														t(
+															"routes.heroes.ledger.rewardAward",
+														)}
 												</Text>
 											</HStack>
 											<HStack
@@ -128,18 +131,27 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 												<Text>{entry.occurred_on}</Text>
 												{entry.decay_factor < 1 && (
 													<Text>
-														Decay:{" "}
-														{Math.round(
-															entry.decay_factor *
-																100,
+														{t(
+															"routes.heroes.ledger.decay",
+															{
+																percent:
+																	Math.round(
+																		entry.decay_factor *
+																			100,
+																	),
+															},
 														)}
-														%
 													</Text>
 												)}
 												{entry.multiplier > 1 && (
 													<Text>
-														Multiplier:{" "}
-														{entry.multiplier}x
+														{t(
+															"routes.heroes.ledger.multiplier",
+															{
+																multiplier:
+																	entry.multiplier,
+															},
+														)}
 													</Text>
 												)}
 											</HStack>
@@ -159,7 +171,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 													{entry.exp_delta > 0
 														? `+${entry.exp_delta}`
 														: entry.exp_delta}{" "}
-													EXP
+													{t("common.units.exp")}
 												</Text>
 											)}
 											{entry.px_delta !== 0 && (
@@ -175,7 +187,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 													{entry.px_delta > 0
 														? `+${entry.px_delta}`
 														: entry.px_delta}{" "}
-													PX
+													{t("common.units.px")}
 												</Text>
 											)}
 										</HStack>
@@ -198,10 +210,13 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 									setPage((p) => Math.max(1, p - 1))
 								}
 							>
-								Previous
+								{t("routes.heroes.ledger.previous")}
 							</Button>
 							<Text fontSize="xs" color="fg.muted">
-								Page {page} of {ledger?.total_pages || 1}
+								{t("routes.heroes.ledger.page", {
+									page,
+									total: ledger?.total_pages || 1,
+								})}
 							</Text>
 							<Button
 								size="xs"
@@ -210,7 +225,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 								disabled={!ledger || page >= ledger.total_pages}
 								onClick={() => setPage((p) => p + 1)}
 							>
-								Next
+								{t("routes.heroes.ledger.next")}
 							</Button>
 						</HStack>
 
@@ -220,7 +235,7 @@ export const LedgerModal: React.FC<LedgerModalProps> = ({
 							rounded="pill"
 							onClick={() => onOpenChange(false)}
 						>
-							Close
+							{t("routes.heroes.ledger.close")}
 						</Button>
 					</Flex>
 				</DialogFooter>

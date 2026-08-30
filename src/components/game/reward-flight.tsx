@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Portal } from "@chakra-ui/react";
 import { usePrefersReducedMotion } from "./hooks";
+import { useTranslation } from "@/lib/i18n";
 
 export type RewardKind = "exp" | "px";
 
@@ -31,6 +32,7 @@ const RewardFlightChip: React.FC<RewardFlightChipProps> = ({
 	req,
 	onComplete,
 }) => {
+	const { t } = useTranslation();
 	const ref = React.useRef<HTMLDivElement>(null);
 
 	React.useLayoutEffect(() => {
@@ -93,7 +95,8 @@ const RewardFlightChip: React.FC<RewardFlightChipProps> = ({
 			shadow="float"
 			whiteSpace="nowrap"
 		>
-			+{req.amount} {req.kind === "px" ? "PX" : "EXP"}
+			+{req.amount}{" "}
+			{req.kind === "px" ? t("common.units.px") : t("common.units.exp")}
 		</Box>
 	);
 };

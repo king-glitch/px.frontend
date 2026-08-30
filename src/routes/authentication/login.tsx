@@ -17,8 +17,10 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { useAuthContext } from "@/contexts/auth-context";
 import { type LoginFormData, loginSchema } from "@/api/schemas";
 import { handleFormApiError } from "@/utils/form-error";
+import { useTranslation } from "@/lib/i18n";
 
 export const Login: React.FC = () => {
+	const { t } = useTranslation();
 	const { isAuthenticated, isLoading, login } = useAuthContext();
 	const navigate = useNavigate();
 	const [serverError, setServerError] = useState<string | null>(null);
@@ -53,9 +55,11 @@ export const Login: React.FC = () => {
 		<Container maxW="md" py={12}>
 			<Stack gap={6}>
 				<Stack gap={1}>
-					<Heading size="xl">Login</Heading>
+					<Heading size="xl">
+						{t("routes.auth.login.heading")}
+					</Heading>
 					<Text color="fg.muted">
-						Enter your credentials to access your account.
+						{t("routes.auth.login.subtitle")}
 					</Text>
 				</Stack>
 
@@ -68,13 +72,13 @@ export const Login: React.FC = () => {
 						)}
 
 						<Field
-							label="Username"
+							label={t("routes.auth.login.username")}
 							errorText={errors.username?.message}
 							invalid={Boolean(errors.username)}
 							required
 						>
 							<Input
-								placeholder="Username"
+								placeholder={t("routes.auth.login.username")}
 								{...register("username")}
 								autoComplete="username"
 								autoFocus
@@ -82,13 +86,13 @@ export const Login: React.FC = () => {
 						</Field>
 
 						<Field
-							label="Password"
+							label={t("routes.auth.login.password")}
 							errorText={errors.password?.message}
 							invalid={Boolean(errors.password)}
 							required
 						>
 							<PasswordInput
-								placeholder="Password"
+								placeholder={t("routes.auth.login.password")}
 								{...register("password")}
 								autoComplete="current-password"
 							/>
@@ -99,13 +103,15 @@ export const Login: React.FC = () => {
 							loading={isSubmitting}
 							width="full"
 						>
-							Login
+							{t("routes.auth.login.submit")}
 						</Button>
 					</Stack>
 				</form>
 
 				<HStack justify="center" fontSize="sm">
-					<Text color="fg.muted">Don't have an account?</Text>
+					<Text color="fg.muted">
+						{t("routes.auth.login.noAccount")}
+					</Text>
 					<Link
 						asChild
 						color="fg"
@@ -113,7 +119,7 @@ export const Login: React.FC = () => {
 						textDecoration="underline"
 					>
 						<RouterLink to="/authentication/register">
-							Register
+							{t("routes.auth.login.register")}
 						</RouterLink>
 					</Link>
 				</HStack>

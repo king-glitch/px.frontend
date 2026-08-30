@@ -3,6 +3,7 @@ import { Badge, Box, Grid, HStack, Icon, Text } from "@chakra-ui/react";
 import { LuClock, LuSparkles } from "react-icons/lu";
 import type { Buff } from "@/api";
 import { BUFF_LABEL, formatCountdown, glassCard } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface ActiveBuffsMatrixProps {
 	activeBuffs: Buff[];
@@ -11,6 +12,7 @@ interface ActiveBuffsMatrixProps {
 export const ActiveBuffsMatrix: React.FC<ActiveBuffsMatrixProps> = ({
 	activeBuffs,
 }) => {
+	const { t } = useTranslation();
 	const [now, setNow] = React.useState(() => Date.now());
 
 	React.useEffect(() => {
@@ -26,11 +28,13 @@ export const ActiveBuffsMatrix: React.FC<ActiveBuffsMatrixProps> = ({
 				<HStack gap={2}>
 					<Icon as={LuSparkles} boxSize={4} color="mint.fg" />
 					<Text fontSize="md" fontWeight="bold">
-						Active Consumable Buffs
+						{t("routes.heroes.buffs.matrix.title")}
 					</Text>
 				</HStack>
 				<Badge colorPalette="mint" rounded="pill" size="sm">
-					{activeBuffs.length} active
+					{t("routes.heroes.buffs.matrix.count.active", {
+						count: activeBuffs.length,
+					})}
 				</Badge>
 			</HStack>
 
@@ -57,7 +61,9 @@ export const ActiveBuffsMatrix: React.FC<ActiveBuffsMatrixProps> = ({
 									{BUFF_LABEL[buff.effect] ?? buff.effect}
 								</Text>
 								<Text fontSize="10px" color="fg.muted">
-									Multiplier bonus active
+									{t(
+										"routes.heroes.buffs.matrix.multiplier.bonus.active",
+									)}
 								</Text>
 							</Box>
 							<HStack

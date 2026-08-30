@@ -13,6 +13,7 @@ import { LuPackage, LuShoppingBag, LuSwords } from "react-icons/lu";
 import { HeroAvatar, type AvatarSlot } from "@/components/game";
 import type { Player } from "@/api";
 import { glassCard } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface HeroSidebarProps {
 	activeSection: "overview" | "shop" | "inventory";
@@ -27,6 +28,8 @@ export const HeroSidebar: React.FC<HeroSidebarProps> = ({
 	username,
 	equippedCosmetics,
 }) => {
+	const { t } = useTranslation();
+
 	return (
 		<Box {...glassCard} p={3}>
 			<VStack gap={1.5} align="stretch">
@@ -51,7 +54,7 @@ export const HeroSidebar: React.FC<HeroSidebarProps> = ({
 								}
 							/>
 							<Text fontWeight="semibold" fontSize="xs">
-								Hero Overview
+								{t("routes.heroes.sidebar.overview")}
 							</Text>
 						</HStack>
 					</Link>
@@ -78,7 +81,7 @@ export const HeroSidebar: React.FC<HeroSidebarProps> = ({
 								}
 							/>
 							<Text fontWeight="semibold" fontSize="xs">
-								Shop & Rewards
+								{t("routes.heroes.sidebar.shop")}
 							</Text>
 						</HStack>
 					</Link>
@@ -105,7 +108,7 @@ export const HeroSidebar: React.FC<HeroSidebarProps> = ({
 								}
 							/>
 							<Text fontWeight="semibold" fontSize="xs">
-								Inventory & Claims
+								{t("routes.heroes.sidebar.inventory")}
 							</Text>
 						</HStack>
 					</Link>
@@ -129,10 +132,14 @@ export const HeroSidebar: React.FC<HeroSidebarProps> = ({
 					/>
 					<Stack gap={0}>
 						<Text fontSize="xs" fontWeight="bold">
-							@{username || "Hero"}
+							@
+							{username ||
+								t("routes.heroes.sidebar.heroFallback")}
 						</Text>
 						<Text fontSize="10px" color="fg.muted">
-							{player.skill_points} skill pts available
+							{t("routes.heroes.sidebar.skillPointsAvailable", {
+								count: player.skill_points,
+							})}
 						</Text>
 					</Stack>
 				</HStack>

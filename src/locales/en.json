@@ -1,0 +1,893 @@
+{
+	"common": {
+		"units": {
+			"px": "PX",
+			"exp": "EXP",
+			"daysShort": "d"
+		},
+		"errors": {
+			"tryRefresh": "Try refreshing the page"
+		},
+		"nav": {
+			"dashboard": "Dashboard",
+			"tasksHabits": "Tasks & Habits",
+			"health": "Health",
+			"settings": "Settings",
+			"calendar": "Calendar",
+			"goals": "Goals"
+		}
+	},
+	"routes": {
+		"index": {
+			"dailyPrefix": "Daily",
+			"dailyHighlight": "summary"
+		},
+		"health": {
+			"cards": {
+				"energyRecovery": "Energy & Recovery",
+				"hrvBaseline": "HRV baseline optimal",
+				"dailySteps": "Daily Steps",
+				"movementProgress": "Movement progress",
+				"sleepQuality": "Sleep Quality",
+				"score": "Score",
+				"sleepRecovery": "Sleep recovery phase",
+				"activeBurn": "Active Burn",
+				"kcal": "kcal",
+				"activeCalorieOutput": "Active calorie output"
+			},
+			"protocol": {
+				"heading": "Bio-Protocol & Vitals",
+				"subtitle": "Daily physiological readiness and workout tracking",
+				"settled": "Settled",
+				"awardPending": "Award Pending: ~",
+				"restingHeartRate": "Resting Heart Rate",
+				"restingHeartRateNote": "Consistently in the high performance tier for recovery.",
+				"hydration": "Hydration",
+				"hydrationNote": "Electrolyte balance replenished after morning workout.",
+				"proteinTarget": "Protein Target",
+				"proteinNote": "High-density whole foods protocol.",
+				"aerobicCapacity": "Aerobic Capacity",
+				"aerobicNote": "Zone 2 endurance training maintained."
+			},
+			"sidebar": {
+				"recoveryIndex": "Recovery Index",
+				"recoverySubtitle": "Combined biomarker readiness",
+				"sleepPhase": "Sleep Phase",
+				"hrvTrend": "HRV Trend",
+				"adaptiveTarget": "Adaptive Target",
+				"adaptiveSubtitle": "Dynamic training targets computed from your recovery baseline.",
+				"syncBioData": "Sync Bio-Data"
+			}
+		},
+		"settings": {
+			"heading": "Settings",
+			"subtitle": "Manage integrations, connected accounts, and preferences.",
+			"active": "Active",
+			"idPrefix": "ID:",
+			"integrations": "Integrations",
+			"duolingo": "Duolingo",
+			"connected": "Connected",
+			"notConnected": "Not connected",
+			"connectedAs": "Connected as {username} · Daily sync active",
+			"duolingoTagline": "Language learning streak & XP synchronization",
+			"connect": "Connect",
+			"xp": "XP",
+			"rank": "Rank",
+			"unranked": "Unranked",
+			"streak": "Streak",
+			"longestStreak": "Longest streak",
+			"reconnect": "Reconnect",
+			"disconnect": "Disconnect",
+			"connectPrompt": "Connect your Duolingo account to track daily language learning XP, league rankings, and streaks on your dashboard.",
+			"connectDuolingoAccount": "Connect Duolingo Account",
+			"validationError": "Validation Error"
+		},
+		"settingsDuolingo": {
+			"backToSettings": "Back to Settings",
+			"heading": "Connect Duolingo",
+			"badge": "Integration",
+			"subtitle": "Link your account to track streaks, XP, and leagues",
+			"username": "Duolingo Username",
+			"usernamePlaceholder": "e.g. duousername",
+			"password": "Duolingo Password",
+			"passwordPlaceholder": "Your Duolingo password",
+			"securityNote": "Your credentials are used solely to establish a secure synchronization session with Duolingo.",
+			"cancel": "Cancel",
+			"connectAccount": "Connect Account"
+		},
+		"finance": {
+			"convert": {
+				"success": "Period converted to EXP",
+				"successDescription": "+{exp} EXP and +{px} PX awarded!",
+				"failed": "Failed to convert period",
+				"failedDescription": "An error occurred while converting the period",
+				"dialogTitle": "Convert Period to Hero EXP",
+				"dialogDescription": "Converting {period} is irreversible and can only be performed once per month. This will award +{exp} EXP based on your logged income, expenses, and savings rate.",
+				"confirmLabel": "Convert to EXP"
+			},
+			"categories": {
+				"expense": {
+					"rent": {
+						"label": "Rent",
+						"description": "Housing & lease payments"
+					},
+					"groceries": {
+						"label": "Groceries",
+						"description": "Supermarket & food supplies"
+					},
+					"diningOut": {
+						"label": "Dining Out",
+						"description": "Restaurants & cafes"
+					},
+					"utilities": {
+						"label": "Utilities",
+						"description": "Electricity, water, internet"
+					},
+					"transport": {
+						"label": "Transport",
+						"description": "Fuel, transit, ride-sharing"
+					},
+					"entertainment": {
+						"label": "Entertainment",
+						"description": "Movies, games, streaming"
+					},
+					"shopping": {
+						"label": "Shopping",
+						"description": "Clothing, gadgets, misc goods"
+					},
+					"health": {
+						"label": "Health",
+						"description": "Medical, gym, pharmacy"
+					},
+					"education": {
+						"label": "Education",
+						"description": "Courses, books, tuition"
+					},
+					"other": {
+						"label": "Other",
+						"description": "Uncategorized expenses"
+					}
+				},
+				"income": {
+					"salary": {
+						"label": "Salary",
+						"description": "Primary employment income"
+					},
+					"freelance": {
+						"label": "Freelance",
+						"description": "Side gigs & contract work"
+					},
+					"investment": {
+						"label": "Investment",
+						"description": "Dividends, interest, capital gains"
+					},
+					"gift": {
+						"label": "Gift",
+						"description": "Received gifts & allowances"
+					},
+					"other": {
+						"label": "Other",
+						"description": "Uncategorized income"
+					}
+				}
+			},
+			"createBudget": {
+				"category": "Category",
+				"selectCategory": "Select expense category",
+				"monthlyLimit": "Monthly Limit ($)",
+				"limitPlaceholder": "e.g. 500",
+				"created": "Budget Target Created",
+				"cancel": "Cancel",
+				"setTarget": "Set Target"
+			},
+			"createEntry": {
+				"expense": "Expense",
+				"income": "Income",
+				"amount": "Amount ($)",
+				"amountPlaceholder": "e.g. 45.50",
+				"category": "Category",
+				"selectCategory": "Select category",
+				"date": "Date",
+				"note": "Note / Merchant (Optional)",
+				"notePlaceholder": "e.g. Dinner with team",
+				"logged": "Entry Logged",
+				"loggedDescription": "Logged ${amount} for {category}",
+				"cancel": "Cancel",
+				"saveEntry": "Save Entry"
+			},
+			"header": {
+				"heading": "Finance & Economy",
+				"subtitle": "Log transactions, track budget limits, and convert monthly discipline into hero EXP.",
+				"activePeriod": "Active Period"
+			},
+			"statTiles": {
+				"totalIncome": "Total Income",
+				"totalExpense": "Total Expense",
+				"savingsRate": "Savings Rate",
+				"daysLogged": "Days Logged",
+				"projectedExp": "Projected EXP",
+				"loadError": "Couldn't load the summary for period {period}."
+			},
+			"conversionCard": {
+				"heading": "Convert Period to Hero EXP",
+				"description": "Converts logged financial discipline (+{exp} projected EXP) into character growth. One-time per monthly cycle.",
+				"converted": "Converted",
+				"convert": "Convert Period (+{exp} EXP)"
+			},
+			"cashflowChart": {
+				"heading": "Monthly Cashflow",
+				"subtitle": "Daily income vs expense activity for {period}",
+				"income": "Income",
+				"expense": "Expense",
+				"empty": "No transactions recorded for this period."
+			},
+			"categoryChart": {
+				"heading": "Expense Breakdown",
+				"subtitle": "Top spending categories in {period}",
+				"spend": "Spend",
+				"empty": "No expense categories recorded yet."
+			},
+			"entries": {
+				"heading": "Transaction History",
+				"subtitle": "Manage and review your logged expenses and income.",
+				"logEntry": "Log Entry",
+				"deleted": "Entry deleted",
+				"failedToDelete": "Failed to delete entry",
+				"failedToDeleteDescription": "An error occurred while deleting the entry",
+				"directionIncome": "income",
+				"directionExpense": "expense",
+				"filterAll": "All",
+				"filterExpenses": "Expenses",
+				"filterIncome": "Income",
+				"searchPlaceholder": "Search notes or category...",
+				"emptyTitle": "No transactions found",
+				"emptyDescription": "Log your daily coffee, rent, or salary to start tracking cashflow.",
+				"showing": "Showing {from} - {to} of {total} entries",
+				"previous": "Previous",
+				"page": "Page {page}",
+				"next": "Next",
+				"deleteDialogTitle": "Delete Transaction",
+				"deleteDialogDescription": "Are you sure you want to permanently remove this transaction record?",
+				"deleteConfirmLabel": "Delete"
+			},
+			"budgets": {
+				"heading": "Monthly Budget Targets",
+				"subtitle": "Set spending limits per category to stay on track.",
+				"addTarget": "Add Target",
+				"deleted": "Budget target deleted",
+				"failedToDelete": "Failed to delete budget",
+				"failedToDeleteDescription": "An error occurred while deleting the budget target",
+				"emptyTitle": "No budget targets set",
+				"emptyDescription": "Add monthly limits for categories like Groceries or Rent to monitor your discipline.",
+				"deleteDialogTitle": "Delete Budget Target",
+				"deleteDialogDescription": "Are you sure you want to remove this category budget limit?",
+				"deleteConfirmLabel": "Delete"
+			}
+		},
+		"tasks": {
+			"categories": {
+				"work": {
+					"label": "Work & Career",
+					"fullDescription": "Deep work, coding & execution",
+					"filterDescription": "Deep work & execution"
+				},
+				"health": {
+					"label": "Health & Fitness",
+					"fullDescription": "Workouts, nutrition & recovery",
+					"filterDescription": "Workouts & recovery"
+				},
+				"learning": {
+					"label": "Learning & Skills",
+					"fullDescription": "Reading, study & practice",
+					"filterDescription": "Reading & study"
+				},
+				"chores": {
+					"label": "Chores & Life Ops",
+					"fullDescription": "Errands, cleaning & admin",
+					"filterDescription": "Errands & cleaning"
+				},
+				"mindfulness": {
+					"label": "Mindfulness",
+					"fullDescription": "Meditation, journaling & rest",
+					"filterDescription": "Meditation & calm"
+				},
+				"social": {
+					"label": "Social & Community",
+					"fullDescription": "Family, friends & networking",
+					"filterDescription": "Family & friends"
+				},
+				"finance": {
+					"label": "Finance & Wealth",
+					"fullDescription": "Budgeting, investing & review",
+					"filterDescription": "Budgeting & savings"
+				}
+			},
+			"filterAll": {
+				"label": "All Categories",
+				"description": "Show all quests"
+			},
+			"cadence": {
+				"daily": {
+					"label": "Daily Loop",
+					"description": "Resets every 24 hours"
+				},
+				"weekly": {
+					"label": "Weekly Quest",
+					"description": "Resets on Mondays"
+				},
+				"monthly": {
+					"label": "Monthly Goal",
+					"description": "Resets on 1st of month"
+				},
+				"one_off": {
+					"label": "One-Time Task",
+					"description": "Completes once permanently"
+				}
+			},
+			"effort": {
+				"trivial": {
+					"label": "Trivial Effort (Instant)",
+					"description": "~5 minutes"
+				},
+				"light": {
+					"label": "Light Effort (Quick Win)",
+					"description": "~15 minutes"
+				},
+				"moderate": {
+					"label": "Moderate Effort (Standard)",
+					"description": "~30-45 minutes"
+				},
+				"hard": {
+					"label": "Hard Effort (Deep Work)",
+					"description": "~60-90 minutes"
+				},
+				"grueling": {
+					"label": "Grueling Effort (Major Milestone)",
+					"description": "2+ hours intense focus"
+				}
+			},
+			"schedule": {
+				"daily": "Daily",
+				"weeklyFlexible": "Weekly (Flexible)",
+				"monthlyFlexible": "Monthly (Flexible)",
+				"oneOff": "One-off",
+				"weekdays": "Weekdays",
+				"weekends": "Weekends",
+				"days": {
+					"sun": "Sun",
+					"mon": "Mon",
+					"tue": "Tue",
+					"wed": "Wed",
+					"thu": "Thu",
+					"fri": "Fri",
+					"sat": "Sat"
+				},
+				"daysFull": {
+					"sun": "Sunday",
+					"mon": "Monday",
+					"tue": "Tuesday",
+					"wed": "Wednesday",
+					"thu": "Thursday",
+					"fri": "Friday",
+					"sat": "Saturday"
+				},
+				"daysShort": {
+					"sun": "S",
+					"mon": "M",
+					"tue": "T",
+					"wed": "W",
+					"thu": "T",
+					"fri": "F",
+					"sat": "S"
+				}
+			},
+			"progressCard": {
+				"title": "Today's Progress",
+				"completed": "completed"
+			},
+			"streakCard": {
+				"title": "Active Streak",
+				"daysContinuous": "days continuous"
+			},
+			"header": {
+				"heading": "Tasks & Quest Loops",
+				"subtitle": "Execute daily routines, habits, and recurring goals to earn EXP + PX rewards.",
+				"filterPlaceholder": "Filter category...",
+				"searchPlaceholder": "Search category...",
+				"newQuest": "New Quest"
+			},
+			"empty": {
+				"title": "No quests found in this view",
+				"description": "Create a new daily, weekly, or one-time quest using the button above."
+			},
+			"row": {
+				"questActions": "Quest actions",
+				"editQuest": "Edit Quest",
+				"deleteQuest": "Delete Quest"
+			},
+			"toasts": {
+				"validationError": "Validation Error",
+				"questDeleted": "Quest Deleted",
+				"failedToDelete": "Failed to delete quest",
+				"errorDeleting": "Error deleting quest"
+			},
+			"dialog": {
+				"editTitle": "Edit Quest",
+				"createTitle": "Create New Quest",
+				"editSubtitle": "Update cadence, effort, duration or checklist notes.",
+				"createSubtitle": "Configure cadence, category, and reward point calculation.",
+				"questTitle": "Quest Title",
+				"questTitlePlaceholder": "e.g. 45m TypeScript deep work",
+				"category": "Category",
+				"selectCategory": "Select category...",
+				"cadenceFrequency": "Cadence (Frequency)",
+				"frequency": "Frequency",
+				"effortLevel": "Effort Level",
+				"effort": "Effort",
+				"durationMinutes": "Task Duration (Minutes)",
+				"expReward": "EXP Progression Reward",
+				"expActive": "EXP Active",
+				"noExp": "No EXP",
+				"systemReward": "System reward ({minutes}m @ {effort}):",
+				"deepFocusActive": "Deep Focus active: +20% bonus multiplier on completion",
+				"activeSchedule": "Active Schedule & Recurrence",
+				"dailyHelp": "Select specific days or run every day",
+				"weeklyHelp": "Flexible weekly target or designated weekdays",
+				"monthlyHelp": "Flexible monthly target or designated days",
+				"everyDay": "Every Day",
+				"anyDayFlexible": "Any Day (Flexible)",
+				"notes": "Notes / Checklist (Optional)",
+				"notesPlaceholder": "Context, subtasks or URL link",
+				"cancel": "Cancel",
+				"saveChanges": "Save Changes",
+				"createQuest": "Create Quest"
+			},
+			"deleteDialog": {
+				"title": "Delete Quest",
+				"description": "This quest will be permanently removed from your active quest board and progression schedule.",
+				"confirmLabel": "Delete Quest"
+			}
+		},
+		"heroes": {
+			"main": {
+				"load": {
+					"error": "Couldn't load your character sheet. Try refreshing the page."
+				},
+				"spend": {
+					"success": {
+						"title": "Skill Point Allocated",
+						"description": "Upgraded perk: {perk}"
+					},
+					"failed": {
+						"title": "Failed to spend skill point"
+					}
+				},
+				"ascend": {
+					"success": {
+						"title": "Hero Ascended!"
+					},
+					"failed": {
+						"title": "Failed to ascend"
+					}
+				},
+				"upgrade": {
+					"dialog": {
+						"title": "Upgrade Talent Perk",
+						"description": "Spend 1 skill point to upgrade {perk}?",
+						"confirm": "Upgrade"
+					}
+				}
+			},
+			"buffs": {
+				"matrix": {
+					"title": "Active Consumable Buffs",
+					"count": {
+						"active": "{count} active"
+					},
+					"multiplier": {
+						"bonus": {
+							"active": "Multiplier bonus active"
+						}
+					}
+				}
+			},
+			"addReward": {
+				"dialog": {
+					"title": "Create Custom Self-Reward",
+					"subtitle": "Define personal real-world rewards you can purchase with earned PX."
+				},
+				"titleField": {
+					"label": "Reward Title",
+					"placeholder": "e.g. Specialty Matcha Latte"
+				},
+				"descriptionField": {
+					"label": "Description (Optional)",
+					"placeholder": "What is the occasion or treat?"
+				},
+				"currencyCost": {
+					"label": "Currency Cost (Real $ Value)",
+					"helper": "Optional reference cost",
+					"placeholder": "e.g. 150"
+				},
+				"currencyUnit": {
+					"label": "Currency Unit",
+					"placeholder": "Select currency"
+				},
+				"pxCost": {
+					"label": "PX Point Cost",
+					"suggested": "Suggested based on economy: ~{value} PX",
+					"autoFill": "Auto-Fill ({value})"
+				},
+				"expiration": {
+					"set": "Expiration Set",
+					"add": "Add Expiration",
+					"days": "days"
+				},
+				"cancel": "Cancel",
+				"create": "Create Reward"
+			},
+			"ascend": {
+				"modal": {
+					"title": "Ascend Hero",
+					"subtitle": "Reach higher power tiers through ascension.",
+					"body": "Ascending resets your hero level to 1, but permanently increases your base stats multiplier and awards 5 bonus skill points.",
+					"cancel": "Cancel",
+					"confirm": "Ascend Now"
+				}
+			},
+			"attribute": {
+				"radar": {
+					"card": {
+						"title": "Attribute Breakdown",
+						"subtitle": "Each attribute is EXP earned from one quest category, log-scaled."
+					}
+				}
+			},
+			"claim": {
+				"card": {
+					"redeemed": "Redeemed",
+					"readyToClaim": "Ready to Claim",
+					"paid": "Paid: {px} PX",
+					"value": "Value: {currency}{cost}",
+					"completed": "Claim Completed",
+					"markRedeemed": "Mark as Redeemed"
+				}
+			},
+			"header": {
+				"title": "Hero Command Hub",
+				"level": "Lv {level}",
+				"ascension": "Ascension {count}",
+				"subtitle": "Progression, talent perks, reward shop, and cyber inventory.",
+				"ledgerHistory": "Ledger History",
+				"available": "available"
+			},
+			"multipliers": {
+				"title": "Active Hero Multipliers",
+				"subtitle": "Live permanent bonuses gained from your invested talent perks and attribute power.",
+				"pointsInvested": "{count} Points Invested",
+				"totalAttributes": "{count} Total Attributes",
+				"rankZeroBase": "Rank 0 (Base 1.0x)",
+				"rankZeroFullPrice": "Rank 0 (Full price)",
+				"questExp": {
+					"label": "Quest EXP",
+					"note": "+{percent}% daily exp"
+				},
+				"pxYield": {
+					"label": "PX Yield",
+					"note": "+{percent}% task px"
+				},
+				"deepFocus": {
+					"label": "Deep Focus",
+					"note": "+{percent}% 60m+ exp"
+				},
+				"healthAward": {
+					"label": "Health Award",
+					"note": "+{percent}% daily health"
+				},
+				"streakBonus": {
+					"label": "Streak Bonus",
+					"note": "+{percent}% streak boost"
+				},
+				"financeExp": {
+					"label": "Finance EXP",
+					"note": "+{percent}% monthly exp"
+				},
+				"shopDiscount": {
+					"label": "Shop Discount",
+					"note": "-{percent}% shop price"
+				},
+				"secondWind": {
+					"label": "Second Wind",
+					"active": "Active",
+					"inactive": "Inactive",
+					"noteActive": "Streak auto-shield (14d)",
+					"noteInactive": "Rank 0 (0/1)"
+				}
+			},
+			"sidebar": {
+				"overview": "Hero Overview",
+				"shop": "Shop & Rewards",
+				"inventory": "Inventory & Claims",
+				"skillPointsAvailable": "{count} skill pts available",
+				"heroFallback": "Hero"
+			},
+			"progression": {
+				"level": "Level {level}",
+				"ascension": "Ascension {ascensions}",
+				"ascendHero": "Ascend Hero",
+				"wardrobeAndPerks": "Wardrobe & Perks"
+			},
+			"streak": {
+				"title": "Streak & Badges",
+				"best": "Best: {days}d",
+				"activeStreak": "Active Streak",
+				"daysSingle": "Day",
+				"daysPlural": "Days",
+				"shielded": "Shielded",
+				"secondWindActive": "Second Wind talent active",
+				"noActiveBuffs": "No active consumable buffs"
+			},
+			"talentTree": {
+				"title": "Talent Perk Tree",
+				"subtitle": "Spend skill points earned from leveling up to activate permanent multipliers.",
+				"pointsAvailable": "{count} Points Available",
+				"current": "Current:",
+				"nextRank": "Next rank:",
+				"maxRank": "Max Rank",
+				"zeroPoints": "0 Skill Points",
+				"upgrade": "Upgrade (+{gain})"
+			},
+			"shop": {
+				"title": "Reward Shop",
+				"subtitle": "Redeem PX points for real-life self-rewards, powerful consumables, and cyber cosmetics.",
+				"tabs": {
+					"reward": "Real-World",
+					"consumable": "Consumables",
+					"cosmetic": "Cosmetics"
+				},
+				"newReward": "New Reward"
+			},
+			"catalog": {
+				"toasts": {
+					"purchaseSuccess": "Purchased {name}!",
+					"purchaseSuccessDesc": "Deducted {price} PX points.",
+					"purchaseFailed": "Purchase failed",
+					"deleteSuccess": "Item removed from shop",
+					"deleteFailed": "Failed to delete item"
+				},
+				"empty": {
+					"title": "No items in this category",
+					"description": "Add your own custom real-life rewards using the button above or check back later."
+				},
+				"badges": {
+					"reqLevel": "Req Lv {level}",
+					"systemItem": "System Item",
+					"exp": "Exp: {date}"
+				},
+				"buttons": {
+					"locked": "Locked (Lv {level})",
+					"owned": "Owned",
+					"unaffordable": "Insufficient PX",
+					"purchase": "Purchase"
+				},
+				"dialogs": {
+					"purchaseTitle": "Purchase Shop Item",
+					"purchaseDesc": "Spend {price} PX to purchase \"{name}\"?",
+					"purchaseConfirm": "Confirm Purchase",
+					"deleteTitle": "Delete Shop Item",
+					"deleteDesc": "Are you sure you want to permanently remove this custom reward from your catalog?",
+					"deleteConfirm": "Delete Item"
+				}
+			},
+			"inventory": {
+				"toasts": {
+					"itemUsed": "Item Used!",
+					"failedUse": "Failed to use item",
+					"itemEquipped": "Item Equipped!",
+					"itemUnequipped": "Item Unequipped",
+					"failedEquip": "Failed to equip item",
+					"claimRedeemed": "Reward Claim Redeemed!",
+					"claimRedeemedDesc": "Enjoy your real-world reward!",
+					"failedRedeem": "Failed to redeem claim"
+				},
+				"bag": {
+					"title": "Inventory Bag",
+					"subtitle": "Manage and use consumables or equip cyber avatar cosmetics.",
+					"emptyTitle": "Your bag is empty",
+					"emptyDesc": "Purchase consumables like Streak Shields or cosmetics from the Shop."
+				},
+				"claims": {
+					"title": "Real-World Reward Claims",
+					"subtitle": "Track real-world rewards purchased with PX points.",
+					"emptyTitle": "No reward claims yet",
+					"emptyDesc": "When you buy real-life rewards from the shop, they appear here."
+				},
+				"dialogs": {
+					"useTitle": "Use Consumable Item",
+					"useDesc": "Are you sure you want to consume this item? Its effects or buffs will activate immediately.",
+					"useConfirm": "Use Item",
+					"redeemTitle": "Mark Claim as Redeemed",
+					"redeemDesc": "Have you fulfilled/enjoyed this real-world reward in your life?",
+					"redeemConfirm": "Mark as Redeemed"
+				},
+				"card": {
+					"mysteryItem": "Mystery Item",
+					"deprecated": "Deprecated",
+					"equipped": "Equipped",
+					"cosmetic": "Cosmetic",
+					"noDesc": "No item description available.",
+					"unequip": "Unequip",
+					"equipItem": "Equip Item",
+					"useItem": "Use Item"
+				}
+			},
+			"ledger": {
+				"title": "EXP & PX Award Ledger",
+				"subtitle": "Full audit history of all quest completions, health rewards, streaks, and purchases.",
+				"emptyTitle": "No ledger entries found",
+				"emptyDesc": "Complete quests or earn rewards to populate your ledger.",
+				"rewardAward": "Reward Award",
+				"decay": "Decay: {percent}%",
+				"multiplier": "Multiplier: {multiplier}x",
+				"previous": "Previous",
+				"page": "Page {page} of {total}",
+				"next": "Next",
+				"close": "Close"
+			},
+			"wardrobe": {
+				"title": "Wardrobe & Perk Customization",
+				"subtitle": "Equip pixel-art hats, glasses, skins, and unlock exclusive perk prestige customizations for your 13×13 rabbit.",
+				"categories": {
+					"head": "Hats (11)",
+					"glasses": "Glasses (7)",
+					"accessory": "Accessories (7)",
+					"skin": "Skins (8)",
+					"perks": "Perk Mastery (8)"
+				},
+				"toasts": {
+					"unequipped": "Unequipped {name}",
+					"equipped": "Equipped {name}!",
+					"equippedPerk": "Equipped Perk Cosmetic: {name}!",
+					"failedEquip": "Failed to equip item"
+				},
+				"close": "Close",
+				"itemCard": {
+					"equipped": "Equipped",
+					"perk": "Perk: {perk}",
+					"locked": "Locked by Perk",
+					"unequip": "Unequip",
+					"equip": "Equip"
+				},
+				"perkCard": {
+					"rank": "Rank {rank}",
+					"locked": "Locked",
+					"unlockInTree": "Unlock in Skill Tree",
+					"unequip": "Unequip",
+					"equipToRabbit": "Equip to Rabbit"
+				},
+				"preview": {
+					"title": "Live 13×13 Preview",
+					"levelRabbit": "Level {level} Rabbit",
+					"equippedSlots": "EQUIPPED SLOTS"
+				}
+			}
+		},
+		"auth": {
+			"login": {
+				"heading": "Login",
+				"subtitle": "Enter your credentials to access your account.",
+				"username": "Username",
+				"password": "Password",
+				"submit": "Login",
+				"noAccount": "Don't have an account?",
+				"register": "Register"
+			},
+			"register": {
+				"heading": "Register",
+				"subtitle": "Create a new account to get started.",
+				"username": "Username",
+				"usernamePlaceholder": "Username (e.g. alice)",
+				"password": "Password",
+				"confirmPassword": "Confirm Password",
+				"submit": "Register",
+				"hasAccount": "Already have an account?",
+				"login": "Login"
+			}
+		}
+	},
+	"components": {
+		"layout": {
+			"navbar": {
+				"overview": "Overview",
+				"heroes": "Heroes",
+				"finance": "Finance",
+				"switchToDark": "Switch to dark mode",
+				"switchToLight": "Switch to light mode",
+				"signedIn": "Signed in",
+				"signOut": "Sign out"
+			}
+		},
+		"game": {
+			"attributes": {
+				"vigor": {
+					"label": "VIGOR",
+					"description": "Raised by health quests and your daily health award."
+				},
+				"craft": {
+					"label": "CRAFT",
+					"description": "Raised by work quests — anything you build or ship."
+				},
+				"mind": {
+					"label": "MIND",
+					"description": "Raised by learning quests — study, reading, practice."
+				},
+				"order": {
+					"label": "ORDER",
+					"description": "Raised by chores — the upkeep that keeps everything else running."
+				},
+				"spirit": {
+					"label": "SPIRIT",
+					"description": "Raised by mindfulness quests — rest, reflection, stillness."
+				},
+				"bond": {
+					"label": "BOND",
+					"description": "Raised by social quests — time spent on people."
+				},
+				"fortune": {
+					"label": "FORTUNE",
+					"description": "Raised by finance quests and by logging your income and expenses."
+				}
+			},
+			"attributeRadar": {
+				"from": "from"
+			},
+			"avatar": {
+				"ariaLabel": "Pixel rabbit avatar"
+			},
+			"expBar": {
+				"level": "Level"
+			},
+			"levelUp": {
+				"title": "Level Up"
+			}
+		},
+		"dashboard": {
+			"duolingoCard": {
+				"failedToLoad": "Failed to load Duolingo data",
+				"defaultUsername": "Duolingo",
+				"manage": "Manage Duolingo",
+				"connect": "Connect Duolingo",
+				"streak": "streak",
+				"linkAccount": "Link account"
+			},
+			"habitsCard": {
+				"titlePrefix": "Habit",
+				"titleHighlight": "tracker",
+				"today": "Today,",
+				"failedToLoad": "Failed to load today's quests",
+				"noQuests": "No quests scheduled today"
+			},
+			"heroSnapshotCard": {
+				"failedToLoad": "Failed to load player data",
+				"hero": "Hero",
+				"ascension": "ascension",
+				"ascensions": "ascensions"
+			},
+			"questsSummaryCard": {
+				"failedToLoad": "Failed to load quests",
+				"todo": "To do",
+				"ongoing": "On going",
+				"complete": "Complete",
+				"tasks": "tasks"
+			},
+			"todayPulseCard": {
+				"failedToLoad": "Failed to load performance data",
+				"today": "Today",
+				"netThisPeriod": "net this period",
+				"income": "Income",
+				"expense": "Expense",
+				"expProjected": "EXP projected"
+			}
+		}
+	}
+}

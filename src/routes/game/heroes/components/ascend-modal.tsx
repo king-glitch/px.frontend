@@ -12,6 +12,7 @@ import {
 	DialogRoot,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { useTranslation } from "@/lib/i18n";
 
 interface AscendModalProps {
 	open: boolean;
@@ -26,6 +27,7 @@ export const AscendModal: React.FC<AscendModalProps> = ({
 	loading,
 	onAscend,
 }) => {
+	const { t } = useTranslation();
 	return (
 		<DialogRoot open={open} onOpenChange={(e) => onOpenChange(e.open)}>
 			<DialogContent
@@ -36,16 +38,16 @@ export const AscendModal: React.FC<AscendModalProps> = ({
 				borderColor="border.glass"
 			>
 				<DialogHeader>
-					<DialogTitle>Ascend Hero</DialogTitle>
+					<DialogTitle>
+						{t("routes.heroes.ascend.modal.title")}
+					</DialogTitle>
 					<DialogDescription fontSize="xs" color="fg.muted">
-						Reach higher power tiers through ascension.
+						{t("routes.heroes.ascend.modal.subtitle")}
 					</DialogDescription>
 				</DialogHeader>
 				<DialogBody>
 					<Text fontSize="sm" color="fg.muted" lineHeight="tall">
-						Ascending resets your hero level to 1, but permanently
-						increases your base stats multiplier and awards 5 bonus
-						skill points.
+						{t("routes.heroes.ascend.modal.body")}
 					</Text>
 				</DialogBody>
 				<DialogFooter>
@@ -54,7 +56,7 @@ export const AscendModal: React.FC<AscendModalProps> = ({
 						size="sm"
 						onClick={() => onOpenChange(false)}
 					>
-						Cancel
+						{t("routes.heroes.ascend.modal.cancel")}
 					</Button>
 					<PillButton
 						variant="dark"
@@ -62,7 +64,7 @@ export const AscendModal: React.FC<AscendModalProps> = ({
 						loading={loading}
 						onClick={onAscend}
 					>
-						Ascend Now
+						{t("routes.heroes.ascend.modal.confirm")}
 					</PillButton>
 				</DialogFooter>
 				<DialogCloseTrigger />

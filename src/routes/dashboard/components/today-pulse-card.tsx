@@ -2,6 +2,7 @@ import React from "react";
 import { Box, HStack, Skeleton, Stack, Text } from "@chakra-ui/react";
 import type { FinanceSummary } from "@/api/types";
 import { holoGlassCard } from "./holo-card";
+import { useTranslation } from "@/lib/i18n";
 
 interface TodayPulseCardProps {
 	todayCompletionPct: number;
@@ -20,6 +21,7 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 	isLoading,
 	isError,
 }) => {
+	const { t } = useTranslation();
 	return (
 		<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
 			{isLoading ? (
@@ -32,10 +34,10 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 			) : isError ? (
 				<Stack gap={2}>
 					<Text fontSize="sm" color="red.fg" fontWeight="medium">
-						Failed to load performance data
+						{t("components.dashboard.todayPulseCard.failedToLoad")}
 					</Text>
 					<Text fontSize="xs" color="fg.muted">
-						Try refreshing the page
+						{t("common.errors.tryRefresh")}
 					</Text>
 				</Stack>
 			) : (
@@ -46,7 +48,7 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 						textTransform="uppercase"
 						letterSpacing="0.08em"
 					>
-						Today
+						{t("components.dashboard.todayPulseCard.today")}
 					</Text>
 					<Stack gap={2.5} mt={4}>
 						<Box
@@ -102,14 +104,21 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 							pl={3}
 							fontWeight="medium"
 						>
-							net this period
+							{t(
+								"components.dashboard.todayPulseCard.netThisPeriod",
+							)}
 						</Text>
 					</HStack>
 					{financeSummary && (
 						<Text fontSize="xs" color="fg.muted" mt={1.5}>
-							Income {financeSummary.income.toLocaleString()} ·
-							Expense {financeSummary.expense.toLocaleString()} ·
-							+{financeSummary.projected_exp} EXP projected
+							{t("components.dashboard.todayPulseCard.income")}{" "}
+							{financeSummary.income.toLocaleString()} ·{" "}
+							{t("components.dashboard.todayPulseCard.expense")}{" "}
+							{financeSummary.expense.toLocaleString()} · +
+							{financeSummary.projected_exp}{" "}
+							{t(
+								"components.dashboard.todayPulseCard.expProjected",
+							)}
 						</Text>
 					)}
 				</>

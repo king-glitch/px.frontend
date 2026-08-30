@@ -9,18 +9,20 @@ import {
 	LuSettings,
 	LuTarget,
 } from "react-icons/lu";
+import { useTranslation } from "@/lib/i18n";
 
 const railItems = [
-	{ icon: LuLayoutDashboard, label: "Dashboard", to: "/dashboard" },
-	{ icon: LuCircleCheck, label: "Tasks & Habits", to: "/tasks" },
-	{ icon: LuActivity, label: "Health", to: "/health" },
-	{ icon: LuSettings, label: "Settings", to: "/settings" },
-	{ icon: LuCalendarDays, label: "Calendar" },
-	{ icon: LuTarget, label: "Goals" },
+	{ icon: LuLayoutDashboard, labelKey: "dashboard", to: "/dashboard" },
+	{ icon: LuCircleCheck, labelKey: "tasksHabits", to: "/tasks" },
+	{ icon: LuActivity, labelKey: "health", to: "/health" },
+	{ icon: LuSettings, labelKey: "settings", to: "/settings" },
+	{ icon: LuCalendarDays, labelKey: "calendar" },
+	{ icon: LuTarget, labelKey: "goals" },
 ];
 
 export const DashboardRail: React.FC = () => {
 	const { pathname } = useLocation();
+	const { t } = useTranslation();
 
 	return (
 		<GridItem
@@ -54,12 +56,13 @@ export const DashboardRail: React.FC = () => {
 						(item.to === "/dashboard" && pathname === "/");
 
 					if (item.to) {
+						const label = t(`common.nav.${item.labelKey}`);
 						return (
 							<Circle
-								key={item.label}
+								key={item.labelKey}
 								asChild
-								title={item.label}
-								aria-label={item.label}
+								title={label}
+								aria-label={label}
 								aria-current={active ? "page" : undefined}
 								size="11"
 								bg={active ? "bg.solid" : "transparent"}
@@ -80,11 +83,12 @@ export const DashboardRail: React.FC = () => {
 						);
 					}
 
+					const label = t(`common.nav.${item.labelKey}`);
 					return (
 						<Circle
-							key={item.label}
-							title={item.label}
-							aria-label={item.label}
+							key={item.labelKey}
+							title={label}
+							aria-label={label}
 							size="11"
 							bg="transparent"
 							color="fg.muted"

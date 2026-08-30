@@ -3,6 +3,7 @@ import { Badge, Box, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react";
 import { LuArrowDownRight, LuArrowUpRight, LuTrash2 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import type { FinanceEntry } from "@/api/types";
+import { useTranslation } from "@/lib/i18n";
 
 interface EntryItemRowProps {
 	entry: FinanceEntry;
@@ -13,6 +14,7 @@ export const EntryItemRow: React.FC<EntryItemRowProps> = ({
 	entry,
 	onDelete,
 }) => {
+	const { t } = useTranslation();
 	const isIncome = entry.direction === "income";
 
 	return (
@@ -46,7 +48,9 @@ export const EntryItemRow: React.FC<EntryItemRowProps> = ({
 							size="xs"
 							colorPalette={isIncome ? "mint" : "gray"}
 						>
-							{entry.direction}
+							{isIncome
+								? t("routes.finance.entries.directionIncome")
+								: t("routes.finance.entries.directionExpense")}
 						</Badge>
 					</HStack>
 					<HStack gap={2} fontSize="xs" color="fg.muted">

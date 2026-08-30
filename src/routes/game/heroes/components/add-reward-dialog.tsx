@@ -33,6 +33,7 @@ import {
 import { handleFormApiError } from "@/utils/form-error";
 import { useCreateShopItem, useSuggestPrice } from "@/api";
 import { CURRENCY_OPTIONS } from "./perks-data";
+import { useTranslation } from "@/lib/i18n";
 
 interface AddRewardDialogProps {
 	open: boolean;
@@ -43,6 +44,7 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 	open,
 	onOpenChange,
 }) => {
+	const { t } = useTranslation();
 	const createItem = useCreateShopItem();
 
 	const {
@@ -130,11 +132,10 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 				<DialogHeader pb={2}>
 					<Stack gap={0.5}>
 						<DialogTitle fontSize="lg">
-							Create Custom Self-Reward
+							{t("routes.heroes.addReward.dialog.title")}
 						</DialogTitle>
 						<DialogDescription fontSize="xs" color="fg.muted">
-							Define personal real-world rewards you can purchase
-							with earned PX.
+							{t("routes.heroes.addReward.dialog.subtitle")}
 						</DialogDescription>
 					</Stack>
 				</DialogHeader>
@@ -146,13 +147,17 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 					>
 						<Stack gap={4}>
 							<Field
-								label="Reward Title"
+								label={t(
+									"routes.heroes.addReward.titleField.label",
+								)}
 								required
 								invalid={Boolean(errors.title)}
 								errorText={errors.title?.message}
 							>
 								<Input
-									placeholder="e.g. Specialty Matcha Latte"
+									placeholder={t(
+										"routes.heroes.addReward.titleField.placeholder",
+									)}
 									rounded="pill"
 									bg="bg.muted"
 									{...register("title")}
@@ -160,12 +165,16 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 							</Field>
 
 							<Field
-								label="Description (Optional)"
+								label={t(
+									"routes.heroes.addReward.descriptionField.label",
+								)}
 								invalid={Boolean(errors.description)}
 								errorText={errors.description?.message}
 							>
 								<Textarea
-									placeholder="What is the occasion or treat?"
+									placeholder={t(
+										"routes.heroes.addReward.descriptionField.placeholder",
+									)}
 									rounded="xl"
 									bg="bg.muted"
 									rows={2}
@@ -181,13 +190,19 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 								gap={3}
 							>
 								<Field
-									label="Currency Cost (Real $ Value)"
-									helperText="Optional reference cost"
+									label={t(
+										"routes.heroes.addReward.currencyCost.label",
+									)}
+									helperText={t(
+										"routes.heroes.addReward.currencyCost.helper",
+									)}
 								>
 									<Input
 										type="number"
 										step="0.01"
-										placeholder="e.g. 150"
+										placeholder={t(
+											"routes.heroes.addReward.currencyCost.placeholder",
+										)}
 										rounded="pill"
 										bg="bg.muted"
 										{...register("currency_cost", {
@@ -196,26 +211,39 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 									/>
 								</Field>
 
-								<Field label="Currency Unit">
+								<Field
+									label={t(
+										"routes.heroes.addReward.currencyUnit.label",
+									)}
+								>
 									<SearchableSelect
 										items={CURRENCY_OPTIONS}
 										value={currency}
 										onValueChange={(val) =>
 											setValue("currency_symbol", val)
 										}
-										placeholder="Select currency"
+										placeholder={t(
+											"routes.heroes.addReward.currencyUnit.placeholder",
+										)}
 									/>
 								</Field>
 							</Grid>
 
 							<Field
-								label="PX Point Cost"
+								label={t(
+									"routes.heroes.addReward.pxCost.label",
+								)}
 								required
 								invalid={Boolean(errors.cost_px)}
 								errorText={errors.cost_px?.message}
 								helperText={
 									suggestion
-										? `Suggested based on economy: ~${suggestion.toLocaleString()} PX`
+										? t(
+												"routes.heroes.addReward.pxCost.suggested",
+												{
+													value: suggestion.toLocaleString(),
+												},
+											)
 										: undefined
 								}
 							>
@@ -242,7 +270,10 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 													boxSize={3.5}
 												/>
 												<Text fontSize="xs">
-													Auto-Fill ({suggestion})
+													{t(
+														"routes.heroes.addReward.pxCost.autoFill",
+														{ value: suggestion },
+													)}
 												</Text>
 											</HStack>
 										</Button>
@@ -267,8 +298,12 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 										}
 									>
 										{hasExpiration
-											? "Expiration Set"
-											: "Add Expiration"}
+											? t(
+													"routes.heroes.addReward.expiration.set",
+												)
+											: t(
+													"routes.heroes.addReward.expiration.add",
+												)}
 									</Button>
 									{hasExpiration && (
 										<HStack gap={1}>
@@ -292,7 +327,9 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 												fontSize="xs"
 												color="fg.muted"
 											>
-												days
+												{t(
+													"routes.heroes.addReward.expiration.days",
+												)}
 											</Text>
 										</HStack>
 									)}
@@ -309,7 +346,7 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 						rounded="pill"
 						onClick={() => onOpenChange(false)}
 					>
-						Cancel
+						{t("routes.heroes.addReward.cancel")}
 					</Button>
 					<PillButton
 						variant="dark"
@@ -318,7 +355,7 @@ export const AddRewardDialog: React.FC<AddRewardDialogProps> = ({
 						type="submit"
 						loading={isSubmitting}
 					>
-						Create Reward
+						{t("routes.heroes.addReward.create")}
 					</PillButton>
 				</DialogFooter>
 				<DialogCloseTrigger />
