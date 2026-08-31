@@ -104,8 +104,8 @@ export const CategoryMasteryCard: React.FC = () => {
 					<HStack gap={2}>
 						<Circle
 							size="28px"
-							bg="purple.500/15"
-							color="purple.400"
+							bg="lime.500/15"
+							color="lime.500"
 						>
 							<Icon as={LuCrown} boxSize={4} />
 						</Circle>
@@ -122,7 +122,7 @@ export const CategoryMasteryCard: React.FC = () => {
 				<Button
 					size="xs"
 					variant="subtle"
-					colorPalette="purple"
+					colorPalette="lime"
 					onClick={() => {
 						setSelectedPrimary(
 							masterySummary?.primary || "learning",
@@ -161,9 +161,9 @@ export const CategoryMasteryCard: React.FC = () => {
 							borderWidth="1px"
 							borderColor={
 								isPrimary
-									? "purple.500/40"
+									? "lime.500/40"
 									: isSecondary
-										? "blue.500/40"
+										? "border.glass"
 										: "border.subtle"
 							}
 							position="relative"
@@ -194,7 +194,7 @@ export const CategoryMasteryCard: React.FC = () => {
 								<HStack gap={1}>
 									{isPrimary && (
 										<Badge
-											colorPalette="purple"
+											colorPalette="lime"
 											size="xs"
 											variant="solid"
 										>
@@ -203,9 +203,9 @@ export const CategoryMasteryCard: React.FC = () => {
 									)}
 									{isSecondary && (
 										<Badge
-											colorPalette="blue"
+											colorPalette="gray"
 											size="xs"
-											variant="solid"
+											variant="subtle"
 										>
 											Secondary
 										</Badge>
@@ -220,7 +220,7 @@ export const CategoryMasteryCard: React.FC = () => {
 								mb={1}
 							>
 								<Text>Mastery Rank</Text>
-								<Text fontWeight="bold" color="purple.400">
+								<Text fontWeight="bold" color="lime.500">
 									Lv. {level}
 								</Text>
 							</HStack>
@@ -231,7 +231,7 @@ export const CategoryMasteryCard: React.FC = () => {
 								size="xs"
 							>
 								<Progress.Track bg="bg.subtle" rounded="full">
-									<Progress.Range bg="purple.400" />
+									<Progress.Range bg="lime.solid" />
 								</Progress.Track>
 							</Progress.Root>
 						</Box>
@@ -318,7 +318,7 @@ export const CategoryMasteryCard: React.FC = () => {
 							<Button variant="outline">Cancel</Button>
 						</DialogActionTrigger>
 						<Button
-							colorPalette="purple"
+							colorPalette="lime"
 							loading={setSpecializationMutation.isPending}
 							onClick={handleSaveSpecialization}
 						>

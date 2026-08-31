@@ -39,16 +39,6 @@ const glassCard = {
 	backdropFilter: "blur(20px)",
 };
 
-const CATEGORY_COLORS: Record<string, string> = {
-	health: "red.400",
-	work: "blue.400",
-	learning: "purple.400",
-	chores: "orange.400",
-	mindfulness: "teal.400",
-	social: "pink.400",
-	finance: "yellow.400",
-};
-
 function getCurrentWeekPeriod(): string {
 	const now = new Date();
 	const startOfYear = new Date(now.getFullYear(), 0, 1);
@@ -150,7 +140,7 @@ export const ReviewsRoute: React.FC = () => {
 			>
 				<VStack align="flex-start" gap={1}>
 					<HStack gap={2}>
-						<Circle size="32px" bg="teal.500/15" color="teal.400">
+						<Circle size="32px" bg="lime.500/15" color="lime.500">
 							<Icon as={LuTrendingUp} boxSize={5} />
 						</Circle>
 						<Heading size="xl" fontWeight="bold">
@@ -167,7 +157,7 @@ export const ReviewsRoute: React.FC = () => {
 					<PillButton
 						size="sm"
 						variant={viewMode === "current" ? "mint" : "outline"}
-						colorPalette="teal"
+						colorPalette="lime"
 						onClick={() => setViewMode("current")}
 					>
 						<Icon as={LuTrendingUp} /> Review Period
@@ -202,7 +192,7 @@ export const ReviewsRoute: React.FC = () => {
 								>
 									<HStack gap={2}>
 										<Badge
-											colorPalette="teal"
+											colorPalette="lime"
 											textTransform="uppercase"
 											size="sm"
 											rounded="full"
@@ -261,7 +251,7 @@ export const ReviewsRoute: React.FC = () => {
 							variant={
 								periodType === "weekly" ? "mint" : "outline"
 							}
-							colorPalette="teal"
+							colorPalette="lime"
 							onClick={() => handlePeriodTypeChange("weekly")}
 						>
 							Weekly Review
@@ -271,7 +261,7 @@ export const ReviewsRoute: React.FC = () => {
 							variant={
 								periodType === "monthly" ? "mint" : "outline"
 							}
-							colorPalette="teal"
+							colorPalette="lime"
 							onClick={() => handlePeriodTypeChange("monthly")}
 						>
 							Monthly Review
@@ -300,7 +290,7 @@ export const ReviewsRoute: React.FC = () => {
 									<Text fontSize="xs" color="fg.muted" mb={1}>
 										Completion Rate
 									</Text>
-									<Heading size="xl" color="teal.400">
+									<Heading size="xl" color="lime.500">
 										{Math.round(summary.completion_rate)}%
 									</Heading>
 									<Text
@@ -317,7 +307,7 @@ export const ReviewsRoute: React.FC = () => {
 									<Text fontSize="xs" color="fg.muted" mb={1}>
 										Effort Invested
 									</Text>
-									<Heading size="xl" color="purple.400">
+									<Heading size="xl" color="lime.500">
 										{summary.effort_minutes}m
 									</Heading>
 									<Text
@@ -333,7 +323,7 @@ export const ReviewsRoute: React.FC = () => {
 									<Text fontSize="xs" color="fg.muted" mb={1}>
 										Streak Consistency
 									</Text>
-									<Heading size="xl" color="orange.400">
+									<Heading size="xl" color="lime.500">
 										{summary.streak_days}d
 									</Heading>
 									<Text
@@ -350,7 +340,7 @@ export const ReviewsRoute: React.FC = () => {
 									<Text fontSize="xs" color="fg.muted" mb={1}>
 										Health & Finance
 									</Text>
-									<Heading size="xl" color="green.400">
+									<Heading size="xl" color="lime.500">
 										{summary.health_days_logged}d / ฿
 										{summary.finance_saved}
 									</Heading>
@@ -381,8 +371,6 @@ export const ReviewsRoute: React.FC = () => {
 											),
 										);
 										const pct = (count / maxVal) * 100;
-										const catColor =
-											CATEGORY_COLORS[cat] || "teal.400";
 
 										return (
 											<Box key={cat}>
@@ -411,7 +399,7 @@ export const ReviewsRoute: React.FC = () => {
 														rounded="full"
 													>
 														<Progress.Range
-															bg={catColor}
+															bg="lime.solid"
 														/>
 													</Progress.Track>
 												</Progress.Root>
@@ -494,7 +482,7 @@ export const ReviewsRoute: React.FC = () => {
 											<Button
 												size="sm"
 												variant="subtle"
-												colorPalette="teal"
+												colorPalette="lime"
 												onClick={addPriority}
 											>
 												Add
@@ -505,7 +493,7 @@ export const ReviewsRoute: React.FC = () => {
 											{nextPriorities.map((p, idx) => (
 												<Badge
 													key={idx}
-													colorPalette="teal"
+													colorPalette="lime"
 													variant="solid"
 													size="md"
 													rounded="full"
@@ -530,7 +518,7 @@ export const ReviewsRoute: React.FC = () => {
 									</Field>
 
 									<Button
-										colorPalette="teal"
+										colorPalette="lime"
 										size="lg"
 										mt={4}
 										onClick={(e) => handleFinalize(e)}

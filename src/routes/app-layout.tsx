@@ -31,64 +31,59 @@ export const AppLayout: React.FC = () => {
 			display="flex"
 			flexDirection="column"
 		>
-			{/* High-performance GPU-friendly ambient gradient without expensive software blur filters */}
+			{/* Subtle lime ambient glow in background */}
 			<Box
 				position="fixed"
 				top="-10%"
-				left="30%"
-				w="700px"
-				h="600px"
+				left="25%"
+				w="600px"
+				h="500px"
 				pointerEvents="none"
-				opacity={0.35}
+				opacity={0.15}
 				zIndex={0}
 				style={{
 					background:
-						"radial-gradient(circle at center, rgba(221, 214, 254, 0.4) 0%, rgba(251, 207, 232, 0.25) 35%, rgba(165, 243, 252, 0.1) 60%, transparent 75%)",
+						"radial-gradient(circle at center, rgba(163, 230, 53, 0.35) 0%, rgba(163, 230, 53, 0.08) 45%, transparent 70%)",
 				}}
 			/>
 
-			{/* Full-Viewport Main Frame: Fixed Sidebar + Content Shell */}
+			{/* Connected Main Frame: Flush Sidebar + Flush Header & Content Shell */}
 			<Flex
-				maxW="1680px"
 				w="full"
 				h="full"
-				mx="auto"
 				flexDirection="row"
-				gap={{ base: 0, md: 5 }}
-				px={{ base: 3, md: 6, xl: 8 }}
-				py={{ base: 3, md: 4 }}
 				position="relative"
 				zIndex={1}
 				overflow="hidden"
 			>
-				{/* Fixed / Non-scrolling Left Sidebar */}
+				{/* Fixed / Non-scrolling Left Sidebar (Flush to left & top & bottom) */}
 				<AppSidebar
 					isOpen={isMobileSidebarOpen}
 					onClose={() => setIsMobileSidebarOpen(false)}
 				/>
 
-				{/* Right Main Column (Fixed Top Header + Scrollable Page Content) */}
+				{/* Right Main Column (Flush Top Header + Scrollable Page Content) */}
 				<Flex
 					flex="1"
 					minW={0}
 					h="full"
 					direction="column"
-					gap={{ base: 3, md: 4 }}
 					overflow="hidden"
 				>
-					{/* Fixed / Non-scrolling Top Header Bar */}
+					{/* Fixed / Non-scrolling Top Header Bar (Flush to top & right) */}
 					<Box flexShrink={0}>
 						<AppHeader onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
 					</Box>
 
-					{/* ONLY THIS REGION SCROLLS */}
+					{/* ONLY THIS REGION SCROLLS (with clean inner content padding) */}
 					<Box
 						flex="1"
 						minH={0}
 						overflowY="auto"
 						overflowX="hidden"
 						position="relative"
-						pr={{ base: 0, md: 1 }}
+						px={{ base: 4, md: 6, xl: 8 }}
+						py={{ base: 4, md: 6 }}
 					>
 						<Outlet />
 					</Box>

@@ -70,14 +70,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenSidebar }) => {
 			justify="space-between"
 			gap={4}
 			w="full"
-			minH="60px"
-			px={{ base: 3, md: 5 }}
-			py={2.5}
-			bg="bg.glass"
-			borderWidth="1px"
+			h="60px"
+			px={{ base: 4, md: 6 }}
+			py={2}
+			bg="bg.panel"
+			borderBottomWidth="1px"
 			borderColor="border.glass"
-			rounded="card"
-			shadow="glass"
+			rounded="none"
+			shadow="none"
 			backdropFilter="blur(20px)"
 			position="relative"
 			zIndex={10}
@@ -109,27 +109,27 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenSidebar }) => {
 				{playerSummary?.player && (
 					<HStack
 						display={{ base: "none", sm: "flex" }}
-						bg="bg.surface"
+						bg="bg.muted"
 						borderWidth="1px"
 						borderColor="border.glass"
 						rounded="pill"
 						px={3}
 						py={1}
 						gap={3}
-						shadow="glass"
+						shadow="none"
 						fontSize="xs"
 					>
 						{/* Level Badge */}
 						<HStack gap={1}>
-							<Icon as={LuZap} color="purple.400" boxSize={3.5} />
-							<Text fontWeight="bold" color="purple.400">
+							<Icon as={LuZap} color="lime.400" boxSize={3.5} />
+							<Text fontWeight="bold" color="lime.500">
 								Lv. {playerSummary.player.level}
 							</Text>
 						</HStack>
 
 						{/* PX Points */}
 						<HStack gap={1}>
-							<Icon as={LuCoins} color="amber.400" boxSize={3.5} />
+							<Icon as={LuCoins} color="lime.400" boxSize={3.5} />
 							<Text fontWeight="semibold">
 								{playerSummary.player.px.toLocaleString()} <Text as="span" color="fg.muted" fontSize="10px">PX</Text>
 							</Text>
@@ -138,8 +138,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenSidebar }) => {
 						{/* Streak Badge if available */}
 						{playerSummary.player.streak > 0 && (
 							<HStack gap={1}>
-								<Icon as={LuFlame} color="orange.400" boxSize={3.5} />
-								<Text fontWeight="semibold" color="orange.400">
+								<Icon as={LuFlame} color="lime.400" boxSize={3.5} />
+								<Text fontWeight="semibold" color="lime.500">
 									{playerSummary.player.streak}d
 								</Text>
 							</HStack>

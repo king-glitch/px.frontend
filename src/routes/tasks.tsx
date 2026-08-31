@@ -489,7 +489,7 @@ export const TasksRoute: React.FC = () => {
 							<Badge
 								size="xs"
 								colorPalette={
-									recovery?.streak_safe ? "green" : "gray"
+									recovery?.streak_safe ? "lime" : "gray"
 								}
 								variant="subtle"
 							>
@@ -511,7 +511,7 @@ export const TasksRoute: React.FC = () => {
 								<Button
 									size="2xs"
 									variant="subtle"
-									colorPalette="blue"
+									colorPalette="gray"
 									disabled={
 										(recovery?.rest_days_count ?? 0) <= 0
 									}
@@ -534,7 +534,11 @@ export const TasksRoute: React.FC = () => {
 											? "solid"
 											: "outline"
 									}
-									colorPalette="purple"
+									colorPalette={
+										recovery?.vacation_mode
+											? "lime"
+											: "gray"
+									}
 									onClick={async () => {
 										const next = !recovery?.vacation_mode;
 										await toggleVacationMutation.mutateAsync(
@@ -749,7 +753,7 @@ export const TasksRoute: React.FC = () => {
 												size="xs"
 												rounded="pill"
 												variant="outline"
-												colorPalette="teal"
+												colorPalette="lime"
 											>
 												MVQ {tq.quest.mvq_minutes}m
 											</Badge>
@@ -760,7 +764,7 @@ export const TasksRoute: React.FC = () => {
 													size="xs"
 													rounded="pill"
 													variant="subtle"
-													colorPalette="orange"
+													colorPalette="gray"
 												>
 													{tq.quest.status}
 												</Badge>

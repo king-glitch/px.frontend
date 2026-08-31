@@ -114,7 +114,7 @@ export const FinanceCategoryChart: React.FC<FinanceCategoryChartProps> = ({
 							<Tooltip content={<ChartTooltip />} />
 							<Bar
 								dataKey={categoryChart.key("amount")}
-								fill={categoryChart.color("purple.solid")}
+								fill={categoryChart.color("mint.solid")}
 								radius={[0, 4, 4, 0]}
 								style={{ cursor: "pointer" }}
 								onClick={(entry: any) => {

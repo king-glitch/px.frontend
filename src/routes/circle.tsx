@@ -21,6 +21,7 @@ import {
 	type InviteMemberFormData,
 } from "@/api/schemas";
 import type { CircleReactionType } from "@/api/types";
+import { Avatar } from "@/components/ui/avatar";
 import { Field } from "@/components/ui/field";
 import { toaster } from "@/components/ui/toaster";
 import {
@@ -35,12 +36,12 @@ import {
 	Badge,
 	Box,
 	Button,
-	Card,
-	Container,
+	Circle,
 	Flex,
 	HStack,
 	Heading,
 	Icon,
+	IconButton,
 	Input,
 	Progress,
 	SimpleGrid,
@@ -55,6 +56,7 @@ import { useForm } from "react-hook-form";
 import {
 	LuAward,
 	LuCopy,
+	LuHeart,
 	LuLogOut,
 	LuMessageSquare,
 	LuPlus,
@@ -65,8 +67,17 @@ import {
 	LuUserCheck,
 	LuUserPlus,
 	LuUsers,
-	LuZap
+	LuZap,
 } from "react-icons/lu";
+
+const glassCard = {
+	bg: "bg.glass",
+	borderWidth: "1px",
+	borderColor: "border.glass",
+	rounded: "card",
+	shadow: "glass",
+	backdropFilter: "blur(20px)",
+};
 
 const tierThresholds = [
 	{ tier: "connected", name: "Connected", days: 6, xpBonus: 2, pxBonus: 0 },
@@ -223,118 +234,125 @@ export const CircleRoute: React.FC = () => {
 
 	if (isLoading) {
 		return (
-			<Container maxW="7xl" py={6}>
+			<Box flex="1" pb={12}>
 				<VStack gap={4} align="stretch">
-					<Skeleton h="120px" rounded="xl" />
-					<Skeleton h="200px" rounded="xl" />
-					<Skeleton h="300px" rounded="xl" />
+					<Skeleton h="120px" rounded="card" />
+					<Skeleton h="200px" rounded="card" />
+					<Skeleton h="300px" rounded="card" />
 				</VStack>
-			</Container>
+			</Box>
 		);
 	}
 
 	// Unenrolled State: Create or Join
 	if (!circleData) {
 		return (
-			<Container maxW="5xl" py={12}>
-				<VStack gap={8} textAlign="center">
-					<Icon as={LuUsers} boxSize={16} color="purple.400" />
-					<Heading
-						size="3xl"
-						bgGradient="to-r"
-						gradientFrom="purple.400"
-						gradientTo="blue.400"
-						bgClip="text"
-					>
-						Co-op Circles
-					</Heading>
-					<Text color="fg.muted" maxW="xl" fontSize="lg">
-						Form a private 6-person circle with friends or family.
-						Encourage each other, contribute through daily quests,
-						and earn shared weekly bonuses.
-					</Text>
+			<Box flex="1" pb={12}>
+				{/* Page Header */}
+				<Flex
+					direction={{ base: "column", md: "row" }}
+					justify="space-between"
+					align={{ base: "flex-start", md: "center" }}
+					gap={4}
+					mb={8}
+				>
+					<VStack align="flex-start" gap={1}>
+						<HStack gap={2}>
+							<Circle
+								size="32px"
+								bg="lime.500/15"
+								color="lime.500"
+							>
+								<Icon as={LuUsers} boxSize={5} />
+							</Circle>
+							<Heading size="xl" fontWeight="bold">
+								Co-op Circle
+							</Heading>
+						</HStack>
+						<Text color="fg.muted" fontSize="sm">
+							A permanent, private 6-person group for family or close friends to stay consistent together.
+						</Text>
+					</VStack>
+				</Flex>
 
-					<SimpleGrid
-						columns={{ base: 1, md: 2 }}
-						gap={6}
-						w="full"
-						maxW="3xl"
-						mt={4}
-					>
-						<Card.Root
-							bg="bg.glass"
-							borderWidth="1px"
-							borderColor="border.glass"
-							backdropFilter="blur(20px)"
-							p={6}
-							textAlign="left"
-						>
-							<VStack align="start" gap={4}>
+				<SimpleGrid
+					columns={{ base: 1, md: 2 }}
+					gap={6}
+					w="full"
+					maxW="4xl"
+					mx="auto"
+					mt={4}
+				>
+					{/* Create Circle Card */}
+					<Box {...glassCard} p={{ base: 5, md: 6 }}>
+						<VStack align="start" gap={4} h="full" justify="space-between">
+							<VStack align="start" gap={3}>
 								<HStack gap={3}>
-									<Icon
-										as={LuPlus}
-										boxSize={6}
-										color="purple.400"
-									/>
-									<Heading size="md">Create a Circle</Heading>
+									<Circle size="40px" bg="lime.500/15" color="lime.500">
+										<Icon as={LuPlus} boxSize={5} />
+									</Circle>
+									<VStack align="start" gap={0}>
+										<Heading size="md">Create a Circle</Heading>
+										<Text fontSize="xs" color="fg.muted">
+											Lead a new private 6-member co-op group
+										</Text>
+									</VStack>
 								</HStack>
 								<Text fontSize="sm" color="fg.muted">
-									Start a new private circle. You'll be the
-									owner and can invite up to 5 members.
+									Start a private circle as the owner, invite your inner circle, and unlock shared weekly XP & PX momentum bonuses.
 								</Text>
+							</VStack>
+							<Button
+								colorPalette="lime"
+								w="full"
+								rounded="full"
+								onClick={() => setIsCreateOpen(true)}
+							>
+								<Icon as={LuPlus} mr={1} /> Create Circle
+							</Button>
+						</VStack>
+					</Box>
+
+					{/* Join with Invite Code Card */}
+					<Box {...glassCard} p={{ base: 5, md: 6 }}>
+						<VStack align="start" gap={4} h="full" justify="space-between">
+							<VStack align="start" gap={3} w="full">
+								<HStack gap={3}>
+									<Circle size="40px" bg="bg.muted" color="fg">
+										<Icon as={LuUserPlus} boxSize={5} />
+									</Circle>
+									<VStack align="start" gap={0}>
+										<Heading size="md">Join with Invite Code</Heading>
+										<Text fontSize="xs" color="fg.muted">
+											Enter an 8-character invitation code
+										</Text>
+									</VStack>
+								</HStack>
+								<Text fontSize="sm" color="fg.muted">
+									Received an invite code from a friend or family member? Enter it below to join their circle.
+								</Text>
+							</VStack>
+							<HStack w="full" gap={2}>
+								<Input
+									placeholder="e.g. A1B2C3D4"
+									value={joinCode}
+									onChange={(e) => setJoinCode(e.target.value)}
+									rounded="full"
+									bg="bg.muted"
+								/>
 								<Button
-									colorPalette="purple"
-									w="full"
-									onClick={() => setIsCreateOpen(true)}
+									colorPalette="lime"
+									rounded="full"
+									px={6}
+									onClick={handleJoinInvite}
+									loading={acceptInviteMutation.isPending}
 								>
-									Create Circle
+									Join
 								</Button>
-							</VStack>
-						</Card.Root>
-
-						<Card.Root
-							bg="bg.glass"
-							borderWidth="1px"
-							borderColor="border.glass"
-							backdropFilter="blur(20px)"
-							p={6}
-							textAlign="left"
-						>
-							<VStack align="start" gap={4}>
-								<HStack gap={3}>
-									<Icon
-										as={LuUserPlus}
-										boxSize={6}
-										color="blue.400"
-									/>
-									<Heading size="md">
-										Join with Invite Code
-									</Heading>
-								</HStack>
-								<Text fontSize="sm" color="fg.muted">
-									Have a code from a friend? Enter it below to
-									join their circle.
-								</Text>
-								<HStack w="full">
-									<Input
-										placeholder="e.g. a1b2c3d4"
-										value={joinCode}
-										onChange={(e) =>
-											setJoinCode(e.target.value)
-										}
-									/>
-									<Button
-										colorPalette="blue"
-										onClick={handleJoinInvite}
-										loading={acceptInviteMutation.isPending}
-									>
-										Join
-									</Button>
-								</HStack>
-							</VStack>
-						</Card.Root>
-					</SimpleGrid>
-				</VStack>
+							</HStack>
+						</VStack>
+					</Box>
+				</SimpleGrid>
 
 				{/* Create Circle Dialog */}
 				<DialogRoot
@@ -343,9 +361,7 @@ export const CircleRoute: React.FC = () => {
 				>
 					<DialogContent bg="bg.panel" backdropFilter="blur(20px)">
 						<form
-							onSubmit={createForm.handleSubmit(
-								handleCreateCircle,
-							)}
+							onSubmit={createForm.handleSubmit(handleCreateCircle)}
 						>
 							<DialogHeader>
 								<DialogTitle>Create Your Circle</DialogTitle>
@@ -356,8 +372,7 @@ export const CircleRoute: React.FC = () => {
 										label="Circle Name"
 										required
 										errorText={
-											createForm.formState.errors.name
-												?.message
+											createForm.formState.errors.name?.message
 										}
 									>
 										<Input
@@ -373,9 +388,7 @@ export const CircleRoute: React.FC = () => {
 									</Field>
 									<Field label="Description">
 										<Textarea
-											{...createForm.register(
-												"description",
-											)}
+											{...createForm.register("description")}
 											placeholder="Purpose of this circle..."
 										/>
 									</Field>
@@ -390,7 +403,7 @@ export const CircleRoute: React.FC = () => {
 								</Button>
 								<Button
 									type="submit"
-									colorPalette="purple"
+									colorPalette="lime"
 									loading={createCircleMutation.isPending}
 								>
 									Create
@@ -399,7 +412,7 @@ export const CircleRoute: React.FC = () => {
 						</form>
 					</DialogContent>
 				</DialogRoot>
-			</Container>
+			</Box>
 		);
 	}
 
@@ -418,35 +431,30 @@ export const CircleRoute: React.FC = () => {
 	);
 
 	return (
-		<Container maxW="7xl" py={6}>
+		<Box flex="1" pb={12}>
 			<VStack gap={6} align="stretch">
-				{/* Circle Header */}
-				<Card.Root
-					bg="bg.glass"
-					borderWidth="1px"
-					borderColor="border.glass"
-					backdropFilter="blur(20px)"
-					p={6}
-				>
+				{/* Circle Header Card */}
+				<Box {...glassCard} p={{ base: 4, md: 6 }}>
 					<Flex
 						justify="space-between"
 						align={{ base: "start", md: "center" }}
 						direction={{ base: "column", md: "row" }}
 						gap={4}
 					>
-						<VStack align="start" gap={2}>
+						<VStack align="start" gap={2} flex={1}>
 							<HStack gap={3} wrap="wrap">
-								<Heading size="xl">{circle.name}</Heading>
-								<Badge colorPalette="purple" size="md">
-									<Icon as={LuShield} mr={1} /> Bond Lv.{" "}
-									{circle.level}
+								<Circle size="36px" bg="lime.500/15" color="lime.500">
+									<Icon as={LuShield} boxSize={5} />
+								</Circle>
+								<Heading size="xl" fontWeight="bold">{circle.name}</Heading>
+								<Badge colorPalette="lime" size="sm" variant="solid">
+									Bond Lv. {circle.level}
 								</Badge>
-								<Badge colorPalette="green" size="md">
-									<Icon as={LuZap} mr={1} /> +
-									{circleData.together_bonus_percent}%
-									Together XP Bonus
+								<Badge colorPalette="lime" size="sm" variant="subtle">
+									<Icon as={LuZap} mr={1} /> +{circleData.together_bonus_percent}% Together XP
 								</Badge>
 							</HStack>
+
 							{circle.motto && (
 								<Text
 									fontSize="sm"
@@ -456,11 +464,13 @@ export const CircleRoute: React.FC = () => {
 									"{circle.motto}"
 								</Text>
 							)}
-							<HStack gap={4} w="full" maxW="md" mt={2}>
+
+							<HStack gap={4} w="full" maxW="lg" mt={1}>
 								<Text
 									fontSize="xs"
 									color="fg.muted"
-									minW="80px"
+									minW="90px"
+									fontWeight="medium"
 								>
 									Bond XP ({circle.bond_xp} XP)
 								</Text>
@@ -468,28 +478,28 @@ export const CircleRoute: React.FC = () => {
 									value={currentBondProgress}
 									size="sm"
 									flex={1}
-									colorPalette="purple"
 								>
-									<Progress.Track>
-										<Progress.Range />
+									<Progress.Track bg="bg.subtle" rounded="full">
+										<Progress.Range bg="lime.solid" />
 									</Progress.Track>
 								</Progress.Root>
 							</HStack>
 						</VStack>
 
-						<HStack gap={3}>
+						<HStack gap={2.5}>
 							<Button
 								size="sm"
-								colorPalette="purple"
+								colorPalette="lime"
+								rounded="full"
 								onClick={() => setIsInviteOpen(true)}
 							>
-								<Icon as={LuUserPlus} /> Invite (
-								{members.length}/6)
+								<Icon as={LuUserPlus} /> Invite ({members.length}/6)
 							</Button>
 							<Button
 								size="sm"
 								variant="outline"
-								colorPalette="red"
+								colorPalette="gray"
+								rounded="full"
 								onClick={() => leaveCircleMutation.mutate()}
 								loading={leaveCircleMutation.isPending}
 							>
@@ -497,17 +507,14 @@ export const CircleRoute: React.FC = () => {
 							</Button>
 						</HStack>
 					</Flex>
-				</Card.Root>
+				</Box>
 
 				{/* Weekly Momentum & Shared Goal Section */}
 				<SimpleGrid columns={{ base: 1, lg: 3 }} gap={6}>
 					{/* Weekly Momentum Meter */}
-					<Card.Root
-						bg="bg.glass"
-						borderWidth="1px"
-						borderColor="border.glass"
-						backdropFilter="blur(20px)"
-						p={6}
+					<Box
+						{...glassCard}
+						p={{ base: 4, md: 6 }}
 						gridColumn={{ base: "span 1", lg: "span 2" }}
 					>
 						<VStack align="start" gap={4}>
@@ -515,32 +522,29 @@ export const CircleRoute: React.FC = () => {
 								justify="space-between"
 								align="center"
 								w="full"
+								wrap="wrap"
+								gap={2}
 							>
 								<HStack gap={2}>
-									<Icon as={LuTrendingUp} color="cyan.400" />
+									<Circle size="28px" bg="lime.500/15" color="lime.500">
+										<Icon as={LuTrendingUp} boxSize={4} />
+									</Circle>
 									<Heading size="md">Weekly Momentum</Heading>
 								</HStack>
 								<Badge
-									colorPalette={
-										currentWeek.momentum_tier === "thriving"
-											? "green"
-											: "cyan"
-									}
+									colorPalette="lime"
 									size="sm"
+									variant="solid"
 								>
-									{currentWeek.momentum_tier.toUpperCase()}{" "}
-									TIER ({currentWeek.contribution_days}{" "}
-									contribution days)
+									{currentWeek.momentum_tier.toUpperCase()} TIER ({currentWeek.contribution_days} contribution days)
 								</Badge>
 							</Flex>
 							<Text fontSize="xs" color="fg.muted">
-								Each member completing qualifying activity adds
-								1 contribution day. Rewards unlock at tier
-								thresholds:
+								Each member completing a qualifying daily quest adds 1 contribution day. Shared bonuses unlock at tier thresholds:
 							</Text>
 
 							{/* Tier Gauges */}
-							<SimpleGrid columns={4} gap={2} w="full">
+							<SimpleGrid columns={{ base: 2, sm: 4 }} gap={2.5} w="full">
 								{tierThresholds.map((t) => {
 									const isAchieved =
 										currentWeek.contribution_days >= t.days;
@@ -548,48 +552,48 @@ export const CircleRoute: React.FC = () => {
 										<Box
 											key={t.tier}
 											p={3}
-											rounded="lg"
+											rounded="xl"
 											borderWidth="1px"
 											borderColor={
 												isAchieved
-													? "green.500/40"
+													? "lime.500/40"
 													: "border.subtle"
 											}
 											bg={
 												isAchieved
-													? "green.500/10"
-													: "bg.subtle"
+													? "lime.500/10"
+													: "bg.muted"
 											}
+											transition="all 0.15s ease-out"
 										>
 											<Text
 												fontSize="xs"
 												fontWeight="bold"
 												color={
 													isAchieved
-														? "green.300"
+														? "lime.500"
 														: "fg.muted"
 												}
 											>
 												{t.name}
 											</Text>
 											<Text
-												fontSize="2xs"
+												fontSize="11px"
 												color="fg.muted"
 											>
 												{t.days} Days
 											</Text>
 											<Text
-												fontSize="2xs"
+												fontSize="11px"
 												color={
 													isAchieved
-														? "green.400"
-														: "fg.subtle"
+														? "lime.500"
+														: "fg.muted"
 												}
+												fontWeight={isAchieved ? "bold" : "normal"}
 												mt={1}
 											>
-												+{t.xpBonus}% XP{" "}
-												{t.pxBonus > 0 &&
-													`& +${t.pxBonus}% PX`}
+												+{t.xpBonus}% XP {t.pxBonus > 0 && `& +${t.pxBonus}% PX`}
 											</Text>
 										</Box>
 									);
@@ -598,10 +602,11 @@ export const CircleRoute: React.FC = () => {
 
 							{/* Reward Claim Button */}
 							{currentWeek.momentum_tier !== "none" && (
-								<Flex justify="flex-end" w="full" mt={2}>
+								<Flex justify="flex-end" w="full" mt={1}>
 									<Button
 										size="sm"
-										colorPalette="green"
+										colorPalette="lime"
+										rounded="full"
 										onClick={() =>
 											handleClaimWeeklyReward(
 												currentWeek.week_id,
@@ -609,21 +614,17 @@ export const CircleRoute: React.FC = () => {
 										}
 										loading={claimRewardMutation.isPending}
 									>
-										<Icon as={LuAward} mr={1} /> Claim
-										Weekly Bonus
+										<Icon as={LuAward} mr={1} /> Claim Weekly Bonus
 									</Button>
 								</Flex>
 							)}
 						</VStack>
-					</Card.Root>
+					</Box>
 
 					{/* Shared Goal Card */}
-					<Card.Root
-						bg="bg.glass"
-						borderWidth="1px"
-						borderColor="border.glass"
-						backdropFilter="blur(20px)"
-						p={6}
+					<Box
+						{...glassCard}
+						p={{ base: 4, md: 6 }}
 					>
 						<VStack
 							align="start"
@@ -632,38 +633,37 @@ export const CircleRoute: React.FC = () => {
 							justify="space-between"
 						>
 							<VStack align="start" gap={2} w="full">
-								<HStack justify="space-between" w="full">
+								<Flex justify="space-between" align="center" w="full">
 									<HStack gap={2}>
-										<Icon
-											as={LuSparkles}
-											color="purple.400"
-										/>
+										<Circle size="28px" bg="lime.500/15" color="lime.500">
+											<Icon as={LuSparkles} boxSize={4} />
+										</Circle>
 										<Heading size="md">Shared Goal</Heading>
 									</HStack>
 									{isLeader && (
 										<Button
 											size="xs"
 											variant="ghost"
+											colorPalette="lime"
 											onClick={() => setIsGoalOpen(true)}
 										>
 											Set Goal
 										</Button>
 									)}
-								</HStack>
+								</Flex>
 
 								{activeGoal ? (
 									<VStack
 										align="start"
-										gap={2}
+										gap={2.5}
 										w="full"
 										mt={2}
 									>
-										<Badge colorPalette="purple" size="sm">
+										<Badge colorPalette="lime" size="sm" variant="subtle">
 											{activeGoal.goal_type.toUpperCase()}
 										</Badge>
 										<Text fontSize="sm" fontWeight="medium">
-											Target: {activeGoal.target}{" "}
-											collective actions
+											Target: {activeGoal.target} collective actions
 										</Text>
 										<Progress.Root
 											value={Math.min(
@@ -674,10 +674,9 @@ export const CircleRoute: React.FC = () => {
 											)}
 											size="sm"
 											w="full"
-											colorPalette="purple"
 										>
-											<Progress.Track>
-												<Progress.Range />
+											<Progress.Track bg="bg.subtle" rounded="full">
+												<Progress.Range bg="lime.solid" />
 											</Progress.Track>
 										</Progress.Root>
 										<HStack
@@ -687,26 +686,24 @@ export const CircleRoute: React.FC = () => {
 											color="fg.muted"
 										>
 											<Text>
-												Progress:{" "}
-												{activeGoal.current_progress}/
-												{activeGoal.target}
+												Progress: {activeGoal.current_progress}/{activeGoal.target}
 											</Text>
-											<Text>
-												+{activeGoal.reward_xp} XP, +
-												{activeGoal.reward_px} PX
+											<Text color="lime.500" fontWeight="bold">
+												+{activeGoal.reward_xp} XP, +{activeGoal.reward_px} PX
 											</Text>
 										</HStack>
 									</VStack>
 								) : (
-									<Box py={4} textAlign="center" w="full">
+									<Box py={6} textAlign="center" w="full">
 										<Text fontSize="xs" color="fg.muted">
 											No active shared goal this week.
 										</Text>
 										{isLeader && (
 											<Button
 												size="xs"
-												colorPalette="purple"
-												mt={2}
+												colorPalette="lime"
+												rounded="full"
+												mt={3}
 												onClick={() =>
 													setIsGoalOpen(true)
 												}
@@ -718,7 +715,7 @@ export const CircleRoute: React.FC = () => {
 								)}
 							</VStack>
 						</VStack>
-					</Card.Root>
+					</Box>
 				</SimpleGrid>
 
 				{/* 6-Member Roster */}
@@ -735,30 +732,31 @@ export const CircleRoute: React.FC = () => {
 							const m = members[idx];
 							if (!m) {
 								return (
-									<Card.Root
+									<Box
 										key={`slot-${idx}`}
-										bg="bg.glass"
-										borderWidth="1px"
+										{...glassCard}
 										borderStyle="dashed"
 										borderColor="border.subtle"
 										p={5}
 										textAlign="center"
 									>
-										<VStack gap={2} py={4}>
+										<VStack gap={2} py={3}>
 											<Icon
 												as={LuUserPlus}
-												color="fg.subtle"
-												boxSize={6}
+												color="fg.muted"
+												boxSize={5}
 											/>
 											<Text
 												fontSize="xs"
-												color="fg.subtle"
+												color="fg.muted"
+												fontWeight="medium"
 											>
-												Open Slot
+												Open Member Slot
 											</Text>
 											<Button
 												size="xs"
 												variant="ghost"
+												colorPalette="lime"
 												onClick={() =>
 													setIsInviteOpen(true)
 												}
@@ -766,18 +764,15 @@ export const CircleRoute: React.FC = () => {
 												Invite
 											</Button>
 										</VStack>
-									</Card.Root>
+									</Box>
 								);
 							}
 
 							return (
-								<Card.Root
+								<Box
 									key={m.member.id}
-									bg="bg.glass"
-									borderWidth="1px"
-									borderColor="border.glass"
-									backdropFilter="blur(20px)"
-									p={5}
+									{...glassCard}
+									p={4.5}
 								>
 									<VStack align="start" gap={3}>
 										<Flex
@@ -785,22 +780,8 @@ export const CircleRoute: React.FC = () => {
 											align="center"
 											w="full"
 										>
-											<HStack gap={2}>
-												<Box
-													w={8}
-													h={8}
-													rounded="full"
-													bg="purple.500/20"
-													display="flex"
-													alignItems="center"
-													justifyContent="center"
-													fontWeight="bold"
-													color="purple.300"
-												>
-													{m.username
-														.charAt(0)
-														.toUpperCase()}
-												</Box>
+											<HStack gap={2.5}>
+												<Avatar size="sm" name={m.username} />
 												<VStack align="start" gap={0}>
 													<Text
 														fontSize="sm"
@@ -811,11 +792,11 @@ export const CircleRoute: React.FC = () => {
 													<Badge
 														size="xs"
 														colorPalette={
-															m.member.role ===
-															"owner"
-																? "purple"
-																: "blue"
+															m.member.role === "owner"
+																? "lime"
+																: "gray"
 														}
+														variant="subtle"
 													>
 														{m.member.role}
 													</Badge>
@@ -824,15 +805,14 @@ export const CircleRoute: React.FC = () => {
 											<Button
 												size="xs"
 												variant="ghost"
-												colorPalette="cyan"
+												colorPalette="lime"
 												onClick={() =>
 													handleNudge(
 														m.member.user_id,
 													)
 												}
 											>
-												<Icon as={LuSend} mr={1} />{" "}
-												Nudge
+												<Icon as={LuSend} mr={1} /> Nudge
 											</Button>
 										</Flex>
 
@@ -842,44 +822,39 @@ export const CircleRoute: React.FC = () => {
 											fontSize="xs"
 											color="fg.muted"
 										>
-											<Text>{m.broad_status}</Text>
-											<Text>
-												{m.contribution_count_this_week}{" "}
-												days this week
+											<Text textTransform="capitalize">{m.broad_status}</Text>
+											<Text fontWeight="medium">
+												{m.contribution_count_this_week} days this week
 											</Text>
 										</HStack>
 
 										{m.is_eligible_for_reward && (
 											<Badge
 												size="xs"
-												colorPalette="green"
+												colorPalette="lime"
+												variant="subtle"
 											>
-												<Icon as={LuUserCheck} mr={1} />{" "}
-												Reward Eligible
+												<Icon as={LuUserCheck} mr={1} /> Reward Eligible
 											</Badge>
 										)}
 									</VStack>
-								</Card.Root>
+								</Box>
 							);
 						})}
 					</SimpleGrid>
 				</VStack>
 
 				{/* Activity Feed */}
-				<Card.Root
-					bg="bg.glass"
-					borderWidth="1px"
-					borderColor="border.glass"
-					backdropFilter="blur(20px)"
-					p={6}
-				>
+				<Box {...glassCard} p={{ base: 4, md: 6 }}>
 					<VStack align="start" gap={4}>
 						<HStack gap={2}>
-							<Icon as={LuMessageSquare} color="purple.400" />
+							<Circle size="28px" bg="lime.500/15" color="lime.500">
+								<Icon as={LuMessageSquare} boxSize={4} />
+							</Circle>
 							<Heading size="md">Circle Activity Stream</Heading>
 						</HStack>
 
-						<VStack gap={3} align="stretch" w="full">
+						<VStack gap={2.5} align="stretch" w="full">
 							{activities.length === 0 ? (
 								<Text
 									fontSize="xs"
@@ -887,18 +862,17 @@ export const CircleRoute: React.FC = () => {
 									py={4}
 									textAlign="center"
 								>
-									No activity yet. Complete quests to record
-									daily contributions!
+									No activity yet. Complete quests to record daily contributions!
 								</Text>
 							) : (
 								activities.map((item) => (
 									<Box
 										key={item.activity.id}
 										p={3}
-										rounded="lg"
-										bg="bg.subtle"
+										rounded="xl"
+										bg="bg.muted"
 										borderWidth="1px"
-										borderColor="border.subtle"
+										borderColor="border.glass"
 									>
 										<Flex
 											justify="space-between"
@@ -906,13 +880,13 @@ export const CircleRoute: React.FC = () => {
 											wrap="wrap"
 											gap={2}
 										>
-											<Text fontSize="sm">
+											<Text fontSize="xs">
 												<Text
 													as="span"
 													fontWeight="bold"
-													color="purple.300"
+													color="lime.500"
 												>
-													{item.username}
+													@{item.username}
 												</Text>{" "}
 												{item.activity.message_template}
 											</Text>
@@ -928,30 +902,23 @@ export const CircleRoute: React.FC = () => {
 													] as CircleReactionType[]
 												).map((rx) => {
 													const count =
-														item.activity
-															.reactions?.[rx] ||
-														0;
+														item.activity.reactions?.[rx] || 0;
 													return (
 														<Button
 															key={rx}
-															size="xs"
+															size="2xs"
 															variant={
 																count > 0
-																	? "subtle"
+																	? "solid"
 																	: "ghost"
 															}
-															colorPalette="purple"
+															colorPalette="lime"
 															onClick={() =>
-																reactMutation.mutate(
-																	{
-																		activity_id:
-																			item
-																				.activity
-																				.id,
-																		reaction:
-																			rx,
-																	},
-																)
+																reactMutation.mutate({
+																	activity_id:
+																		item.activity.id,
+																	reaction: rx,
+																})
 															}
 														>
 															{reactionIcons[rx]}{" "}
@@ -966,7 +933,7 @@ export const CircleRoute: React.FC = () => {
 							)}
 						</VStack>
 					</VStack>
-				</Card.Root>
+				</Box>
 			</VStack>
 
 			{/* Invite Modal */}
@@ -982,15 +949,11 @@ export const CircleRoute: React.FC = () => {
 						<DialogBody>
 							<VStack gap={4}>
 								<Text fontSize="sm" color="fg.muted">
-									Generate an invite code to share with your
-									friends or family. Codes expire after 7
-									days.
+									Generate an invite code to share with your friends or family. Codes expire after 7 days.
 								</Text>
 								<Field label="Username (Optional)">
 									<Input
-										{...inviteForm.register(
-											"invitee_username",
-										)}
+										{...inviteForm.register("invitee_username")}
 										placeholder="e.g. alex"
 									/>
 								</Field>
@@ -1011,14 +974,15 @@ export const CircleRoute: React.FC = () => {
 												key={inv.id}
 												justify="space-between"
 												w="full"
-												p={2}
-												bg="bg.subtle"
-												rounded="md"
+												p={2.5}
+												bg="bg.muted"
+												rounded="lg"
 											>
 												<Text
 													fontSize="sm"
 													fontFamily="mono"
 													fontWeight="bold"
+													color="lime.500"
 												>
 													{inv.invite_code}
 												</Text>
@@ -1026,13 +990,10 @@ export const CircleRoute: React.FC = () => {
 													size="xs"
 													variant="outline"
 													onClick={() =>
-														handleCopy(
-															inv.invite_code,
-														)
+														handleCopy(inv.invite_code)
 													}
 												>
-													<Icon as={LuCopy} mr={1} />{" "}
-													Copy
+													<Icon as={LuCopy} mr={1} /> Copy
 												</Button>
 											</HStack>
 										))}
@@ -1049,7 +1010,7 @@ export const CircleRoute: React.FC = () => {
 							</Button>
 							<Button
 								type="submit"
-								colorPalette="purple"
+								colorPalette="lime"
 								loading={createInviteMutation.isPending}
 							>
 								Generate Code
@@ -1077,10 +1038,9 @@ export const CircleRoute: React.FC = () => {
 										style={{
 											width: "100%",
 											padding: "8px",
-											borderRadius: "6px",
-											background:
-												"var(--chakra-colors-bg-subtle)",
-											border: "1px solid var(--chakra-colors-border-subtle)",
+											borderRadius: "8px",
+											background: "transparent",
+											border: "1px solid var(--chakra-colors-border-glass)",
 											color: "inherit",
 										}}
 									>
@@ -1112,7 +1072,7 @@ export const CircleRoute: React.FC = () => {
 							</Button>
 							<Button
 								type="submit"
-								colorPalette="purple"
+								colorPalette="lime"
 								loading={setGoalMutation.isPending}
 							>
 								Set Goal
@@ -1121,7 +1081,7 @@ export const CircleRoute: React.FC = () => {
 					</form>
 				</DialogContent>
 			</DialogRoot>
-		</Container>
+		</Box>
 	);
 };
 

@@ -68,31 +68,26 @@ export const GoalRetrospectiveDialog: React.FC<
 		value: GoalRetrospectiveOutcome;
 		label: string;
 		desc: string;
-		color: string;
 	}[] = [
 		{
 			value: "achieved",
 			label: "Achieved",
 			desc: "Outcome fully realized according to plan",
-			color: "teal",
 		},
 		{
 			value: "partially_achieved",
 			label: "Partially Achieved",
 			desc: "Meaningful progress with pivot",
-			color: "cyan",
 		},
 		{
 			value: "abandoned",
 			label: "Abandoned",
 			desc: "Deprioritized or no longer relevant",
-			color: "amber",
 		},
 		{
 			value: "replaced",
 			label: "Replaced",
 			desc: "Superseded by a new higher-impact goal",
-			color: "purple",
 		},
 	];
 
@@ -116,8 +111,8 @@ export const GoalRetrospectiveDialog: React.FC<
 						<HStack gap={2}>
 							<Circle
 								size="32px"
-								bg="teal.500/15"
-								color="teal.400"
+								bg="lime.500/15"
+								color="lime.500"
 							>
 								<Icon as={LuAward} boxSize={5} />
 							</Circle>
@@ -149,7 +144,7 @@ export const GoalRetrospectiveDialog: React.FC<
 							>
 								<VStack align="flex-start" gap={1}>
 									<Badge
-										colorPalette="teal"
+										colorPalette="lime"
 										variant="subtle"
 										size="sm"
 									>
@@ -200,12 +195,12 @@ export const GoalRetrospectiveDialog: React.FC<
 												borderWidth="1px"
 												borderColor={
 													isSelected
-														? `${opt.color}.500`
+														? "lime.500"
 														: "border.glass"
 												}
 												bg={
 													isSelected
-														? `${opt.color}.500/10`
+														? "lime.500/10"
 														: "bg.surface"
 												}
 												textAlign="left"
@@ -222,7 +217,7 @@ export const GoalRetrospectiveDialog: React.FC<
 														fontSize="sm"
 														color={
 															isSelected
-																? `${opt.color}.400`
+																? "lime.500"
 																: "inherit"
 														}
 													>
@@ -231,7 +226,7 @@ export const GoalRetrospectiveDialog: React.FC<
 													{isSelected && (
 														<Icon
 															as={LuCheck}
-															color={`${opt.color}.400`}
+															color="lime.500"
 														/>
 													)}
 												</HStack>
@@ -309,7 +304,7 @@ export const GoalRetrospectiveDialog: React.FC<
 								Cancel
 							</Button>
 							<Button
-								colorPalette="teal"
+								colorPalette="lime"
 								size="sm"
 								onClick={handleSubmit}
 								loading={closeGoalMutation.isPending}

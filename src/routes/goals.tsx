@@ -81,19 +81,11 @@ const AREA_COLORS: Record<
 	LifeArea,
 	{ bg: string; color: string; border: string }
 > = {
-	health: { bg: "red.500/15", color: "red.400", border: "red.500/30" },
-	wealth: {
-		bg: "yellow.500/15",
-		color: "yellow.400",
-		border: "yellow.500/30",
-	},
-	mastery: {
-		bg: "purple.500/15",
-		color: "purple.400",
-		border: "purple.500/30",
-	},
-	personal: { bg: "cyan.500/15", color: "cyan.400", border: "cyan.500/30" },
-	social: { bg: "pink.500/15", color: "pink.400", border: "pink.500/30" },
+	health: { bg: "lime.500/15", color: "lime.500", border: "lime.500/30" },
+	wealth: { bg: "bg.muted", color: "fg", border: "border" },
+	mastery: { bg: "lime.500/15", color: "lime.500", border: "lime.500/30" },
+	personal: { bg: "bg.muted", color: "fg", border: "border" },
+	social: { bg: "lime.500/15", color: "lime.500", border: "lime.500/30" },
 };
 
 export const GoalsRoute: React.FC = () => {
@@ -293,8 +285,8 @@ export const GoalsRoute: React.FC = () => {
 					<HStack gap={2}>
 						<Circle
 							size="32px"
-							bg="purple.500/15"
-							color="purple.400"
+							bg="lime.500/15"
+							color="lime.500"
 						>
 							<Icon as={LuTarget} boxSize={5} />
 						</Circle>
@@ -309,7 +301,7 @@ export const GoalsRoute: React.FC = () => {
 				</VStack>
 
 				<Button
-					colorPalette="purple"
+					colorPalette="lime"
 					rounded="full"
 					onClick={() => {
 						goalForm.reset();
@@ -321,7 +313,7 @@ export const GoalsRoute: React.FC = () => {
 			</Flex>
 
 			{/* Area Tabs */}
-			<HStack gap={2} mb={6} overflowX="auto" pb={1}>
+			<HStack gap={2} mb={6} overflowX="auto" py={2} px={1}>
 				{[
 					"all",
 					"health",
@@ -333,8 +325,9 @@ export const GoalsRoute: React.FC = () => {
 					<PillButton
 						key={area}
 						size="sm"
+						noIcon
 						variant={selectedArea === area ? "mint" : "outline"}
-						colorPalette={selectedArea === area ? "purple" : "gray"}
+						colorPalette={selectedArea === area ? "lime" : "gray"}
 						onClick={() => setSelectedArea(area)}
 						textTransform="capitalize"
 					>
@@ -446,7 +439,7 @@ export const GoalsRoute: React.FC = () => {
 												progress >= 100 && (
 													<Button
 														size="sm"
-														colorPalette="green"
+														colorPalette="lime"
 														onClick={(e) =>
 															handleCompleteGoal(
 																goal,
@@ -462,7 +455,7 @@ export const GoalsRoute: React.FC = () => {
 											<Button
 												size="sm"
 												variant="outline"
-												colorPalette="teal"
+												colorPalette="gray"
 												onClick={() =>
 													setRetrospectiveGoal(goal)
 												}
@@ -510,12 +503,7 @@ export const GoalsRoute: React.FC = () => {
 												bg="bg.subtle"
 												rounded="full"
 											>
-												<Progress.Range
-													style={{
-														background:
-															"linear-gradient(90deg, #A5F3FC 0%, #DDD6FE 50%, #A3F788 100%)",
-													}}
-												/>
+												<Progress.Range bg="lime.solid" />
 											</Progress.Track>
 										</Progress.Root>
 									</Box>
@@ -544,7 +532,7 @@ export const GoalsRoute: React.FC = () => {
 											<Button
 												size="xs"
 												variant="subtle"
-												colorPalette="purple"
+												colorPalette="lime"
 												onClick={() => {
 													projectForm.reset({
 														goal_id: goal.id,
@@ -598,7 +586,7 @@ export const GoalsRoute: React.FC = () => {
 																		as={
 																			LuFolder
 																		}
-																		color="purple.400"
+																		color="lime.500"
 																	/>
 																	<Text
 																		fontWeight="semibold"
@@ -623,7 +611,7 @@ export const GoalsRoute: React.FC = () => {
 																	<Button
 																		size="2xs"
 																		variant="ghost"
-																		colorPalette="purple"
+																		colorPalette="lime"
 																		onClick={() => {
 																			milestoneForm.reset(
 																				{
@@ -700,7 +688,7 @@ export const GoalsRoute: React.FC = () => {
 																					borderWidth="1px"
 																					borderColor={
 																						isMCompleted
-																							? "green.500/30"
+																							? "lime.500/30"
 																							: "border.subtle"
 																					}
 																				>
@@ -718,7 +706,7 @@ export const GoalsRoute: React.FC = () => {
 																							}
 																							colorPalette={
 																								isMCompleted
-																									? "green"
+																									? "lime"
 																									: "gray"
 																							}
 																							aria-label="Toggle milestone"
@@ -759,28 +747,6 @@ export const GoalsRoute: React.FC = () => {
 																							{
 																								m.title
 																							}
-																						</Text>
-																					</HStack>
-
-																					<HStack
-																						gap={
-																							2
-																						}
-																						fontSize="2xs"
-																					>
-																						<Text color="purple.400">
-																							+
-																							{
-																								m.exp_reward
-																							}{" "}
-																							XP
-																						</Text>
-																						<Text color="yellow.400">
-																							+
-																							{
-																								m.px_reward
-																							}{" "}
-																							PX
 																						</Text>
 																					</HStack>
 																				</Flex>
@@ -918,7 +884,7 @@ export const GoalsRoute: React.FC = () => {
 							</DialogActionTrigger>
 							<Button
 								type="submit"
-								colorPalette="purple"
+								colorPalette="lime"
 								loading={createGoalMutation.isPending}
 							>
 								Create Goal
@@ -984,7 +950,7 @@ export const GoalsRoute: React.FC = () => {
 							</Button>
 							<Button
 								type="submit"
-								colorPalette="purple"
+								colorPalette="lime"
 								loading={createProjectMutation.isPending}
 							>
 								Add Project
@@ -1042,7 +1008,7 @@ export const GoalsRoute: React.FC = () => {
 							</Button>
 							<Button
 								type="submit"
-								colorPalette="purple"
+								colorPalette="lime"
 								loading={createMilestoneMutation.isPending}
 							>
 								Add Milestone

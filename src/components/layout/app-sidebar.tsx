@@ -138,15 +138,15 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 			p={4}
 		>
 			{/* Top: Brand Header */}
-			<VStack align="stretch" gap={6}>
+			<VStack align="stretch" gap={5}>
 				<Flex align="center" justify="space-between">
 					<HStack asChild gap={2.5} cursor="pointer">
 						<Link to="/dashboard" onClick={onClose}>
 							<Circle
 								size="9"
-								bg="bg.solid"
-								color="fg.inverted"
-								shadow="glass"
+								bg="lime.solid"
+								color="lime.contrast"
+								shadow="none"
 								transition="transform 0.15s ease-out"
 								_hover={{ transform: "scale(1.08)" }}
 							>
@@ -167,6 +167,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 									fontSize="9px"
 									px={1.5}
 									py={0.5}
+									colorPalette="lime"
 								>
 									OS
 								</Badge>
@@ -189,7 +190,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 				</Flex>
 
 				{/* Navigation Sections (Independently scrollable if needed) */}
-				<VStack align="stretch" gap={5} flex="1" minH={0} overflowY="auto" pr={1}>
+				<VStack align="stretch" gap={4} flex="1" minH={0} overflowY="auto" pr={0.5}>
 					{navSections.map((section) => (
 						<VStack key={section.title} align="stretch" gap={1}>
 							<Text
@@ -216,13 +217,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 										gap={3}
 										cursor="pointer"
 										transition="all 0.15s ease-out"
-										bg={active ? "bg.solid" : "transparent"}
-										color={active ? "fg.inverted" : "fg.muted"}
+										bg={active ? "lime.solid" : "transparent"}
+										color={active ? "lime.contrast" : "fg.muted"}
 										fontWeight={active ? "bold" : "medium"}
 										fontSize="xs"
 										_hover={{
-											bg: active ? "bg.solid" : "bg.subtle",
-											color: active ? "fg.inverted" : "fg",
+											bg: active ? "lime.solid" : "bg.muted",
+											color: active ? "lime.contrast" : "fg",
 										}}
 										onClick={onClose}
 									>
@@ -230,7 +231,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 											<Icon
 												as={item.icon}
 												boxSize={4}
-												color={active ? "fg.inverted" : "inherit"}
+												color={active ? "lime.contrast" : "inherit"}
 											/>
 											<Text flex="1" whiteSpace="nowrap">
 												{item.label}
@@ -239,7 +240,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 												<Badge
 													size="xs"
 													variant="solid"
-													colorPalette="teal"
+													colorPalette="lime"
 													rounded="pill"
 												>
 													{item.badge}
@@ -264,13 +265,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 					gap={3}
 					cursor="pointer"
 					transition="all 0.15s ease-out"
-					bg={pathname.startsWith("/settings") ? "bg.solid" : "transparent"}
-					color={pathname.startsWith("/settings") ? "fg.inverted" : "fg.muted"}
+					bg={pathname.startsWith("/settings") ? "lime.solid" : "transparent"}
+					color={pathname.startsWith("/settings") ? "lime.contrast" : "fg.muted"}
 					fontWeight={pathname.startsWith("/settings") ? "bold" : "medium"}
 					fontSize="xs"
 					_hover={{
-						bg: pathname.startsWith("/settings") ? "bg.solid" : "bg.subtle",
-						color: pathname.startsWith("/settings") ? "fg.inverted" : "fg",
+						bg: pathname.startsWith("/settings") ? "lime.solid" : "bg.muted",
+						color: pathname.startsWith("/settings") ? "lime.contrast" : "fg",
 					}}
 					onClick={onClose}
 				>
@@ -286,7 +287,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 					justify="space-between"
 					p={2}
 					rounded="xl"
-					bg="bg.surface"
+					bg="bg.muted"
 					borderWidth="1px"
 					borderColor="border.glass"
 				>
@@ -306,7 +307,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 						aria-label="Sign Out"
 						variant="ghost"
 						size="xs"
-						color="red.400"
+						color="fg.muted"
+						_hover={{ color: "fg" }}
 						onClick={logout}
 						title={t("components.layout.navbar.signOut") || "Sign out"}
 					>
@@ -319,18 +321,18 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
 	return (
 		<>
-			{/* Desktop Fixed / Static Sidebar */}
+			{/* Desktop Fixed / Static Sidebar (Flush to Left, Top, Bottom) */}
 			<Box
 				as="aside"
 				display={{ base: "none", md: "flex" }}
 				w="260px"
-				h="full"
+				h="100dvh"
 				flexShrink={0}
-				bg="bg.glass"
-				borderWidth="1px"
+				bg="bg.panel"
+				borderRightWidth="1px"
 				borderColor="border.glass"
-				rounded="card"
-				shadow="glass"
+				rounded="none"
+				shadow="none"
 				backdropFilter="blur(20px)"
 				zIndex={20}
 				overflow="hidden"
@@ -362,7 +364,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 						left={0}
 						bottom={0}
 						w="280px"
-						bg="bg.glass"
+						bg="bg.panel"
 						borderRightWidth="1px"
 						borderColor="border.glass"
 						shadow="float"

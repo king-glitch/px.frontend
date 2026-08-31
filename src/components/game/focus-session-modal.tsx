@@ -135,8 +135,8 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 						<HStack gap={2}>
 							<Circle
 								size="32px"
-								bg="purple.500/15"
-								color="purple.400"
+								bg="lime.500/15"
+								color="lime.500"
 							>
 								<Icon as={LuFlame} boxSize={5} />
 							</Circle>
@@ -172,7 +172,7 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 										width="full"
 									>
 										<Badge
-											colorPalette="purple"
+											colorPalette="lime"
 											variant="subtle"
 											size="sm"
 										>
@@ -180,7 +180,7 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 										</Badge>
 										{isMVQ && (
 											<Badge
-												colorPalette="amber"
+												colorPalette="lime"
 												variant="solid"
 												size="sm"
 											>
@@ -200,11 +200,11 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 											rounded="md"
 											width="full"
 											borderWidth="1px"
-											borderColor="purple.500/30"
+											borderColor="lime.500/30"
 										>
 											<Icon
 												as={LuCheck}
-												color="purple.400"
+												color="lime.500"
 											/>
 											<Text
 												fontSize="sm"
@@ -227,7 +227,7 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 												? "solid"
 												: "subtle"
 										}
-										colorPalette="purple"
+										colorPalette="lime"
 										onClick={() => setMode("countdown")}
 									>
 										Countdown
@@ -239,7 +239,7 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 												? "solid"
 												: "subtle"
 										}
-										colorPalette="purple"
+										colorPalette="lime"
 										onClick={() => setMode("countup")}
 									>
 										Stopwatch
@@ -260,14 +260,14 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 								<Box width="full" px={4}>
 									<Progress.Root
 										value={progressPercent}
-										colorPalette="purple"
+										colorPalette="lime"
 										size="md"
 									>
 										<Progress.Track
 											bg="whiteAlpha.100"
 											rounded="full"
 										>
-											<Progress.Range rounded="full" />
+											<Progress.Range rounded="full" bg="lime.solid" />
 										</Progress.Track>
 									</Progress.Root>
 								</Box>
@@ -275,7 +275,7 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 								<HStack gap={4} pt={2}>
 									<Button
 										size="lg"
-										colorPalette="purple"
+										colorPalette="lime"
 										variant={
 											isRunning ? "outline" : "solid"
 										}
@@ -328,7 +328,7 @@ export const FocusSessionModal: React.FC<FocusSessionModalProps> = ({
 									Cancel
 								</Button>
 								<Button
-									colorPalette="teal"
+									colorPalette="lime"
 									size="sm"
 									onClick={handleComplete}
 									loading={completeQuestMutation.isPending}
