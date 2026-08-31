@@ -9,6 +9,7 @@ import {
 	DialogRoot,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
 import {
 	Badge,
 	Box,
@@ -243,10 +244,7 @@ export const GoalRetrospectiveDialog: React.FC<
 							</VStack>
 
 							{/* Obstacles Encountered */}
-							<VStack align="flex-start" gap={1}>
-								<Text fontSize="sm" fontWeight="semibold">
-									Obstacles & Bottlenecks
-								</Text>
+							<Field label="Obstacles & Bottlenecks">
 								<Textarea
 									placeholder="What hindered momentum or took longer than expected?"
 									value={obstacles}
@@ -255,15 +253,14 @@ export const GoalRetrospectiveDialog: React.FC<
 									}
 									rows={2}
 									fontSize="sm"
-									bg="bg.surface"
+									bg="bg.muted"
+									borderColor="border"
+									rounded="xl"
 								/>
-							</VStack>
+							</Field>
 
 							{/* Learnings & Key Takeaways */}
-							<VStack align="flex-start" gap={1}>
-								<Text fontSize="sm" fontWeight="semibold">
-									Key Learnings for Next Goals
-								</Text>
+							<Field label="Key Learnings for Next Goals">
 								<Textarea
 									placeholder="What worked well? What rules will you carry forward?"
 									value={learnings}
@@ -272,15 +269,14 @@ export const GoalRetrospectiveDialog: React.FC<
 									}
 									rows={2}
 									fontSize="sm"
-									bg="bg.surface"
+									bg="bg.muted"
+									borderColor="border"
+									rounded="xl"
 								/>
-							</VStack>
+							</Field>
 
 							{/* Effective Routines */}
-							<VStack align="flex-start" gap={1}>
-								<Text fontSize="sm" fontWeight="semibold">
-									Effective Routines (comma-separated)
-								</Text>
+							<Field label="Effective Routines (comma-separated)">
 								<Input
 									placeholder="e.g. Morning Focus, Weekly Sprint Reset"
 									value={effectiveRoutines}
@@ -288,9 +284,11 @@ export const GoalRetrospectiveDialog: React.FC<
 										setEffectiveRoutines(e.target.value)
 									}
 									fontSize="sm"
-									bg="bg.surface"
+									bg="bg.muted"
+									borderColor="border"
+									rounded="pill"
 								/>
-							</VStack>
+							</Field>
 						</VStack>
 					</DialogBody>
 

@@ -33,6 +33,7 @@ import {
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field } from "@/components/ui/field";
 import { PillButton } from "@/components/ui/pill-button";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
 import { GoalRetrospectiveDialog } from "@/routes/goals/goal-retrospective-dialog";
 import {
@@ -50,6 +51,7 @@ import {
 	SimpleGrid,
 	Skeleton,
 	Text,
+	Textarea,
 	VStack,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -88,6 +90,24 @@ const AREA_COLORS: Record<
 	social: { bg: "lime.500/15", color: "lime.500", border: "lime.500/30" },
 };
 
+const LIFE_AREAS = [
+	{ label: "Health", value: "health" },
+	{ label: "Wealth", value: "wealth" },
+	{ label: "Mastery", value: "mastery" },
+	{ label: "Personal", value: "personal" },
+	{ label: "Social", value: "social" },
+];
+
+const GOAL_CATEGORIES = [
+	{ label: "Learning", value: "learning" },
+	{ label: "Work", value: "work" },
+	{ label: "Health", value: "health" },
+	{ label: "Chores", value: "chores" },
+	{ label: "Mindfulness", value: "mindfulness" },
+	{ label: "Social", value: "social" },
+	{ label: "Finance", value: "finance" },
+];
+
 export const GoalsRoute: React.FC = () => {
 	const { data: goals = [], isLoading } = useGoals();
 	const createGoalMutation = useCreateGoal();
@@ -124,6 +144,9 @@ export const GoalsRoute: React.FC = () => {
 			target_date: "",
 		},
 	});
+
+	const goalArea = goalForm.watch("area");
+	const goalCategory = goalForm.watch("category");
 
 	const projectForm = useForm<ProjectFormData>({
 		resolver: zodResolver(projectSchema),
@@ -784,10 +807,13 @@ export const GoalsRoute: React.FC = () => {
 						</DialogHeader>
 
 						<DialogBody>
-							<VStack gap={4}>
+							<VStack gap={4} align="stretch">
 								<Field
 									label="Goal Title"
 									required
+									invalid={Boolean(
+										goalForm.formState.errors.title,
+									)}
 									errorText={
 										goalForm.formState.errors.title?.message
 									}
@@ -795,77 +821,54 @@ export const GoalsRoute: React.FC = () => {
 									<Input
 										{...goalForm.register("title")}
 										placeholder="e.g. Become conversational in Japanese"
+										rounded="pill"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
 									/>
 								</Field>
 
 								<Field label="Description">
-									<Input
+									<Textarea
 										{...goalForm.register("description")}
 										placeholder="Why this goal matters..."
+										rounded="xl"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
+										rows={2}
 									/>
 								</Field>
 
-								<SimpleGrid columns={2} gap={4} w="full">
-									<Field label="Life Area">
-										<select
-											{...goalForm.register("area")}
-											style={{
-												width: "100%",
-												padding: "8px",
-												borderRadius: "8px",
-												background: "transparent",
-												border: "1px solid var(--chakra-colors-border-glass)",
-											}}
-										>
-											<option value="health">
-												Health
-											</option>
-											<option value="wealth">
-												Wealth
-											</option>
-											<option value="mastery">
-												Mastery
-											</option>
-											<option value="personal">
-												Personal
-											</option>
-											<option value="social">
-												Social
-											</option>
-										</select>
+								<SimpleGrid columns={{ base: 1, sm: 2 }} gap={3} w="full">
+									<Field label="Life Area" required>
+										<SearchableSelect
+											items={LIFE_AREAS}
+											value={goalArea}
+											onValueChange={(val) =>
+												goalForm.setValue(
+													"area",
+													val as LifeArea,
+													{ shouldValidate: true },
+												)
+											}
+											placeholder="Select Life Area"
+										/>
 									</Field>
 
-									<Field label="Category">
-										<select
-											{...goalForm.register("category")}
-											style={{
-												width: "100%",
-												padding: "8px",
-												borderRadius: "8px",
-												background: "transparent",
-												border: "1px solid var(--chakra-colors-border-glass)",
-											}}
-										>
-											<option value="learning">
-												Learning
-											</option>
-											<option value="work">Work</option>
-											<option value="health">
-												Health
-											</option>
-											<option value="chores">
-												Chores
-											</option>
-											<option value="mindfulness">
-												Mindfulness
-											</option>
-											<option value="social">
-												Social
-											</option>
-											<option value="finance">
-												Finance
-											</option>
-										</select>
+									<Field label="Category" required>
+										<SearchableSelect
+											items={GOAL_CATEGORIES}
+											value={goalCategory}
+											onValueChange={(val) =>
+												goalForm.setValue(
+													"category",
+													val as any,
+													{ shouldValidate: true },
+												)
+											}
+											placeholder="Select Category"
+										/>
 									</Field>
 								</SimpleGrid>
 
@@ -873,6 +876,10 @@ export const GoalsRoute: React.FC = () => {
 									<Input
 										type="date"
 										{...goalForm.register("target_date")}
+										rounded="pill"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
 									/>
 								</Field>
 							</VStack>
@@ -912,10 +919,13 @@ export const GoalsRoute: React.FC = () => {
 						</DialogHeader>
 
 						<DialogBody>
-							<VStack gap={4}>
+							<VStack gap={4} align="stretch">
 								<Field
 									label="Project Title"
 									required
+									invalid={Boolean(
+										projectForm.formState.errors.title,
+									)}
 									errorText={
 										projectForm.formState.errors.title
 											?.message
@@ -924,18 +934,31 @@ export const GoalsRoute: React.FC = () => {
 									<Input
 										{...projectForm.register("title")}
 										placeholder="e.g. Complete beginner curriculum"
+										rounded="pill"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
 									/>
 								</Field>
 								<Field label="Description">
-									<Input
+									<Textarea
 										{...projectForm.register("description")}
 										placeholder="Scope of this project..."
+										rounded="xl"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
+										rows={2}
 									/>
 								</Field>
 								<Field label="Target Date">
 									<Input
 										type="date"
 										{...projectForm.register("target_date")}
+										rounded="pill"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
 									/>
 								</Field>
 							</VStack>
@@ -980,10 +1003,13 @@ export const GoalsRoute: React.FC = () => {
 						</DialogHeader>
 
 						<DialogBody>
-							<VStack gap={4}>
+							<VStack gap={4} align="stretch">
 								<Field
 									label="Milestone Title"
 									required
+									invalid={Boolean(
+										milestoneForm.formState.errors.title,
+									)}
 									errorText={
 										milestoneForm.formState.errors.title
 											?.message
@@ -992,6 +1018,10 @@ export const GoalsRoute: React.FC = () => {
 									<Input
 										{...milestoneForm.register("title")}
 										placeholder="e.g. Finish units 1–5"
+										rounded="pill"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
 									/>
 								</Field>
 							</VStack>

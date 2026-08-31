@@ -82,6 +82,10 @@ export const Login: React.FC = () => {
 								{...register("username")}
 								autoComplete="username"
 								autoFocus
+								rounded="pill"
+								bg="bg.muted"
+								borderColor="border"
+								fontSize="sm"
 							/>
 						</Field>
 
@@ -95,6 +99,10 @@ export const Login: React.FC = () => {
 								placeholder={t("routes.auth.login.password")}
 								{...register("password")}
 								autoComplete="current-password"
+								rounded="pill"
+								bg="bg.muted"
+								borderColor="border"
+								fontSize="sm"
 							/>
 						</Field>
 

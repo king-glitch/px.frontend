@@ -20,7 +20,7 @@ import { WardrobeModal } from "@/routes/game/heroes/components/wardrobe-modal";
 import { ShopSection } from "@/routes/game/heroes/components/shop-section";
 import { InventoryAndClaimsSection } from "@/routes/game/heroes/components/inventory-and-claims-section";
 import { HeroHeader } from "@/routes/game/heroes/components/hero-header";
-import { HeroSidebar } from "@/routes/game/heroes/components/hero-sidebar";
+import { HeroTopbar } from "@/routes/game/heroes/components/hero-sidebar";
 import { HeroOverviewSection } from "@/routes/game/heroes/components/hero-overview-section";
 import { AscendModal } from "@/routes/game/heroes/components/ascend-modal";
 import {
@@ -114,37 +114,30 @@ export const Heroes: React.FC = () => {
 
 	if (isLoading) {
 		return (
-			<Container maxW="7xl" py={{ base: 4, md: 8 }}>
+			<Box flex="1" pb={12}>
 				<Stack gap={6}>
-					<Skeleton h="10" w="240px" rounded="xl" />
-					<Grid
-						gap={5}
-						templateColumns={{ base: "1fr", lg: "240px 1fr" }}
-					>
-						<Skeleton h="300px" rounded="card" />
-						<Skeleton h="500px" rounded="card" />
-					</Grid>
+					<Skeleton h="120px" rounded="card" />
+					<Skeleton h="60px" rounded="card" />
+					<Skeleton h="400px" rounded="card" />
 				</Stack>
-			</Container>
+			</Box>
 		);
 	}
 
 	if (isError || !summary) {
 		return (
-			<Container maxW="7xl" py={{ base: 4, md: 8 }}>
-				<Box {...glassCard} p={8}>
-					<Text color="fg.muted">
-						{t("routes.heroes.main.load.error")}
-					</Text>
-				</Box>
-			</Container>
+			<Box flex="1" pb={12}>
+				<Text color="red.400">
+					{t("routes.heroes.failedToLoad")}
+				</Text>
+			</Box>
 		);
 	}
 
 	const { player, exp_to_next, attributes, active_buffs, perks } = summary;
 
 	return (
-		<Container maxW="7xl" py={{ base: 4, md: 6 }}>
+		<Box flex="1" pb={12}>
 			<RewardFlight />
 			<Stack gap={6}>
 				{/* Top Hero Command Header */}
@@ -153,52 +146,45 @@ export const Heroes: React.FC = () => {
 					onOpenLedger={() => setLedgerOpen(true)}
 				/>
 
-				{/* Sidebar Navigation & Active View Grid */}
-				<Grid
-					gap={6}
-					templateColumns={{ base: "1fr", lg: "240px 1fr" }}
-					alignItems="start"
-				>
-					{/* Sidebar Navigation */}
-					<HeroSidebar
-						activeSection={activeSection}
-						player={player}
-						username={user?.username}
-						equippedCosmetics={equippedCosmetics}
-					/>
+				{/* Horizontal Topbar Navigation */}
+				<HeroTopbar
+					activeSection={activeSection}
+					player={player}
+					username={user?.username}
+					equippedCosmetics={equippedCosmetics}
+				/>
 
-					{/* Main Content Area */}
-					<Box minW={0}>
-						{activeSection === "overview" && (
-							<HeroOverviewSection
-								player={player}
-								expToNext={exp_to_next}
-								attributes={attributes}
-								activeBuffs={active_buffs}
-								perks={perks}
-								equippedCosmetics={equippedCosmetics}
-								pendingPerk={pendingPerk}
-								onOpenAscend={() => setAscendOpen(true)}
-								onOpenWardrobe={() => setWardrobeOpen(true)}
-								onSelectPerkToUpgrade={(perkId) =>
-									confirmSpendPerk.ask(perkId)
-								}
-							/>
-						)}
+				{/* Main Content Area */}
+				<Box minW={0}>
+					{activeSection === "overview" && (
+						<HeroOverviewSection
+							player={player}
+							expToNext={exp_to_next}
+							attributes={attributes}
+							activeBuffs={active_buffs}
+							perks={perks}
+							equippedCosmetics={equippedCosmetics}
+							pendingPerk={pendingPerk}
+							onOpenAscend={() => setAscendOpen(true)}
+							onOpenWardrobe={() => setWardrobeOpen(true)}
+							onSelectPerkToUpgrade={(perkId) =>
+								confirmSpendPerk.ask(perkId)
+							}
+						/>
+					)}
 
-						{activeSection === "shop" && (
-							<ShopSection player={player} />
-						)}
+					{activeSection === "shop" && (
+						<ShopSection player={player} />
+					)}
 
-						{activeSection === "inventory" && (
-							<InventoryAndClaimsSection
-								player={player}
-								activeBuffs={active_buffs}
-								avatar={summary.avatar}
-							/>
-						)}
-					</Box>
-				</Grid>
+					{activeSection === "inventory" && (
+						<InventoryAndClaimsSection
+							player={player}
+							activeBuffs={active_buffs}
+							avatar={summary.avatar}
+						/>
+					)}
+				</Box>
 			</Stack>
 
 			{/* Ledger History Modal */}
@@ -243,7 +229,7 @@ export const Heroes: React.FC = () => {
 				loading={ascend.isPending}
 				onAscend={handleAscend}
 			/>
-		</Container>
+		</Box>
 	);
 };
 

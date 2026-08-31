@@ -25,6 +25,8 @@ import {
 	DialogRoot,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { Field } from "@/components/ui/field";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
 import {
 	useCategoryMastery,
@@ -256,60 +258,38 @@ export const CategoryMasteryCard: React.FC = () => {
 					</DialogHeader>
 
 					<DialogBody>
-						<VStack gap={4}>
-							<Box w="full">
-								<Text fontSize="xs" fontWeight="bold" mb={1}>
-									Primary Specialization
-								</Text>
-								<select
+						<VStack gap={4} align="stretch">
+							<Field label="Primary Specialization (+25% XP)" required>
+								<SearchableSelect
+									items={CATEGORIES.map((c) => ({
+										label: `${CATEGORY_ICONS[c]} ${c.charAt(0).toUpperCase() + c.slice(1)}`,
+										value: c,
+									}))}
 									value={selectedPrimary}
-									onChange={(e) =>
+									onValueChange={(val) =>
 										setSelectedPrimary(
-											e.target.value as QuestCategory,
+											val as QuestCategory,
 										)
 									}
-									style={{
-										width: "100%",
-										padding: "8px",
-										borderRadius: "8px",
-										background: "transparent",
-										border: "1px solid var(--chakra-colors-border-glass)",
-									}}
-								>
-									{CATEGORIES.map((c) => (
-										<option key={c} value={c}>
-											{c.toUpperCase()}
-										</option>
-									))}
-								</select>
-							</Box>
+									placeholder="Select Primary Category"
+								/>
+							</Field>
 
-							<Box w="full">
-								<Text fontSize="xs" fontWeight="bold" mb={1}>
-									Secondary Specialization
-								</Text>
-								<select
+							<Field label="Secondary Specialization (+15% XP)" required>
+								<SearchableSelect
+									items={CATEGORIES.map((c) => ({
+										label: `${CATEGORY_ICONS[c]} ${c.charAt(0).toUpperCase() + c.slice(1)}`,
+										value: c,
+									}))}
 									value={selectedSecondary}
-									onChange={(e) =>
+									onValueChange={(val) =>
 										setSelectedSecondary(
-											e.target.value as QuestCategory,
+											val as QuestCategory,
 										)
 									}
-									style={{
-										width: "100%",
-										padding: "8px",
-										borderRadius: "8px",
-										background: "transparent",
-										border: "1px solid var(--chakra-colors-border-glass)",
-									}}
-								>
-									{CATEGORIES.map((c) => (
-										<option key={c} value={c}>
-											{c.toUpperCase()}
-										</option>
-									))}
-								</select>
-							</Box>
+									placeholder="Select Secondary Category"
+								/>
+							</Field>
 						</VStack>
 					</DialogBody>
 

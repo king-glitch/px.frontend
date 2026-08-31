@@ -23,6 +23,8 @@ import {
 import type { CircleReactionType } from "@/api/types";
 import { Avatar } from "@/components/ui/avatar";
 import { Field } from "@/components/ui/field";
+import { PillButton } from "@/components/ui/pill-button";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
 import {
 	DialogBody,
@@ -94,6 +96,34 @@ const reactionIcons: Record<CircleReactionType, string> = {
 	muscle: "💪",
 };
 
+const CIRCLE_GOAL_TYPES = [
+	{
+		label: "Consistency (20 Contribution Days)",
+		value: "consistency",
+		description: "Daily quest activity across all members",
+	},
+	{
+		label: "Balance (5 Disciplines Active)",
+		value: "balance",
+		description: "Broad category distribution throughout the week",
+	},
+	{
+		label: "Progress (3 Milestones Moved)",
+		value: "progress",
+		description: "Move long-term projects and milestones",
+	},
+	{
+		label: "Recovery (4 Planned Rest/Recovery)",
+		value: "recovery",
+		description: "Protect health, rest days, and avoid burnout",
+	},
+	{
+		label: "Reflection (4 Weekly Reviews)",
+		value: "reflection",
+		description: "Complete mindful weekly progress reviews",
+	},
+];
+
 export const CircleRoute: React.FC = () => {
 	const { data: circleData, isLoading } = useCurrentCircle();
 	const { data: activities = [] } = useCircleActivities();
@@ -130,6 +160,8 @@ export const CircleRoute: React.FC = () => {
 		resolver: zodResolver(createCircleGoalSchema),
 		defaultValues: { goal_type: "consistency" },
 	});
+
+	const goalType = goalForm.watch("goal_type");
 
 	const handleCreateCircle = async (data: CreateCircleFormData) => {
 		try {
@@ -367,29 +399,48 @@ export const CircleRoute: React.FC = () => {
 								<DialogTitle>Create Your Circle</DialogTitle>
 							</DialogHeader>
 							<DialogBody>
-								<VStack gap={4}>
+								<VStack gap={4} align="stretch">
 									<Field
 										label="Circle Name"
 										required
+										invalid={Boolean(
+											createForm.formState.errors.name,
+										)}
 										errorText={
-											createForm.formState.errors.name?.message
+											createForm.formState.errors.name
+												?.message
 										}
 									>
 										<Input
 											{...createForm.register("name")}
 											placeholder="e.g. The Vanguard"
+											rounded="pill"
+											bg="bg.muted"
+											borderColor="border"
+											fontSize="sm"
 										/>
 									</Field>
 									<Field label="Motto / Focus">
 										<Input
 											{...createForm.register("motto")}
 											placeholder="e.g. Daily consistency together"
+											rounded="pill"
+											bg="bg.muted"
+											borderColor="border"
+											fontSize="sm"
 										/>
 									</Field>
 									<Field label="Description">
 										<Textarea
-											{...createForm.register("description")}
+											{...createForm.register(
+												"description",
+											)}
 											placeholder="Purpose of this circle..."
+											rounded="xl"
+											bg="bg.muted"
+											borderColor="border"
+											fontSize="sm"
+											rows={2}
 										/>
 									</Field>
 								</VStack>
@@ -947,7 +998,7 @@ export const CircleRoute: React.FC = () => {
 							<DialogTitle>Invite to Circle</DialogTitle>
 						</DialogHeader>
 						<DialogBody>
-							<VStack gap={4}>
+							<VStack gap={4} align="stretch">
 								<Text fontSize="sm" color="fg.muted">
 									Generate an invite code to share with your friends or family. Codes expire after 7 days.
 								</Text>
@@ -955,6 +1006,10 @@ export const CircleRoute: React.FC = () => {
 									<Input
 										{...inviteForm.register("invitee_username")}
 										placeholder="e.g. alex"
+										rounded="pill"
+										bg="bg.muted"
+										borderColor="border"
+										fontSize="sm"
 									/>
 								</Field>
 
@@ -1031,35 +1086,20 @@ export const CircleRoute: React.FC = () => {
 							<DialogTitle>Set Weekly Shared Goal</DialogTitle>
 						</DialogHeader>
 						<DialogBody>
-							<VStack gap={4}>
+							<VStack gap={4} align="stretch">
 								<Field label="Goal Type" required>
-									<select
-										{...goalForm.register("goal_type")}
-										style={{
-											width: "100%",
-											padding: "8px",
-											borderRadius: "8px",
-											background: "transparent",
-											border: "1px solid var(--chakra-colors-border-glass)",
-											color: "inherit",
-										}}
-									>
-										<option value="consistency">
-											Consistency (20 Contribution Days)
-										</option>
-										<option value="balance">
-											Balance (5 Disciplines Active)
-										</option>
-										<option value="progress">
-											Progress (3 Milestones Moved)
-										</option>
-										<option value="recovery">
-											Recovery (4 Planned Rest/Recovery)
-										</option>
-										<option value="reflection">
-											Reflection (4 Weekly Reviews)
-										</option>
-									</select>
+									<SearchableSelect
+										items={CIRCLE_GOAL_TYPES}
+										value={goalType}
+										onValueChange={(val) =>
+											goalForm.setValue(
+												"goal_type",
+												val as any,
+												{ shouldValidate: true },
+											)
+										}
+										placeholder="Select Weekly Goal Type"
+									/>
 								</Field>
 							</VStack>
 						</DialogBody>

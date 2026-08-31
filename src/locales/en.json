@@ -554,10 +554,10 @@
 				}
 			},
 			"header": {
-				"title": "Hero Command Hub",
+				"title": "Hero Sanctuary",
 				"level": "Lv {level}",
 				"ascension": "Ascension {count}",
-				"subtitle": "Progression, talent perks, reward shop, and cyber inventory.",
+				"subtitle": "Personal companion hub: progression, talent perks, reward shop, and cyber inventory.",
 				"ledgerHistory": "Ledger History",
 				"available": "available"
 			},

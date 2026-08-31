@@ -458,6 +458,10 @@ export const ReviewsRoute: React.FC = () => {
 											}
 											placeholder="Write open reflections without judgment..."
 											rows={3}
+											rounded="xl"
+											bg="bg.muted"
+											borderColor="border"
+											fontSize="sm"
 										/>
 									</Field>
 
@@ -478,6 +482,10 @@ export const ReviewsRoute: React.FC = () => {
 														addPriority();
 													}
 												}}
+												rounded="pill"
+												bg="bg.muted"
+												borderColor="border"
+												fontSize="sm"
 											/>
 											<Button
 												size="sm"
