@@ -1,5 +1,7 @@
-import React from "react";
+import type { DuolingoStatus } from "@/api/types";
+import { useTranslation } from "@/lib/i18n";
 import {
+	Badge,
 	Box,
 	Circle,
 	HStack,
@@ -8,11 +10,10 @@ import {
 	Stack,
 	Text,
 } from "@chakra-ui/react";
-import { Link } from "react-router";
+import React from "react";
 import { LuArrowUpRight, LuLeaf } from "react-icons/lu";
-import type { DuolingoStatus } from "@/api/types";
+import { Link } from "react-router";
 import { holoGlassCard } from "./holo-card";
-import { useTranslation } from "@/lib/i18n";
 
 interface DuolingoCardProps {
 	status?: DuolingoStatus | null;
@@ -58,6 +59,16 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 									"components.dashboard.duolingoCard.defaultUsername",
 								)}
 						</Text>
+						{status && (
+							<Badge
+								size="xs"
+								variant="subtle"
+								colorPalette="mint"
+								rounded="pill"
+							>
+								Synced
+							</Badge>
+						)}
 					</HStack>
 					<Circle
 						asChild

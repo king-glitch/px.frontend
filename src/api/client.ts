@@ -1,3 +1,5 @@
+import type { ApiErrorPayload, ApiResponse } from "@/api/types";
+import { config } from "@/config";
 import axios, {
 	type AxiosError,
 	type AxiosInstance,
@@ -5,8 +7,6 @@ import axios, {
 	type AxiosResponse,
 	type InternalAxiosRequestConfig,
 } from "axios";
-import { config } from "@/config";
-import type { ApiErrorPayload, ApiResponse } from "@/api/types";
 
 export class ApiError extends Error {
 	public code: string;
@@ -51,6 +51,8 @@ function createApiClient(): AxiosInstance {
 		(error) => Promise.reject(error),
 	);
 
+	let isHandlingUnauthorized = false;
+
 	// Handle standard envelope responses and map error envelopes
 	instance.interceptors.response.use(
 		(response: AxiosResponse) => {
@@ -61,10 +63,18 @@ function createApiClient(): AxiosInstance {
 			const errorPayload = error.response?.data?.errors;
 
 			if (status === 401 && typeof window !== "undefined") {
-				localStorage.removeItem(config.storage.tokenKey);
-				localStorage.removeItem(config.storage.userKey);
-				// Dispatch custom event for auth listeners
-				window.dispatchEvent(new CustomEvent("px:unauthorized"));
+				// ponytail: single 401 event loop mutex
+				if (!isHandlingUnauthorized) {
+					isHandlingUnauthorized = true;
+					localStorage.removeItem(config.storage.tokenKey);
+					localStorage.removeItem(config.storage.userKey);
+					localStorage.removeItem(config.storage.expiresAtKey);
+					// Dispatch custom event for auth listeners
+					window.dispatchEvent(new CustomEvent("px:unauthorized"));
+					setTimeout(() => {
+						isHandlingUnauthorized = false;
+					}, 1000);
+				}
 			}
 
 			if (errorPayload) {

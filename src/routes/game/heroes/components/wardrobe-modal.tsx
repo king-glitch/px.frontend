@@ -30,6 +30,7 @@ import { type AvatarSlot } from "@/components/game";
 import { ApiError } from "@/api/client";
 import {
 	useUpdateAvatar,
+	useInventory,
 	type Player,
 	type PerkID,
 	type ShopItem,
@@ -66,6 +67,7 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 	const [previewSlots, setPreviewSlots] =
 		useState<Partial<Record<AvatarSlot, string>>>(equipped);
 	const updateAvatar = useUpdateAvatar();
+	const { data: inventory = [] } = useInventory();
 
 	const CATEGORIES = useMemo(
 		() => [
@@ -113,10 +115,51 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 		return res;
 	}, [summary?.perks]);
 
+	// ponytail: item is unlocked if default skin, or unlocked via perk rank, or owned in inventory
 	const isItemUnlocked = (item: CustomizationDef): boolean => {
-		if (!item.requiredPerk) return true;
-		const rank = playerPerkMap.get(item.requiredPerk) || 0;
-		return rank > 0;
+		if (item.id === "obsidian") return true;
+		if (item.requiredPerk) {
+			const rank = playerPerkMap.get(item.requiredPerk) || 0;
+			return rank > 0;
+		}
+		const shopItem = cosmetics.find(
+			(c) => c.slot === `${item.slot}:${item.id}`,
+		);
+		if (shopItem) {
+			return inventory.some(
+				(inv) => inv.shop_item_id === shopItem.id && inv.quantity > 0,
+			);
+		}
+		return false;
+	};
+
+	const handleUnequipSlot = async (slot: AvatarSlot) => {
+		if (!previewSlots[slot]) return;
+		const nextSlots = { ...previewSlots };
+		delete nextSlots[slot];
+
+		const equippedPayload: Record<string, string> = {};
+		for (const [s, id] of Object.entries(nextSlots)) {
+			const match = cosmetics.find((c) => c.slot === `${s}:${id}`);
+			if (match) equippedPayload[s] = match.id;
+		}
+
+		try {
+			await updateAvatar.mutateAsync(equippedPayload);
+			setPreviewSlots(nextSlots);
+			toaster.create({
+				title: t("routes.heroes.wardrobe.toasts.unequipped", {
+					name: slot,
+				}),
+				type: "success",
+			});
+		} catch (err) {
+			toaster.create({
+				title: t("routes.heroes.wardrobe.toasts.failedEquip"),
+				description: err instanceof ApiError ? err.message : undefined,
+				type: "error",
+			});
+		}
 	};
 
 	const handleToggleSlot = async (item: CustomizationDef) => {
@@ -273,25 +316,50 @@ export const WardrobeModal: React.FC<WardrobeModalProps> = ({
 									)}
 								</SimpleGrid>
 							) : (
-								<SimpleGrid
-									columns={{ base: 1, sm: 2 }}
-									gap={2.5}
-								>
-									{WARDROBE_CUSTOMIZATIONS.filter(
-										(item) => item.slot === activeTab,
-									).map((item) => (
-										<WardrobeItemCard
-											key={item.id}
-											item={item}
-											isUnlocked={isItemUnlocked(item)}
-											isEquipped={
-												previewSlots[item.slot] ===
-												item.id
-											}
-											onToggle={handleToggleSlot}
-										/>
-									))}
-								</SimpleGrid>
+								<Stack gap={2.5}>
+									{previewSlots[activeTab as AvatarSlot] &&
+										activeTab !== "skin" && (
+											<HStack justify="flex-end">
+												<Button
+													size="2xs"
+													variant="ghost"
+													colorPalette="red"
+													rounded="pill"
+													onClick={() =>
+														handleUnequipSlot(
+															activeTab as AvatarSlot,
+														)
+													}
+												>
+													{t(
+														"routes.heroes.wardrobe.itemCard.unequip",
+													)}{" "}
+													({activeTab})
+												</Button>
+											</HStack>
+										)}
+									<SimpleGrid
+										columns={{ base: 1, sm: 2 }}
+										gap={2.5}
+									>
+										{WARDROBE_CUSTOMIZATIONS.filter(
+											(item) => item.slot === activeTab,
+										).map((item) => (
+											<WardrobeItemCard
+												key={item.id}
+												item={item}
+												isUnlocked={isItemUnlocked(
+													item,
+												)}
+												isEquipped={
+													previewSlots[item.slot] ===
+													item.id
+												}
+												onToggle={handleToggleSlot}
+											/>
+										))}
+									</SimpleGrid>
+								</Stack>
 							)}
 						</Stack>
 					</Grid>

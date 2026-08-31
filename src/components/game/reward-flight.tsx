@@ -162,7 +162,29 @@ export function useRewardFlight() {
 		[reducedMotion],
 	);
 
-	return { fly };
+	const triggerFlight = React.useCallback(
+		(options: {
+			sourceX?: number;
+			sourceY?: number;
+			exp?: number;
+			px?: number;
+			fromElement?: HTMLElement;
+		}) => {
+			const el =
+				options.fromElement ||
+				(typeof document !== "undefined" ? document.body : null);
+			if (!el) return;
+			if (options.exp && options.exp > 0) {
+				void fly(el, options.exp, "exp");
+			}
+			if (options.px && options.px > 0) {
+				void fly(el, options.px, "px");
+			}
+		},
+		[fly],
+	);
+
+	return { fly, triggerFlight };
 }
 
 export default RewardFlight;

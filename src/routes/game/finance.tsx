@@ -13,13 +13,13 @@ import {
 	registerRewardFlightTarget,
 	useRewardFlight,
 } from "@/components/game";
-import { EntriesSection } from "./finance/components/entries-section";
-import { BudgetsSection } from "./finance/components/budgets-section";
-import { FinanceHeader } from "./finance/components/finance-header";
-import { FinanceStatTiles } from "./finance/components/finance-stat-tiles";
-import { FinanceConversionCard } from "./finance/components/finance-conversion-card";
-import { FinanceCashflowChart } from "./finance/components/finance-cashflow-chart";
-import { FinanceCategoryChart } from "./finance/components/finance-category-chart";
+import { EntriesSection } from "@/routes/game/finance/components/entries-section";
+import { BudgetsSection } from "@/routes/game/finance/components/budgets-section";
+import { FinanceHeader } from "@/routes/game/finance/components/finance-header";
+import { FinanceStatTiles } from "@/routes/game/finance/components/finance-stat-tiles";
+import { FinanceConversionCard } from "@/routes/game/finance/components/finance-conversion-card";
+import { FinanceCashflowChart } from "@/routes/game/finance/components/finance-cashflow-chart";
+import { FinanceCategoryChart } from "@/routes/game/finance/components/finance-category-chart";
 import { useTranslation } from "@/lib/i18n";
 
 function currentPeriod(): string {
@@ -29,6 +29,7 @@ function currentPeriod(): string {
 export const Finance: React.FC = () => {
 	const { t } = useTranslation();
 	const [period, setPeriod] = useState(currentPeriod);
+	const [selectedCategory, setSelectedCategory] = useState<string>("");
 	const {
 		data: summary,
 		isLoading: summaryLoading,
@@ -164,11 +165,17 @@ export const Finance: React.FC = () => {
 					<FinanceCategoryChart
 						period={period}
 						data={categoryChartData}
+						selectedCategory={selectedCategory}
+						onSelectCategory={setSelectedCategory}
 					/>
 				</Grid>
 
 				{/* Entries Section */}
-				<EntriesSection period={period} />
+				<EntriesSection
+					period={period}
+					selectedCategory={selectedCategory}
+					onClearCategory={() => setSelectedCategory("")}
+				/>
 
 				{/* Budgets Section */}
 				<BudgetsSection periodEntries={periodEntries} />

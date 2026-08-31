@@ -146,6 +146,60 @@ export type PerkID =
 	| "bargain"
 	| "second_wind";
 
+export type LifeArea = "health" | "wealth" | "mastery" | "personal" | "social";
+
+export type GoalStatus = "active" | "completed" | "paused" | "archived";
+export type ProjectStatus = "active" | "completed" | "archived";
+export type MilestoneStatus = "pending" | "in_progress" | "completed";
+export type QuestStatus =
+	| "draft"
+	| "active"
+	| "completed"
+	| "skipped"
+	| "rescheduled"
+	| "paused"
+	| "archived";
+export type AscensionPath =
+	"none" | "sage" | "vanguard" | "steward" | "connector";
+export type ReviewPeriodType = "weekly" | "monthly";
+
+export type CircleRole = "owner" | "co_owner" | "member";
+export type CirclePrivacy = "private" | "invitation_only";
+export type CircleStatusVisibility = "minimal" | "standard" | "detailed";
+export type CircleActivityVisibility = "public" | "private";
+export type CircleInviteStatus =
+	"pending" | "accepted" | "declined" | "expired";
+export type CircleContributionSource =
+	"quest" | "routine" | "goal" | "review" | "recovery";
+export type CircleMomentumTier =
+	"none" | "connected" | "steady" | "strong" | "thriving";
+export type CircleGoalType =
+	| "consistency"
+	| "balance"
+	| "routine"
+	| "progress"
+	| "recovery"
+	| "reflection";
+export type CircleGoalStatus = "active" | "completed" | "failed";
+export type CircleRewardStatus = "pending" | "claimed" | "expired";
+export type CircleReactionType = "cheer" | "fire" | "clap" | "heart" | "muscle";
+export type AvatarSlot =
+	| "head"
+	| "glasses"
+	| "accessory"
+	| "skin"
+	| "outfit"
+	| "handheld"
+	| "background"
+	| "aura"
+	| "body";
+
+export interface QuestSubtask {
+	title: string;
+	completed: boolean;
+	order: number;
+}
+
 export interface Player extends ModelBase {
 	user_id: ObjectID;
 	level: number;
@@ -156,8 +210,14 @@ export interface Player extends ModelBase {
 	streak: number;
 	longest_streak: number;
 	last_active_on: string;
+	rolled_over_on: string;
 	category_exp: Record<QuestCategory, number>;
 	ascensions: number;
+	ascension_path?: AscensionPath;
+	rest_days?: number;
+	vacation_mode?: boolean;
+	vacation_start_on?: string;
+	grace_days?: number;
 	time_zone: string;
 	reset_hour: number;
 }
@@ -184,12 +244,237 @@ export interface Quest extends ModelBase {
 	minutes: number;
 	scored: boolean;
 	active: boolean;
+	status?: QuestStatus;
+	subtasks?: QuestSubtask[];
+	project_id?: ObjectID;
+	milestone_id?: ObjectID;
+	pause_reason?: string;
+	is_mvq?: boolean;
+	mvq_minutes?: number;
 	schedule_days: number[];
 	streak: number;
 	longest_streak: number;
 	exp_value: number;
 	px_value: number;
 	archived_at?: ISO8601String;
+}
+
+export interface Goal extends ModelBase {
+	user_id: ObjectID;
+	title: string;
+	description: string;
+	area: LifeArea;
+	category: QuestCategory;
+	status: GoalStatus;
+	target_date?: string;
+	target_metric?: string;
+	current_value?: number;
+	target_value?: number;
+	exp_reward: number;
+	px_reward: number;
+	completed_at?: ISO8601String;
+}
+
+export interface Project extends ModelBase {
+	user_id: ObjectID;
+	goal_id: ObjectID;
+	title: string;
+	description: string;
+	status: ProjectStatus;
+	target_date?: string;
+	order: number;
+}
+
+export interface Milestone extends ModelBase {
+	user_id: ObjectID;
+	project_id: ObjectID;
+	goal_id: ObjectID;
+	title: string;
+	status: MilestoneStatus;
+	order: number;
+	exp_reward: number;
+	px_reward: number;
+	completed_at?: ISO8601String;
+}
+
+export interface ProjectSummary {
+	project: Project;
+	milestones: Milestone[];
+	progress: number;
+}
+
+export interface GoalSummary {
+	goal: Goal;
+	projects: ProjectSummary[];
+	milestones: Milestone[];
+	progress: number;
+}
+
+export interface RoutineStep {
+	title: string;
+	minutes: number;
+	category: QuestCategory;
+	effort: QuestEffort;
+	linked_quest_id?: ObjectID;
+	order: number;
+}
+
+export interface Routine extends ModelBase {
+	user_id: ObjectID;
+	title: string;
+	description: string;
+	schedule_days: number[];
+	estimated_m: number;
+	steps: RoutineStep[];
+	is_template: boolean;
+	is_active: boolean;
+}
+
+export interface RecoverySummary {
+	rest_days_count: number;
+	vacation_mode: boolean;
+	vacation_start_on?: string;
+	grace_days_available: number;
+	streak_safe: boolean;
+}
+
+export interface ReviewSummary {
+	period_type: ReviewPeriodType;
+	period: string;
+	quests_completed: number;
+	quests_planned: number;
+	completion_rate: number;
+	effort_minutes: number;
+	streak_days: number;
+	grace_days_used: number;
+	category_breakdown: Record<QuestCategory, number>;
+	skipped_quest_titles: string[];
+	finance_saved: number;
+	health_days_logged: number;
+}
+
+export interface Review extends ModelBase {
+	user_id: ObjectID;
+	period_type: ReviewPeriodType;
+	period: string;
+	quests_completed: number;
+	quests_planned: number;
+	effort_minutes: number;
+	streak_days: number;
+	grace_days_used: number;
+	category_breakdown: Record<QuestCategory, number>;
+	skipped_quest_titles: string[];
+	finance_saved: number;
+	health_days_logged: number;
+	reflection_notes: string;
+	next_priorities: string[];
+	completed_at: ISO8601String;
+}
+
+export interface CategoryMastery extends ModelBase {
+	user_id: ObjectID;
+	category: QuestCategory;
+	mastery_level: number;
+	mastery_exp: number;
+	is_primary: boolean;
+	is_secondary: boolean;
+	custom_name?: string;
+	milestones_unlocked?: string[];
+}
+
+export interface CategoryMasterySummary {
+	masteries: CategoryMastery[];
+	primary?: QuestCategory;
+	secondary?: QuestCategory;
+	total_levels: number;
+}
+
+export type GoalRetrospectiveOutcome =
+	"achieved" | "partially_achieved" | "abandoned" | "replaced";
+export type WorkloadFatigueScore = "low" | "balanced" | "heavy" | "overloaded";
+
+export interface CalendarEventSummary {
+	schedule_id: ObjectID;
+	quest_id: ObjectID;
+	title: string;
+	category: QuestCategory;
+	effort: QuestEffort;
+	scheduled_date: string;
+	start_time?: string;
+	end_time?: string;
+	estimated_minutes: number;
+	completed: boolean;
+	is_mvq?: boolean;
+	mvq_minutes?: number;
+	is_recurring_exception?: boolean;
+	project_title?: string;
+	goal_title?: string;
+}
+
+export interface WorkloadDaySummary {
+	date: string;
+	total_planned_minutes: number;
+	capacity_minutes: number;
+	hard_quests_count: number;
+	max_hard_quests: number;
+	fatigue_score: WorkloadFatigueScore;
+	sustainable: boolean;
+	warnings: string[];
+}
+
+export interface WorkloadConfig extends ModelBase {
+	user_id: ObjectID;
+	daily_capacity_minutes: Record<string, number>;
+	max_hard_quests_per_day: number;
+	buffer_minutes: number;
+}
+
+export interface GoalRetrospective extends ModelBase {
+	user_id: ObjectID;
+	goal_id: ObjectID;
+	outcome: GoalRetrospectiveOutcome;
+	obstacles: string;
+	learnings: string;
+	effective_routines: string[];
+	completed_at: ISO8601String;
+}
+
+export interface GoalRetrospectiveSummary {
+	retrospective: GoalRetrospective;
+	goal: Goal;
+	planned_days: number;
+	actual_days: number;
+	completed_milestones_count: number;
+	total_milestones_count: number;
+}
+
+export interface ScheduleQuestInput {
+	quest_id: ObjectID;
+	scheduled_date: string;
+	start_time?: string;
+	end_time?: string;
+	estimated_minutes?: number;
+	is_recurring_exception?: boolean;
+}
+
+export interface RescheduleQuestInput {
+	schedule_id: ObjectID;
+	scheduled_date: string;
+	start_time?: string;
+	end_time?: string;
+}
+
+export interface UpdateWorkloadConfigInput {
+	daily_capacity_minutes?: Record<string, number>;
+	max_hard_quests_per_day?: number;
+	buffer_minutes?: number;
+}
+
+export interface CloseGoalRetrospectiveInput {
+	outcome: GoalRetrospectiveOutcome;
+	obstacles?: string;
+	learnings?: string;
+	effective_routines?: string[];
 }
 
 /**
@@ -515,4 +800,124 @@ export interface CreateFinanceBudgetRequest {
 
 export interface UpdateFinanceBudgetRequest {
 	monthly_limit: number;
+}
+
+// Circles
+export interface Circle extends ModelBase {
+	name: string;
+	description: string;
+	motto: string;
+	owner_user_id: ObjectID;
+	level: number;
+	bond_xp: number;
+	privacy: CirclePrivacy;
+	member_limit: number;
+}
+
+export interface CircleMember extends ModelBase {
+	user_id: ObjectID;
+	circle_id: ObjectID;
+	role: CircleRole;
+	status_visibility: CircleStatusVisibility;
+	activity_visibility: CircleActivityVisibility;
+	joined_at: ISO8601String;
+	reward_eligible_at: ISO8601String;
+	last_contribution_at?: ISO8601String;
+	left_at?: ISO8601String;
+}
+
+export interface CircleInvite extends ModelBase {
+	circle_id: ObjectID;
+	inviter_id: ObjectID;
+	invitee_id?: ObjectID;
+	invite_code: string;
+	status: CircleInviteStatus;
+	expires_at: ISO8601String;
+	accepted_at?: ISO8601String;
+}
+
+export interface CircleWeek extends ModelBase {
+	circle_id: ObjectID;
+	week_id: string;
+	contribution_days: number;
+	momentum_tier: CircleMomentumTier;
+	reward_status: CircleRewardStatus;
+}
+
+export interface CircleGoal extends ModelBase {
+	circle_id: ObjectID;
+	week_id: string;
+	goal_type: CircleGoalType;
+	target: number;
+	current_progress: number;
+	reward_xp: number;
+	reward_px: number;
+	status: CircleGoalStatus;
+	claimed_at?: ISO8601String;
+}
+
+export interface CircleActivity extends ModelBase {
+	user_id: ObjectID;
+	circle_id: ObjectID;
+	message_template: string;
+	reactions: Record<CircleReactionType, number>;
+	user_reactions: Record<string, CircleReactionType>;
+}
+
+export interface CircleMemberSummary {
+	member: CircleMember;
+	username: string;
+	avatar_equipped: Record<string, string>;
+	broad_status: string;
+	contribution_count_this_week: number;
+	is_active_today: boolean;
+	is_eligible_for_reward: boolean;
+}
+
+export interface CircleSummary {
+	circle: Circle;
+	members: CircleMemberSummary[];
+	current_week: CircleWeek;
+	active_goal?: CircleGoal;
+	supporting_members_count: number;
+	together_bonus_percent: number;
+	pending_invites_count: number;
+	my_role: CircleRole;
+}
+
+export interface CircleActivitySummary {
+	activity: CircleActivity;
+	username: string;
+	avatar_equipped: Record<string, string>;
+}
+
+export interface CreateCircleInput {
+	name: string;
+	description?: string;
+	motto?: string;
+}
+
+export interface UpdateCircleInput {
+	name?: string;
+	description?: string;
+	motto?: string;
+	privacy?: CirclePrivacy;
+}
+
+export interface InviteMemberInput {
+	invitee_username?: string;
+}
+
+export interface UpdateMemberSettingsInput {
+	status_visibility?: CircleStatusVisibility;
+	activity_visibility?: CircleActivityVisibility;
+}
+
+export interface CreateCircleGoalInput {
+	goal_type: CircleGoalType;
+}
+
+export interface ReactToActivityInput {
+	activity_id: ObjectID;
+	reaction: CircleReactionType;
 }

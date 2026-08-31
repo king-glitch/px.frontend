@@ -1,13 +1,3 @@
-import React from "react";
-import {
-	Box,
-	Flex,
-	Grid,
-	GridItem,
-	HStack,
-	Text,
-	Stack,
-} from "@chakra-ui/react";
 import {
 	useDuolingoStatus,
 	useFinanceSummary,
@@ -16,15 +6,24 @@ import {
 	useQuests,
 	useTodayQuests,
 } from "@/api";
-import { DashboardRail } from "./dashboard/components/dashboard-rail";
-import { FloatingCreaturesScene } from "./dashboard/components/creature-scene";
-import { DuolingoCard } from "./dashboard/components/duolingo-card";
-import { QuestsSummaryCard } from "./dashboard/components/quests-summary-card";
-import { HeroSnapshotCard } from "./dashboard/components/hero-snapshot-card";
-import { HabitsCard } from "./dashboard/components/habits-card";
-import { TodayPulseCard } from "./dashboard/components/today-pulse-card";
-import { OutlinePill } from "./dashboard/components/holo-card";
 import { useTranslation } from "@/lib/i18n";
+import { FloatingCreaturesScene } from "@/routes/dashboard/components/creature-scene";
+import { DuolingoCard } from "@/routes/dashboard/components/duolingo-card";
+import { HabitsCard } from "@/routes/dashboard/components/habits-card";
+import { HeroSnapshotCard } from "@/routes/dashboard/components/hero-snapshot-card";
+import { OutlinePill } from "@/routes/dashboard/components/holo-card";
+import { QuestsSummaryCard } from "@/routes/dashboard/components/quests-summary-card";
+import { TodayPulseCard } from "@/routes/dashboard/components/today-pulse-card";
+import {
+	Box,
+	Flex,
+	Grid,
+	GridItem,
+	HStack,
+	Stack,
+	Text,
+} from "@chakra-ui/react";
+import React from "react";
 
 function todayISO(): string {
 	return new Date().toISOString().split("T")[0];
@@ -110,15 +109,12 @@ export const Index: React.FC = () => {
 				gap={{ base: 4, lg: 6, xl: 8 }}
 				templateColumns={{
 					base: "1fr",
-					lg: "76px minmax(0, 1fr) 370px",
-					xl: "84px minmax(0, 1fr) 420px",
+					lg: "minmax(0, 1fr) 370px",
+					xl: "minmax(0, 1fr) 420px",
 				}}
 				position="relative"
 				zIndex={1}
 			>
-				{/* Left Floating Rail */}
-				<DashboardRail />
-
 				{/* Center Column: Open Creature Stage Box & Bottom Daily Summary */}
 				<GridItem
 					h="full"

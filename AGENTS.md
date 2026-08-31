@@ -6,6 +6,9 @@ Welcome to the **PX Frontend** project (Personal Expense & Bank Transaction Trac
 
 ## 🚀 0. Mandatory Agent Behavior
 
+- **Always Read Frontend Docs First**: Whenever performing any frontend-related work, always read [AGENTS.md](file:///Users/rachamon/Desktop/developments/personal/px/frontend/AGENTS.md), [DESIGN.md](file:///Users/rachamon/Desktop/developments/personal/px/frontend/DESIGN.md), and [API.md](file:///Users/rachamon/Desktop/developments/personal/px/frontend/API.md) to adhere to all design, type, and architectural constraints.
+- **Mandatory Type Check Before Completion**: Always run `bun run typecheck` and `bun run build` before completing any frontend task. All TypeScript type errors and build warnings must be fully fixed with zero errors.
+- **Strict Path Alias Imports (`@/...`)**: NEVER use relative imports like `./` or `../`. Always use the `@/...` path alias (e.g., `@/api/...`, `@/components/...`, `@/routes/...`, `@/lib/...`, `@/theme/...`).
 - **Skills First**: Utilize installed skills (`chakra-ui-builder`, `chakra-ui-refactor`, `react-router`) before improvising or writing boilerplate.
 - **No Unrequested Commits**: NEVER commit code directly. User commits only. Keep changes clean in the working tree.
 - **TypeScript Strictness**: Strictly typed TypeScript with zero `any` types. Ensure all models match the backend API contract defined in [API.md](file:///Users/rachamon/Desktop/developments/personal/px/frontend/API.md).

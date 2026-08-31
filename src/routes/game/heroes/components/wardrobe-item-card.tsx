@@ -49,6 +49,16 @@ export const WardrobeItemCard: React.FC<WardrobeItemCardProps> = ({
 								})}
 							</Badge>
 						)}
+						{!item.requiredPerk && !isUnlocked && (
+							<Badge
+								size="xs"
+								rounded="pill"
+								variant="subtle"
+								colorPalette="amber"
+							>
+								Shop
+							</Badge>
+						)}
 					</HStack>
 					<Text fontSize="11px" color="fg.muted">
 						{item.description}

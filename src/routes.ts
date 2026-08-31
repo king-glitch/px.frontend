@@ -10,7 +10,12 @@ export default [
 	layout("routes/app-layout.tsx", [
 		index("routes/index.tsx"),
 		route("dashboard", "routes/dashboard.tsx"),
+		route("goals", "routes/goals.tsx"),
+		route("calendar", "routes/calendar.tsx"),
+		route("circle", "routes/circle.tsx"),
 		route("tasks", "routes/tasks.tsx"),
+		route("routines", "routes/routines.tsx"),
+		route("reviews", "routes/reviews.tsx"),
 		route("health", "routes/health.tsx"),
 		route("settings", "routes/settings.tsx"),
 		route("settings/duolingo", "routes/settings/duolingo.tsx"),
@@ -28,4 +33,5 @@ export default [
 	]),
 	route("login", "routes/login.tsx"),
 	route("register", "routes/register.tsx"),
+	route("*", "routes/not-found.tsx"),
 ] satisfies RouteConfig;

@@ -1,3 +1,13 @@
+import { queryKeys } from "@/api/query-keys";
+import { authService } from "@/api/services/auth-service";
+import {
+	type LoginRequest,
+	type RegisterRequest,
+	type User,
+	type UserSession,
+} from "@/api/types";
+import { config } from "@/config";
+import { useQueryClient } from "@tanstack/react-query";
 import React, {
 	createContext,
 	useCallback,
@@ -5,16 +15,6 @@ import React, {
 	useEffect,
 	useState,
 } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { config } from "@/config";
-import {
-	type LoginRequest,
-	type RegisterRequest,
-	type User,
-	type UserSession,
-} from "@/api/types";
-import { queryKeys } from "@/api/query-keys";
-import { authService } from "@/api/services/auth-service";
 
 export interface AuthContextValue {
 	user: User | null;
@@ -37,6 +37,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 	const queryClient = useQueryClient();
 	const [token, setToken] = useState<string | null>(() => {
 		if (typeof window !== "undefined") {
+			// ponytail: proactive check on initialization
+			const expiresAt = localStorage.getItem(config.storage.expiresAtKey);
+			if (expiresAt && Date.now() > new Date(expiresAt).getTime()) {
+				localStorage.removeItem(config.storage.tokenKey);
+				localStorage.removeItem(config.storage.userKey);
+				localStorage.removeItem(config.storage.expiresAtKey);
+				return null;
+			}
 			return localStorage.getItem(config.storage.tokenKey);
 		}
 		return null;
@@ -46,7 +54,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
 	const fetchProfile = useCallback(async () => {
 		const storedToken = localStorage.getItem(config.storage.tokenKey);
-		if (!storedToken) {
+		const storedExpiresAt = localStorage.getItem(
+			config.storage.expiresAtKey,
+		);
+		if (
+			!storedToken ||
+			(storedExpiresAt &&
+				Date.now() > new Date(storedExpiresAt).getTime())
+		) {
+			localStorage.removeItem(config.storage.tokenKey);
+			localStorage.removeItem(config.storage.userKey);
+			localStorage.removeItem(config.storage.expiresAtKey);
+			setToken(null);
 			setUser(null);
 			setIsLoading(false);
 			return;
@@ -61,6 +80,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 			// Failed to get user profile (token expired or invalid)
 			localStorage.removeItem(config.storage.tokenKey);
 			localStorage.removeItem(config.storage.userKey);
+			localStorage.removeItem(config.storage.expiresAtKey);
 			setToken(null);
 			setUser(null);
 		} finally {
@@ -94,6 +114,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 				const res = await authService.login(payload);
 				const session = res.session;
 				localStorage.setItem(config.storage.tokenKey, session.token);
+				if (session.expires_at) {
+					localStorage.setItem(
+						config.storage.expiresAtKey,
+						session.expires_at,
+					);
+				}
 				setToken(session.token);
 
 				// Fetch user profile immediately
@@ -126,6 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 		if (typeof window !== "undefined") {
 			localStorage.removeItem(config.storage.tokenKey);
 			localStorage.removeItem(config.storage.userKey);
+			localStorage.removeItem(config.storage.expiresAtKey);
 		}
 		setToken(null);
 		setUser(null);

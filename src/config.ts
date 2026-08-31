@@ -11,6 +11,7 @@ export const config = {
 	storage: {
 		tokenKey: "px_session_token",
 		userKey: "px_user_data",
+		expiresAtKey: "px_session_expires_at",
 	},
 	pagination: {
 		defaultPage: 1,

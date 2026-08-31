@@ -232,7 +232,24 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 												)}
 											</Badge>
 										)}
-										{expiryMatch && (
+										{item.expires_in_days &&
+										item.expires_in_days > 0 ? (
+											<Badge
+												size="xs"
+												rounded="pill"
+												variant="subtle"
+											>
+												<HStack gap={1}>
+													<Icon
+														as={LuClock}
+														boxSize={3}
+													/>
+													<Text>
+														{item.expires_in_days}d
+													</Text>
+												</HStack>
+											</Badge>
+										) : expiryMatch ? (
 											<Badge
 												size="xs"
 												rounded="pill"
@@ -253,7 +270,7 @@ export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 													</Text>
 												</HStack>
 											</Badge>
-										)}
+										) : null}
 									</HStack>
 								</Stack>
 

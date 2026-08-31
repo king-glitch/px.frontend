@@ -1,8 +1,9 @@
-import React from "react";
+import { useHealthDay } from "@/api";
+import { PillButton } from "@/components/ui/pill-button";
+import { useTranslation } from "@/lib/i18n";
 import {
 	Badge,
 	Box,
-	Button,
 	Circle,
 	Flex,
 	Grid,
@@ -15,6 +16,7 @@ import {
 	Text,
 	VStack,
 } from "@chakra-ui/react";
+import React from "react";
 import {
 	LuActivity,
 	LuApple,
@@ -26,9 +28,6 @@ import {
 	LuSparkles,
 	LuTrendingUp,
 } from "react-icons/lu";
-import { PillButton } from "@/components/ui/pill-button";
-import { useHealthDay } from "@/api";
-import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",

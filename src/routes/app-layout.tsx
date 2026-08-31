@@ -1,11 +1,13 @@
-import AppNavbar from "@/components/layout/app-navbar";
+import { AppHeader } from "@/components/layout/app-header";
+import { AppSidebar } from "@/components/layout/app-sidebar";
 import { useAuthContext } from "@/contexts/auth-context";
 import { Box, Container, Flex, Spinner } from "@chakra-ui/react";
-import React from "react";
+import React, { useState } from "react";
 import { Navigate, Outlet } from "react-router";
 
 export const AppLayout: React.FC = () => {
 	const { isAuthenticated, isLoading } = useAuthContext();
+	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
 	if (isLoading) {
 		return (
@@ -21,10 +23,11 @@ export const AppLayout: React.FC = () => {
 
 	return (
 		<Box
-			minH="100dvh"
+			h="100dvh"
+			w="100vw"
 			bg="bg.canvas"
 			position="relative"
-			overflowX="hidden"
+			overflow="hidden"
 			display="flex"
 			flexDirection="column"
 		>
@@ -44,32 +47,53 @@ export const AppLayout: React.FC = () => {
 				}}
 			/>
 
-			{/* Persistent Wide Main Container */}
-			<Container
+			{/* Full-Viewport Main Frame: Fixed Sidebar + Content Shell */}
+			<Flex
 				maxW="1680px"
 				w="full"
-				flex="1"
-				display="flex"
-				flexDirection="column"
-				px={{ base: 4, md: 8, xl: 10 }}
+				h="full"
+				mx="auto"
+				flexDirection="row"
+				gap={{ base: 0, md: 5 }}
+				px={{ base: 3, md: 6, xl: 8 }}
 				py={{ base: 3, md: 4 }}
 				position="relative"
 				zIndex={1}
+				overflow="hidden"
 			>
-				{/* Top Global App Navbar — Persists across all pages */}
-				<AppNavbar />
+				{/* Fixed / Non-scrolling Left Sidebar */}
+				<AppSidebar
+					isOpen={isMobileSidebarOpen}
+					onClose={() => setIsMobileSidebarOpen(false)}
+				/>
 
-				{/* Page Content */}
-				<Box
-					position="relative"
-					mt={{ base: 3, md: 4 }}
+				{/* Right Main Column (Fixed Top Header + Scrollable Page Content) */}
+				<Flex
 					flex="1"
-					display="flex"
-					flexDirection="column"
+					minW={0}
+					h="full"
+					direction="column"
+					gap={{ base: 3, md: 4 }}
+					overflow="hidden"
 				>
-					<Outlet />
-				</Box>
-			</Container>
+					{/* Fixed / Non-scrolling Top Header Bar */}
+					<Box flexShrink={0}>
+						<AppHeader onOpenSidebar={() => setIsMobileSidebarOpen(true)} />
+					</Box>
+
+					{/* ONLY THIS REGION SCROLLS */}
+					<Box
+						flex="1"
+						minH={0}
+						overflowY="auto"
+						overflowX="hidden"
+						position="relative"
+						pr={{ base: 0, md: 1 }}
+					>
+						<Outlet />
+					</Box>
+				</Flex>
+			</Flex>
 		</Box>
 	);
 };

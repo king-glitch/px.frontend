@@ -1,4 +1,10 @@
-import React, { useMemo, useState } from "react";
+import { useDeleteFinanceEntry, useFinanceEntries } from "@/api";
+import { ApiError } from "@/api/client";
+import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { PillButton } from "@/components/ui/pill-button";
+import { toaster } from "@/components/ui/toaster";
+import { useTranslation } from "@/lib/i18n";
 import {
 	Badge,
 	Box,
@@ -12,21 +18,15 @@ import {
 	Stack,
 	Text,
 } from "@chakra-ui/react";
+import React, { useMemo, useState } from "react";
 import {
 	LuBanknote,
 	LuPlus,
 	LuTrendingDown,
 	LuTrendingUp,
 } from "react-icons/lu";
-import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
-import { EmptyState } from "@/components/ui/empty-state";
-import { PillButton } from "@/components/ui/pill-button";
-import { toaster } from "@/components/ui/toaster";
-import { ApiError } from "@/api/client";
-import { useDeleteFinanceEntry, useFinanceEntries } from "@/api";
 import { CreateEntryDialog } from "./create-entry-dialog";
 import { EntryItemRow } from "./entry-item-row";
-import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -39,9 +39,15 @@ const glassCard = {
 
 interface EntriesSectionProps {
 	period: string;
+	selectedCategory?: string;
+	onClearCategory?: () => void;
 }
 
-export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
+export const EntriesSection: React.FC<EntriesSectionProps> = ({
+	period,
+	selectedCategory = "",
+	onClearCategory,
+}) => {
 	const { t } = useTranslation();
 	const [page, setPage] = useState(1);
 	const [pageSize] = useState(10);
@@ -77,13 +83,15 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 		}
 	};
 
+	const effectiveCategoryFilter = selectedCategory || searchCategory;
+
 	const filteredEntries = useMemo(() => {
 		let list = entriesData?.entries ?? [];
 		if (filterDirection !== "all") {
 			list = list.filter((e) => e.direction === filterDirection);
 		}
-		if (searchCategory.trim()) {
-			const q = searchCategory.toLowerCase();
+		if (effectiveCategoryFilter.trim()) {
+			const q = effectiveCategoryFilter.toLowerCase();
 			list = list.filter(
 				(e) =>
 					e.category.toLowerCase().includes(q) ||
@@ -91,7 +99,7 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 			);
 		}
 		return list;
-	}, [entriesData?.entries, filterDirection, searchCategory]);
+	}, [entriesData?.entries, filterDirection, effectiveCategoryFilter]);
 
 	return (
 		<Box {...glassCard} p={{ base: 5, md: 6 }}>
@@ -191,19 +199,35 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({ period }) => {
 						</Button>
 					</HStack>
 
-					<Input
-						placeholder={t(
-							"routes.finance.entries.searchPlaceholder",
+					<HStack gap={2} w={{ base: "full", sm: "auto" }}>
+						{selectedCategory && (
+							<Badge
+								size="sm"
+								colorPalette="purple"
+								variant="surface"
+								rounded="pill"
+								px={2.5}
+								py={1}
+								cursor="pointer"
+								onClick={onClearCategory}
+							>
+								{selectedCategory} ✕
+							</Badge>
 						)}
-						size="sm"
-						w={{ base: "full", sm: "220px" }}
-						rounded="pill"
-						bg="bg.muted"
-						value={searchCategory}
-						onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-							setSearchCategory(e.target.value)
-						}
-					/>
+						<Input
+							placeholder={t(
+								"routes.finance.entries.searchPlaceholder",
+							)}
+							size="sm"
+							w={{ base: "full", sm: "200px" }}
+							rounded="pill"
+							bg="bg.muted"
+							value={searchCategory}
+							onChange={(
+								e: React.ChangeEvent<HTMLInputElement>,
+							) => setSearchCategory(e.target.value)}
+						/>
+					</HStack>
 				</Flex>
 
 				{/* Entries List */}

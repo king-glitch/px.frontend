@@ -1,5 +1,5 @@
-import React from "react";
 import { Box, Flex, Text } from "@chakra-ui/react";
+import React from "react";
 import {
 	CREATURE_CONFIGS,
 	type FloatingCreatureConfig,
@@ -21,6 +21,11 @@ function useMouseParallax() {
 		};
 
 		const animate = () => {
+			if (document.hidden) {
+				rafRef.current = null;
+				return;
+			}
+
 			const k = 0.075;
 			currentRef.current.x +=
 				(targetRef.current.x - currentRef.current.x) * k;
@@ -35,13 +40,24 @@ function useMouseParallax() {
 			rafRef.current = requestAnimationFrame(animate);
 		};
 
+		const handleVisibilityChange = () => {
+			if (!document.hidden && !rafRef.current) {
+				rafRef.current = requestAnimationFrame(animate);
+			}
+		};
+
 		window.addEventListener("mousemove", handleMouseMove, {
 			passive: true,
 		});
+		document.addEventListener("visibilitychange", handleVisibilityChange);
 		rafRef.current = requestAnimationFrame(animate);
 
 		return () => {
 			window.removeEventListener("mousemove", handleMouseMove);
+			document.removeEventListener(
+				"visibilitychange",
+				handleVisibilityChange,
+			);
 			if (rafRef.current) cancelAnimationFrame(rafRef.current);
 		};
 	}, []);

@@ -6,25 +6,30 @@ import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
 import {
 	useAscendPlayer,
+	useAscendWithPath,
 	usePlayerSummary,
 	useShopCatalog,
 	useSpendPerk,
+	type AscensionPath,
 	type PerkID,
 } from "@/api";
 import { useAuthContext } from "@/contexts/auth-context";
 import { RewardFlight, type AvatarSlot } from "@/components/game";
-import { LedgerModal } from "./heroes/components/ledger-modal";
-import { WardrobeModal } from "./heroes/components/wardrobe-modal";
-import { ShopSection } from "./heroes/components/shop-section";
-import { InventoryAndClaimsSection } from "./heroes/components/inventory-and-claims-section";
-import { HeroHeader } from "./heroes/components/hero-header";
-import { HeroSidebar } from "./heroes/components/hero-sidebar";
-import { HeroOverviewSection } from "./heroes/components/hero-overview-section";
-import { AscendModal } from "./heroes/components/ascend-modal";
-import { PERK_DEFS, glassCard } from "./heroes/components/perks-data";
+import { LedgerModal } from "@/routes/game/heroes/components/ledger-modal";
+import { WardrobeModal } from "@/routes/game/heroes/components/wardrobe-modal";
+import { ShopSection } from "@/routes/game/heroes/components/shop-section";
+import { InventoryAndClaimsSection } from "@/routes/game/heroes/components/inventory-and-claims-section";
+import { HeroHeader } from "@/routes/game/heroes/components/hero-header";
+import { HeroSidebar } from "@/routes/game/heroes/components/hero-sidebar";
+import { HeroOverviewSection } from "@/routes/game/heroes/components/hero-overview-section";
+import { AscendModal } from "@/routes/game/heroes/components/ascend-modal";
+import {
+	PERK_DEFS,
+	glassCard,
+} from "@/routes/game/heroes/components/perks-data";
 import { useTranslation } from "@/lib/i18n";
 
-export { PERK_COSMETIC_MAP } from "./heroes/components/perks-data";
+export { PERK_COSMETIC_MAP } from "@/routes/game/heroes/components/perks-data";
 
 type HeroSection = "overview" | "shop" | "inventory";
 
@@ -57,9 +62,8 @@ export const Heroes: React.FC = () => {
 					const parts = item.slot.split(":");
 					const key = parts[0] as AvatarSlot;
 					res[key] = parts[1] || parts[0];
-				} else {
-					res[slotType as AvatarSlot] = itemId;
 				}
+				// ponytail: omit unresolvable/deleted item IDs so SVG avatar rendering never receives raw MongoDB IDs
 			}
 		}
 		return res;
@@ -88,11 +92,14 @@ export const Heroes: React.FC = () => {
 		}
 	};
 
-	const handleAscend = async () => {
+	const ascendWithPath = useAscendWithPath();
+
+	const handleAscend = async (path: AscensionPath) => {
 		try {
-			await ascend.mutateAsync();
+			await ascendWithPath.mutateAsync(path);
 			toaster.create({
 				title: t("routes.heroes.main.ascend.success.title"),
+				description: `Ascended on the path of the ${path.toUpperCase()}!`,
 				type: "success",
 			});
 			setAscendOpen(false);

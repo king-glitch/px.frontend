@@ -1,0 +1,1126 @@
+import {
+	useCompleteGoal,
+	useCompleteMilestone,
+	useCreateGoal,
+	useCreateMilestone,
+	useCreateProject,
+	useDeleteGoal,
+	useDeleteProject,
+	useGoals,
+	type Goal,
+	type LifeArea,
+	type Milestone,
+} from "@/api";
+import {
+	goalSchema,
+	milestoneSchema,
+	projectSchema,
+	type GoalFormData,
+	type MilestoneFormData,
+	type ProjectFormData,
+} from "@/api/schemas";
+import { RewardFlight, useRewardFlight } from "@/components/game";
+import {
+	DialogActionTrigger,
+	DialogBody,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogRoot,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Field } from "@/components/ui/field";
+import { PillButton } from "@/components/ui/pill-button";
+import { toaster } from "@/components/ui/toaster";
+import { GoalRetrospectiveDialog } from "@/routes/goals/goal-retrospective-dialog";
+import {
+	Badge,
+	Box,
+	Button,
+	Circle,
+	Flex,
+	HStack,
+	Heading,
+	Icon,
+	IconButton,
+	Input,
+	Progress,
+	SimpleGrid,
+	Skeleton,
+	Text,
+	VStack,
+} from "@chakra-ui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+	LuAward,
+	LuCheck,
+	LuCoins,
+	LuFlag,
+	LuFolder,
+	LuHistory,
+	LuPlus,
+	LuTarget,
+	LuTrash2,
+	LuZap,
+} from "react-icons/lu";
+
+const glassCard = {
+	bg: "bg.glass",
+	borderWidth: "1px",
+	borderColor: "border.glass",
+	rounded: "card",
+	shadow: "glass",
+	backdropFilter: "blur(20px)",
+};
+
+const AREA_COLORS: Record<
+	LifeArea,
+	{ bg: string; color: string; border: string }
+> = {
+	health: { bg: "red.500/15", color: "red.400", border: "red.500/30" },
+	wealth: {
+		bg: "yellow.500/15",
+		color: "yellow.400",
+		border: "yellow.500/30",
+	},
+	mastery: {
+		bg: "purple.500/15",
+		color: "purple.400",
+		border: "purple.500/30",
+	},
+	personal: { bg: "cyan.500/15", color: "cyan.400", border: "cyan.500/30" },
+	social: { bg: "pink.500/15", color: "pink.400", border: "pink.500/30" },
+};
+
+export const GoalsRoute: React.FC = () => {
+	const { data: goals = [], isLoading } = useGoals();
+	const createGoalMutation = useCreateGoal();
+	const deleteGoalMutation = useDeleteGoal();
+	const completeGoalMutation = useCompleteGoal();
+	const createProjectMutation = useCreateProject();
+	const deleteProjectMutation = useDeleteProject();
+	const createMilestoneMutation = useCreateMilestone();
+	const deleteMilestoneMutation = useCompleteMilestone();
+	const completeMilestoneMutation = useCompleteMilestone();
+
+	const [isCreateGoalOpen, setIsCreateGoalOpen] = useState(false);
+	const [activeGoalForProject, setActiveGoalForProject] = useState<
+		string | null
+	>(null);
+	const [activeProjectForMilestone, setActiveProjectForMilestone] = useState<{
+		goalId: string;
+		projectId: string;
+	} | null>(null);
+	const [selectedArea, setSelectedArea] = useState<string>("all");
+	const [retrospectiveGoal, setRetrospectiveGoal] = useState<Goal | null>(
+		null,
+	);
+
+	const { triggerFlight } = useRewardFlight();
+
+	const goalForm = useForm<GoalFormData>({
+		resolver: zodResolver(goalSchema),
+		defaultValues: {
+			title: "",
+			description: "",
+			area: "mastery",
+			category: "learning",
+			target_date: "",
+			exp_reward: 500,
+			px_reward: 100,
+		},
+	});
+
+	const projectForm = useForm<ProjectFormData>({
+		resolver: zodResolver(projectSchema),
+		defaultValues: {
+			goal_id: "",
+			title: "",
+			description: "",
+			target_date: "",
+			order: 0,
+		},
+	});
+
+	const milestoneForm = useForm<MilestoneFormData>({
+		resolver: zodResolver(milestoneSchema),
+		defaultValues: {
+			goal_id: "",
+			project_id: "",
+			title: "",
+			order: 0,
+			exp_reward: 150,
+			px_reward: 30,
+		},
+	});
+
+	const handleCreateGoal = async (data: GoalFormData) => {
+		try {
+			await createGoalMutation.mutateAsync(data);
+			toaster.create({
+				title: "Goal Created",
+				description: `"${data.title}" added to your life vision.`,
+				type: "success",
+			});
+			setIsCreateGoalOpen(false);
+			goalForm.reset();
+		} catch (e: any) {
+			toaster.create({
+				title: "Failed to create goal",
+				description: e?.message || "Something went wrong",
+				type: "error",
+			});
+		}
+	};
+
+	const handleCreateProject = async (data: ProjectFormData) => {
+		try {
+			await createProjectMutation.mutateAsync(data);
+			toaster.create({
+				title: "Project Added",
+				description: `"${data.title}" added to the goal.`,
+				type: "success",
+			});
+			setActiveGoalForProject(null);
+			projectForm.reset();
+		} catch (e: any) {
+			toaster.create({
+				title: "Failed to add project",
+				description: e?.message || "Something went wrong",
+				type: "error",
+			});
+		}
+	};
+
+	const handleCreateMilestone = async (data: MilestoneFormData) => {
+		try {
+			await createMilestoneMutation.mutateAsync(data);
+			toaster.create({
+				title: "Milestone Added",
+				description: `"${data.title}" created.`,
+				type: "success",
+			});
+			setActiveProjectForMilestone(null);
+			milestoneForm.reset();
+		} catch (e: any) {
+			toaster.create({
+				title: "Failed to add milestone",
+				description: e?.message || "Something went wrong",
+				type: "error",
+			});
+		}
+	};
+
+	const handleCompleteMilestone = async (
+		milestone: Milestone,
+		event?: React.MouseEvent,
+	) => {
+		try {
+			const res = await completeMilestoneMutation.mutateAsync(
+				milestone.id,
+			);
+			if (event) {
+				const rect = (
+					event.target as HTMLElement
+				).getBoundingClientRect();
+				triggerFlight({
+					sourceX: rect.left + rect.width / 2,
+					sourceY: rect.top + rect.height / 2,
+					exp: res.exp,
+					px: res.px,
+				});
+			}
+			toaster.create({
+				title: "Milestone Completed!",
+				description: `+${res.exp} EXP, +${res.px} PX`,
+				type: "success",
+			});
+		} catch (e: any) {
+			toaster.create({
+				title: "Failed to complete milestone",
+				description: e?.message || "Something went wrong",
+				type: "error",
+			});
+		}
+	};
+
+	const handleCompleteGoal = async (goal: Goal, event?: React.MouseEvent) => {
+		try {
+			const res = await completeGoalMutation.mutateAsync(goal.id);
+			if (event) {
+				const rect = (
+					event.target as HTMLElement
+				).getBoundingClientRect();
+				triggerFlight({
+					sourceX: rect.left + rect.width / 2,
+					sourceY: rect.top + rect.height / 2,
+					exp: res.exp,
+					px: res.px,
+				});
+			}
+			toaster.create({
+				title: "🎉 Goal Accomplished!",
+				description: `Claimed +${res.exp} EXP, +${res.px} PX reward!`,
+				type: "success",
+			});
+		} catch (e: any) {
+			toaster.create({
+				title: "Failed to complete goal",
+				description: e?.message || "Something went wrong",
+				type: "error",
+			});
+		}
+	};
+
+	const filteredGoals = goals.filter((g) => {
+		if (selectedArea === "all") return true;
+		return g.goal.area === selectedArea;
+	});
+
+	return (
+		<Box flex="1" pb={12}>
+			<RewardFlight />
+
+			{/* Header */}
+			<Flex
+				direction={{ base: "column", md: "row" }}
+				justify="space-between"
+				align={{ base: "flex-start", md: "center" }}
+				gap={4}
+				mb={6}
+			>
+				<VStack align="flex-start" gap={1}>
+					<HStack gap={2}>
+						<Circle
+							size="32px"
+							bg="purple.500/15"
+							color="purple.400"
+						>
+							<Icon as={LuTarget} boxSize={5} />
+						</Circle>
+						<Heading size="xl" fontWeight="bold">
+							Goals & Projects
+						</Heading>
+					</HStack>
+					<Text color="fg.muted" fontSize="sm">
+						Life Area → Goal → Project → Milestone hierarchy
+						connecting daily quests to long-term outcomes.
+					</Text>
+				</VStack>
+
+				<Button
+					colorPalette="purple"
+					rounded="full"
+					onClick={() => {
+						goalForm.reset();
+						setIsCreateGoalOpen(true);
+					}}
+				>
+					<Icon as={LuPlus} /> New Goal
+				</Button>
+			</Flex>
+
+			{/* Area Tabs */}
+			<HStack gap={2} mb={6} overflowX="auto" pb={1}>
+				{[
+					"all",
+					"health",
+					"wealth",
+					"mastery",
+					"personal",
+					"social",
+				].map((area) => (
+					<PillButton
+						key={area}
+						size="sm"
+						variant={selectedArea === area ? "mint" : "outline"}
+						colorPalette={selectedArea === area ? "purple" : "gray"}
+						onClick={() => setSelectedArea(area)}
+						textTransform="capitalize"
+					>
+						{area}
+					</PillButton>
+				))}
+			</HStack>
+
+			{/* Goal List */}
+			{isLoading ? (
+				<VStack gap={4} align="stretch">
+					{[1, 2].map((i) => (
+						<Skeleton key={i} h="160px" rounded="card" />
+					))}
+				</VStack>
+			) : filteredGoals.length === 0 ? (
+				<Box {...glassCard} p={10}>
+					<EmptyState
+						title="No Goals Found"
+						description="Create a goal to set milestones and projects for your long-term roadmap."
+					/>
+				</Box>
+			) : (
+				<VStack gap={6} align="stretch">
+					{filteredGoals.map(
+						({ goal, projects, milestones, progress }) => {
+							const areaStyle =
+								AREA_COLORS[goal.area] || AREA_COLORS.mastery;
+							const isDone =
+								goal.status === "completed" || progress >= 100;
+
+							return (
+								<Box
+									key={goal.id}
+									{...glassCard}
+									p={{ base: 4, md: 6 }}
+									position="relative"
+								>
+									{/* Goal Top Row */}
+									<Flex
+										direction={{
+											base: "column",
+											md: "row",
+										}}
+										justify="space-between"
+										align={{
+											base: "flex-start",
+											md: "center",
+										}}
+										gap={3}
+										mb={4}
+									>
+										<VStack
+											align="flex-start"
+											gap={1.5}
+											flex="1"
+										>
+											<HStack gap={2} wrap="wrap">
+												<Badge
+													bg={areaStyle.bg}
+													color={areaStyle.color}
+													borderWidth="1px"
+													borderColor={
+														areaStyle.border
+													}
+													rounded="full"
+													px={2.5}
+													py={0.5}
+													textTransform="uppercase"
+													fontSize="xs"
+													fontWeight="bold"
+												>
+													{goal.area}
+												</Badge>
+												<Badge
+													variant="subtle"
+													colorPalette="gray"
+													rounded="full"
+												>
+													{goal.category}
+												</Badge>
+												{goal.status ===
+													"completed" && (
+													<Badge
+														colorPalette="green"
+														variant="solid"
+														rounded="full"
+													>
+														Completed
+													</Badge>
+												)}
+											</HStack>
+
+											<Heading size="md">
+												{goal.title}
+											</Heading>
+											{goal.description && (
+												<Text
+													fontSize="sm"
+													color="fg.muted"
+												>
+													{goal.description}
+												</Text>
+											)}
+										</VStack>
+
+										<HStack gap={3}>
+											<VStack align="flex-end" gap={0}>
+												<HStack
+													gap={1}
+													color="purple.400"
+													fontSize="sm"
+													fontWeight="bold"
+												>
+													<Icon
+														as={LuZap}
+														boxSize={3.5}
+													/>
+													+{goal.exp_reward} XP
+												</HStack>
+												<HStack
+													gap={1}
+													color="yellow.400"
+													fontSize="sm"
+													fontWeight="bold"
+												>
+													<Icon
+														as={LuCoins}
+														boxSize={3.5}
+													/>
+													+{goal.px_reward} PX
+												</HStack>
+											</VStack>
+
+											{goal.status !== "completed" &&
+												progress >= 100 && (
+													<Button
+														size="sm"
+														colorPalette="green"
+														onClick={(e) =>
+															handleCompleteGoal(
+																goal,
+																e,
+															)
+														}
+													>
+														<Icon as={LuAward} />{" "}
+														Claim Reward
+													</Button>
+												)}
+
+											<Button
+												size="sm"
+												variant="outline"
+												colorPalette="teal"
+												onClick={() =>
+													setRetrospectiveGoal(goal)
+												}
+											>
+												<Icon as={LuHistory} mr={1} />{" "}
+												Retrospective
+											</Button>
+
+											<IconButton
+												size="sm"
+												variant="ghost"
+												colorPalette="red"
+												aria-label="Delete goal"
+												onClick={() =>
+													deleteGoalMutation.mutate(
+														goal.id,
+													)
+												}
+											>
+												<Icon as={LuTrash2} />
+											</IconButton>
+										</HStack>
+									</Flex>
+
+									{/* Progress Bar */}
+									<Box mb={5}>
+										<Flex
+											justify="space-between"
+											fontSize="xs"
+											mb={1.5}
+										>
+											<Text color="fg.muted">
+												Goal Progress
+											</Text>
+											<Text fontWeight="bold">
+												{Math.round(progress)}%
+											</Text>
+										</Flex>
+										<Progress.Root
+											value={progress}
+											max={100}
+											size="sm"
+										>
+											<Progress.Track
+												bg="bg.subtle"
+												rounded="full"
+											>
+												<Progress.Range
+													style={{
+														background:
+															"linear-gradient(90deg, #A5F3FC 0%, #DDD6FE 50%, #A3F788 100%)",
+													}}
+												/>
+											</Progress.Track>
+										</Progress.Root>
+									</Box>
+
+									{/* Projects & Milestones Hierarchy */}
+									<VStack
+										gap={4}
+										align="stretch"
+										pt={2}
+										borderTopWidth="1px"
+										borderColor="border.glass"
+									>
+										<Flex
+											justify="space-between"
+											align="center"
+										>
+											<Text
+												fontSize="xs"
+												fontWeight="bold"
+												textTransform="uppercase"
+												color="fg.muted"
+											>
+												Projects & Milestones (
+												{projects.length})
+											</Text>
+											<Button
+												size="xs"
+												variant="subtle"
+												colorPalette="purple"
+												onClick={() => {
+													projectForm.reset({
+														goal_id: goal.id,
+														title: "",
+														description: "",
+														target_date: "",
+														order: 0,
+													});
+													setActiveGoalForProject(
+														goal.id,
+													);
+												}}
+											>
+												<Icon as={LuPlus} /> Add Project
+											</Button>
+										</Flex>
+
+										{projects.length === 0 ? (
+											<Text
+												fontSize="xs"
+												color="fg.muted"
+												fontStyle="italic"
+											>
+												No projects yet. Add a project
+												to organize step-by-step
+												milestones.
+											</Text>
+										) : (
+											<VStack gap={3} align="stretch">
+												{projects.map(
+													({
+														project,
+														milestones: pMilestones,
+														progress: pProg,
+													}) => (
+														<Box
+															key={project.id}
+															bg="bg.panel"
+															p={3.5}
+															rounded="lg"
+															borderWidth="1px"
+															borderColor="border.subtle"
+														>
+															<Flex
+																justify="space-between"
+																align="center"
+																mb={2}
+															>
+																<HStack gap={2}>
+																	<Icon
+																		as={
+																			LuFolder
+																		}
+																		color="purple.400"
+																	/>
+																	<Text
+																		fontWeight="semibold"
+																		fontSize="sm"
+																	>
+																		{
+																			project.title
+																		}
+																	</Text>
+																	<Badge
+																		size="xs"
+																		variant="outline"
+																	>
+																		{Math.round(
+																			pProg,
+																		)}
+																		%
+																	</Badge>
+																</HStack>
+
+																<HStack gap={1}>
+																	<Button
+																		size="2xs"
+																		variant="ghost"
+																		colorPalette="purple"
+																		onClick={() => {
+																			milestoneForm.reset(
+																				{
+																					goal_id:
+																						goal.id,
+																					project_id:
+																						project.id,
+																					title: "",
+																					order: 0,
+																					exp_reward: 150,
+																					px_reward: 30,
+																				},
+																			);
+																			setActiveProjectForMilestone(
+																				{
+																					goalId: goal.id,
+																					projectId:
+																						project.id,
+																				},
+																			);
+																		}}
+																	>
+																		<Icon
+																			as={
+																				LuPlus
+																			}
+																		/>{" "}
+																		Milestone
+																	</Button>
+																	<IconButton
+																		size="2xs"
+																		variant="ghost"
+																		colorPalette="red"
+																		aria-label="Delete project"
+																		onClick={() =>
+																			deleteProjectMutation.mutate(
+																				project.id,
+																			)
+																		}
+																	>
+																		<Icon
+																			as={
+																				LuTrash2
+																			}
+																		/>
+																	</IconButton>
+																</HStack>
+															</Flex>
+
+															{/* Milestones inside project */}
+															{pMilestones.length >
+																0 && (
+																<VStack
+																	gap={1.5}
+																	align="stretch"
+																	pl={4}
+																	pt={1}
+																>
+																	{pMilestones.map(
+																		(m) => {
+																			const isMCompleted =
+																				m.status ===
+																				"completed";
+																			return (
+																				<Flex
+																					key={
+																						m.id
+																					}
+																					justify="space-between"
+																					align="center"
+																					bg="bg.canvas"
+																					p={
+																						2
+																					}
+																					rounded="md"
+																					borderWidth="1px"
+																					borderColor={
+																						isMCompleted
+																							? "green.500/30"
+																							: "border.subtle"
+																					}
+																				>
+																					<HStack
+																						gap={
+																							2
+																						}
+																					>
+																						<IconButton
+																							size="2xs"
+																							variant={
+																								isMCompleted
+																									? "solid"
+																									: "outline"
+																							}
+																							colorPalette={
+																								isMCompleted
+																									? "green"
+																									: "gray"
+																							}
+																							aria-label="Toggle milestone"
+																							onClick={(
+																								e,
+																							) => {
+																								if (
+																									!isMCompleted
+																								) {
+																									handleCompleteMilestone(
+																										m,
+																										e,
+																									);
+																								}
+																							}}
+																						>
+																							<Icon
+																								as={
+																									isMCompleted
+																										? LuCheck
+																										: LuFlag
+																								}
+																							/>
+																						</IconButton>
+																						<Text
+																							fontSize="xs"
+																							textDecoration={
+																								isMCompleted
+																									? "line-through"
+																									: "none"
+																							}
+																							color={
+																								isMCompleted
+																									? "fg.muted"
+																									: "fg.default"
+																							}
+																						>
+																							{
+																								m.title
+																							}
+																						</Text>
+																					</HStack>
+
+																					<HStack
+																						gap={
+																							2
+																						}
+																						fontSize="2xs"
+																					>
+																						<Text color="purple.400">
+																							+
+																							{
+																								m.exp_reward
+																							}{" "}
+																							XP
+																						</Text>
+																						<Text color="yellow.400">
+																							+
+																							{
+																								m.px_reward
+																							}{" "}
+																							PX
+																						</Text>
+																					</HStack>
+																				</Flex>
+																			);
+																		},
+																	)}
+																</VStack>
+															)}
+														</Box>
+													),
+												)}
+											</VStack>
+										)}
+									</VStack>
+								</Box>
+							);
+						},
+					)}
+				</VStack>
+			)}
+
+			{/* Create Goal Dialog */}
+			<DialogRoot
+				open={isCreateGoalOpen}
+				onOpenChange={(e) => setIsCreateGoalOpen(e.open)}
+			>
+				<DialogContent>
+					<form onSubmit={goalForm.handleSubmit(handleCreateGoal)}>
+						<DialogHeader>
+							<DialogTitle>Create New Life Goal</DialogTitle>
+							<DialogDescription>
+								Define an inspiring long-term outcome. Break it
+								into projects & milestones.
+							</DialogDescription>
+						</DialogHeader>
+
+						<DialogBody>
+							<VStack gap={4}>
+								<Field
+									label="Goal Title"
+									required
+									errorText={
+										goalForm.formState.errors.title?.message
+									}
+								>
+									<Input
+										{...goalForm.register("title")}
+										placeholder="e.g. Become conversational in Japanese"
+									/>
+								</Field>
+
+								<Field label="Description">
+									<Input
+										{...goalForm.register("description")}
+										placeholder="Why this goal matters..."
+									/>
+								</Field>
+
+								<SimpleGrid columns={2} gap={4} w="full">
+									<Field label="Life Area">
+										<select
+											{...goalForm.register("area")}
+											style={{
+												width: "100%",
+												padding: "8px",
+												borderRadius: "8px",
+												background: "transparent",
+												border: "1px solid var(--chakra-colors-border-glass)",
+											}}
+										>
+											<option value="health">
+												Health
+											</option>
+											<option value="wealth">
+												Wealth
+											</option>
+											<option value="mastery">
+												Mastery
+											</option>
+											<option value="personal">
+												Personal
+											</option>
+											<option value="social">
+												Social
+											</option>
+										</select>
+									</Field>
+
+									<Field label="Category">
+										<select
+											{...goalForm.register("category")}
+											style={{
+												width: "100%",
+												padding: "8px",
+												borderRadius: "8px",
+												background: "transparent",
+												border: "1px solid var(--chakra-colors-border-glass)",
+											}}
+										>
+											<option value="learning">
+												Learning
+											</option>
+											<option value="work">Work</option>
+											<option value="health">
+												Health
+											</option>
+											<option value="chores">
+												Chores
+											</option>
+											<option value="mindfulness">
+												Mindfulness
+											</option>
+											<option value="social">
+												Social
+											</option>
+											<option value="finance">
+												Finance
+											</option>
+										</select>
+									</Field>
+								</SimpleGrid>
+
+								<SimpleGrid columns={2} gap={4} w="full">
+									<Field label="Target Date">
+										<Input
+											type="date"
+											{...goalForm.register(
+												"target_date",
+											)}
+										/>
+									</Field>
+									<Field label="XP Reward">
+										<Input
+											type="number"
+											{...goalForm.register("exp_reward")}
+										/>
+									</Field>
+								</SimpleGrid>
+							</VStack>
+						</DialogBody>
+
+						<DialogFooter>
+							<DialogActionTrigger asChild>
+								<Button variant="outline">Cancel</Button>
+							</DialogActionTrigger>
+							<Button
+								type="submit"
+								colorPalette="purple"
+								loading={createGoalMutation.isPending}
+							>
+								Create Goal
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</DialogRoot>
+
+			{/* Create Project Dialog */}
+			<DialogRoot
+				open={!!activeGoalForProject}
+				onOpenChange={() => setActiveGoalForProject(null)}
+			>
+				<DialogContent>
+					<form
+						onSubmit={projectForm.handleSubmit(handleCreateProject)}
+					>
+						<DialogHeader>
+							<DialogTitle>Add Project to Goal</DialogTitle>
+							<DialogDescription>
+								A project groups sequential milestones toward
+								the goal.
+							</DialogDescription>
+						</DialogHeader>
+
+						<DialogBody>
+							<VStack gap={4}>
+								<Field
+									label="Project Title"
+									required
+									errorText={
+										projectForm.formState.errors.title
+											?.message
+									}
+								>
+									<Input
+										{...projectForm.register("title")}
+										placeholder="e.g. Complete beginner curriculum"
+									/>
+								</Field>
+								<Field label="Description">
+									<Input
+										{...projectForm.register("description")}
+										placeholder="Scope of this project..."
+									/>
+								</Field>
+								<Field label="Target Date">
+									<Input
+										type="date"
+										{...projectForm.register("target_date")}
+									/>
+								</Field>
+							</VStack>
+						</DialogBody>
+
+						<DialogFooter>
+							<Button
+								variant="outline"
+								onClick={() => setActiveGoalForProject(null)}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="submit"
+								colorPalette="purple"
+								loading={createProjectMutation.isPending}
+							>
+								Add Project
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</DialogRoot>
+
+			{/* Create Milestone Dialog */}
+			<DialogRoot
+				open={!!activeProjectForMilestone}
+				onOpenChange={() => setActiveProjectForMilestone(null)}
+			>
+				<DialogContent>
+					<form
+						onSubmit={milestoneForm.handleSubmit(
+							handleCreateMilestone,
+						)}
+					>
+						<DialogHeader>
+							<DialogTitle>Add Milestone to Project</DialogTitle>
+							<DialogDescription>
+								A milestone is a concrete accomplishment that
+								awards XP & PX.
+							</DialogDescription>
+						</DialogHeader>
+
+						<DialogBody>
+							<VStack gap={4}>
+								<Field
+									label="Milestone Title"
+									required
+									errorText={
+										milestoneForm.formState.errors.title
+											?.message
+									}
+								>
+									<Input
+										{...milestoneForm.register("title")}
+										placeholder="e.g. Finish units 1–5"
+									/>
+								</Field>
+								<SimpleGrid columns={2} gap={4} w="full">
+									<Field label="XP Reward">
+										<Input
+											type="number"
+											{...milestoneForm.register(
+												"exp_reward",
+											)}
+										/>
+									</Field>
+									<Field label="PX Reward">
+										<Input
+											type="number"
+											{...milestoneForm.register(
+												"px_reward",
+											)}
+										/>
+									</Field>
+								</SimpleGrid>
+							</VStack>
+						</DialogBody>
+
+						<DialogFooter>
+							<Button
+								variant="outline"
+								onClick={() =>
+									setActiveProjectForMilestone(null)
+								}
+							>
+								Cancel
+							</Button>
+							<Button
+								type="submit"
+								colorPalette="purple"
+								loading={createMilestoneMutation.isPending}
+							>
+								Add Milestone
+							</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</DialogRoot>
+
+			{/* Goal Retrospective Dialog */}
+			<GoalRetrospectiveDialog
+				isOpen={!!retrospectiveGoal}
+				onClose={() => setRetrospectiveGoal(null)}
+				goal={retrospectiveGoal}
+			/>
+		</Box>
+	);
+};
+
+export default GoalsRoute;

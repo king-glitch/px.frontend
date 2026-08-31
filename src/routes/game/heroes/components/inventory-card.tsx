@@ -36,7 +36,9 @@ export const InventoryCard: React.FC<InventoryCardProps> = ({
 					<HStack justify="space-between">
 						<Text fontWeight="bold" fontSize="sm">
 							{shopItem?.name ||
-								t("routes.heroes.inventory.card.deprecatedItem")}
+								t(
+									"routes.heroes.inventory.card.deprecatedItem",
+								)}
 						</Text>
 						<HStack gap={1}>
 							{item.quantity > 1 && (

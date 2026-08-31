@@ -14,6 +14,8 @@ export const FinanceHeader: React.FC<FinanceHeaderProps> = ({
 }) => {
 	const { t } = useTranslation();
 
+	const currentMonth = new Date().toISOString().slice(0, 7);
+
 	return (
 		<Flex justify="space-between" align="flex-end" wrap="wrap" gap={3}>
 			<Stack gap={1}>
@@ -28,6 +30,7 @@ export const FinanceHeader: React.FC<FinanceHeaderProps> = ({
 				<Input
 					type="month"
 					value={period}
+					max={currentMonth}
 					onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
 						onPeriodChange(e.target.value)
 					}

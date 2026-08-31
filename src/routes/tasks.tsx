@@ -1,48 +1,30 @@
-import React, { useMemo, useState } from "react";
 import {
-	Badge,
-	Box,
-	Button,
-	Circle,
-	Container,
-	Flex,
-	Grid,
-	HStack,
-	Heading,
-	Icon,
-	IconButton,
-	Input,
-	SimpleGrid,
-	Skeleton,
-	Spinner,
-	Stack,
-	Tabs,
-	Text,
-	VStack,
-} from "@chakra-ui/react";
+	useCompleteQuest,
+	useCreateQuest,
+	useDeclareRestDay,
+	useDeleteQuest,
+	usePlayerSummary,
+	useQuestPricePreview,
+	useRecovery,
+	useTodayQuests,
+	useToggleVacation,
+	useUndoCompleteQuest,
+	useUpdateQuest,
+	type Quest,
+	type QuestCadence,
+	type QuestCategory,
+	type QuestEffort,
+	type TodayQuest,
+} from "@/api";
+import { ApiError } from "@/api/client";
+import { questSchema, type QuestFormData } from "@/api/schemas";
 import {
-	LuCalendar,
-	LuCheck,
-	LuCircle,
-	LuCircleCheck,
-	LuCoins,
-	LuEllipsisVertical,
-	LuFlame,
-	LuLayers,
-	LuPencil,
-	LuPlus,
-	LuRepeat,
-	LuSparkles,
-	LuTarget,
-	LuTimer,
-	LuTrash2,
-	LuTrendingUp,
-	LuZap,
-} from "react-icons/lu";
-import { PillButton } from "@/components/ui/pill-button";
+	RewardFlight,
+	registerRewardFlightTarget,
+	useRewardFlight,
+} from "@/components/game";
 import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
 import {
-	DialogActionTrigger,
 	DialogBody,
 	DialogCloseTrigger,
 	DialogContent,
@@ -52,46 +34,55 @@ import {
 	DialogRoot,
 	DialogTitle,
 } from "@/components/ui/dialog";
+import { EmptyState } from "@/components/ui/empty-state";
+import { Field } from "@/components/ui/field";
 import {
 	MenuContent,
 	MenuItem,
 	MenuRoot,
 	MenuTrigger,
 } from "@/components/ui/menu";
-import { EmptyState } from "@/components/ui/empty-state";
-import { Field } from "@/components/ui/field";
+import { PillButton } from "@/components/ui/pill-button";
 import {
 	SearchableSelect,
 	type SearchableSelectItem,
 } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
-import { ApiError } from "@/api/client";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import {
-	useCompleteQuest,
-	useCreateQuest,
-	useDeleteQuest,
-	usePlayerSummary,
-	useQuestPricePreview,
-	useTodayQuests,
-	useUndoCompleteQuest,
-	useUpdateQuest,
-	type Quest,
-	type QuestCadence,
-	type QuestCategory,
-	type QuestEffort,
-	type TodayQuest,
-} from "@/api";
-import { type QuestFormData, questSchema } from "@/api/schemas";
+import type { TFunction } from "@/lib/i18n";
+import { useTranslation } from "@/lib/i18n";
 import { handleFormApiError } from "@/utils/form-error";
 import {
-	RewardFlight,
-	registerRewardFlightTarget,
-	useRewardFlight,
-} from "@/components/game";
-import { useTranslation } from "@/lib/i18n";
-import type { TFunction } from "@/lib/i18n";
+	Badge,
+	Box,
+	Button,
+	Circle,
+	Flex,
+	Grid,
+	HStack,
+	Heading,
+	Icon,
+	IconButton,
+	Input,
+	Skeleton,
+	Spinner,
+	Stack,
+	Text,
+	VStack,
+} from "@chakra-ui/react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import React, { useMemo, useState } from "react";
+import { useForm } from "react-hook-form";
+import {
+	LuCircleCheck,
+	LuEllipsisVertical,
+	LuFlame,
+	LuPencil,
+	LuPlus,
+	LuSparkles,
+	LuTarget,
+	LuTrash2,
+	LuZap,
+} from "react-icons/lu";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -258,6 +249,10 @@ export const TasksRoute: React.FC = () => {
 	const { data: pricePreview, isFetching: isPreviewFetching } =
 		useQuestPricePreview(effort, cadence, minutes);
 
+	const { data: recovery } = useRecovery();
+	const declareRestDayMutation = useDeclareRestDay();
+	const toggleVacationMutation = useToggleVacation();
+
 	const completedCount = todayQuests.filter((q) => q.completed).length;
 	const totalCount = todayQuests.length || 1;
 	const progressPercent = Math.round((completedCount / totalCount) * 100);
@@ -422,9 +417,10 @@ export const TasksRoute: React.FC = () => {
 					gap={4}
 					templateColumns={{
 						base: "1fr",
-						sm: "repeat(2, 1fr)",
+						sm: "repeat(3, 1fr)",
 					}}
 				>
+					<Skeleton h="24" rounded="card" />
 					<Skeleton h="24" rounded="card" />
 					<Skeleton h="24" rounded="card" />
 				</Grid>
@@ -433,7 +429,7 @@ export const TasksRoute: React.FC = () => {
 					gap={4}
 					templateColumns={{
 						base: "1fr",
-						sm: "repeat(2, 1fr)",
+						sm: "repeat(3, 1fr)",
 					}}
 				>
 					<Box {...glassCard} p={4}>
@@ -478,6 +474,83 @@ export const TasksRoute: React.FC = () => {
 							<Text fontSize="xs" color="fg.muted">
 								{t("routes.tasks.streakCard.daysContinuous")}
 							</Text>
+						</HStack>
+					</Box>
+
+					<Box {...glassCard} p={4}>
+						<HStack justify="space-between" color="fg.muted">
+							<Text
+								fontSize="xs"
+								fontWeight="semibold"
+								textTransform="uppercase"
+							>
+								Recovery & Rest
+							</Text>
+							<Badge
+								size="xs"
+								colorPalette={
+									recovery?.streak_safe ? "green" : "gray"
+								}
+								variant="subtle"
+							>
+								{recovery?.streak_safe
+									? "Streak Protected"
+									: "Active"}
+							</Badge>
+						</HStack>
+						<HStack align="center" justify="space-between" mt={2}>
+							<VStack align="flex-start" gap={0}>
+								<Heading size="2xl">
+									{recovery?.rest_days_count ?? 0}
+								</Heading>
+								<Text fontSize="xs" color="fg.muted">
+									Rest days banked
+								</Text>
+							</VStack>
+							<HStack gap={1}>
+								<Button
+									size="2xs"
+									variant="subtle"
+									colorPalette="blue"
+									disabled={
+										(recovery?.rest_days_count ?? 0) <= 0
+									}
+									onClick={async () => {
+										await declareRestDayMutation.mutateAsync();
+										toaster.create({
+											title: "Rest Day Declared",
+											description:
+												"Streak protected for today.",
+											type: "info",
+										});
+									}}
+								>
+									Rest Day
+								</Button>
+								<Button
+									size="2xs"
+									variant={
+										recovery?.vacation_mode
+											? "solid"
+											: "outline"
+									}
+									colorPalette="purple"
+									onClick={async () => {
+										const next = !recovery?.vacation_mode;
+										await toggleVacationMutation.mutateAsync(
+											{ enable: next },
+										);
+										toaster.create({
+											title: next
+												? "Vacation Mode ON"
+												: "Vacation Mode OFF",
+											type: "info",
+										});
+									}}
+								>
+									Vacation
+								</Button>
+							</HStack>
 						</HStack>
 					</Box>
 				</Grid>
@@ -671,6 +744,27 @@ export const TasksRoute: React.FC = () => {
 												</Text>
 											</HStack>
 										)}
+										{tq.quest.is_mvq && (
+											<Badge
+												size="xs"
+												rounded="pill"
+												variant="outline"
+												colorPalette="teal"
+											>
+												MVQ {tq.quest.mvq_minutes}m
+											</Badge>
+										)}
+										{tq.quest.status &&
+											tq.quest.status !== "active" && (
+												<Badge
+													size="xs"
+													rounded="pill"
+													variant="subtle"
+													colorPalette="orange"
+												>
+													{tq.quest.status}
+												</Badge>
+											)}
 										<Badge
 											size="xs"
 											rounded="pill"

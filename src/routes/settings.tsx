@@ -1,4 +1,9 @@
-import React from "react";
+import { useDisconnectDuolingo, useDuolingoStatus } from "@/api";
+import { ApiError } from "@/api/client";
+import { Button } from "@/components/ui/button";
+import { toaster } from "@/components/ui/toaster";
+import { useAuthContext } from "@/contexts/auth-context";
+import { useTranslation } from "@/lib/i18n";
 import {
 	Badge,
 	Box,
@@ -12,23 +17,16 @@ import {
 	Stack,
 	Text,
 } from "@chakra-ui/react";
+import React from "react";
 import {
 	LuExternalLink,
 	LuFlame,
 	LuLeaf,
-	LuPlus,
-	LuShieldCheck,
 	LuTrendingUp,
 	LuTrophy,
 	LuUser,
 } from "react-icons/lu";
 import { useNavigate } from "react-router";
-import { Button } from "@/components/ui/button";
-import { toaster } from "@/components/ui/toaster";
-import { ApiError } from "@/api/client";
-import { useDisconnectDuolingo, useDuolingoStatus } from "@/api";
-import { useAuthContext } from "@/contexts/auth-context";
-import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
 	bg: "bg.glass",

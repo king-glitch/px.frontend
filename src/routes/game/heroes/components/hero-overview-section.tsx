@@ -6,6 +6,7 @@ import { HeroProgressionCard } from "./hero-progression-card";
 import { StreakBadgesCard } from "./streak-badges-card";
 import { AttributeRadarCard } from "./attribute-radar-card";
 import { HeroMultipliersGrid } from "./hero-multipliers-grid";
+import { CategoryMasteryCard } from "./category-mastery-card";
 import { TalentPerkTree } from "./talent-perk-tree";
 
 interface HeroOverviewSectionProps {
@@ -81,6 +82,9 @@ export const HeroOverviewSection: React.FC<HeroOverviewSectionProps> = ({
 				perks={perks}
 				totalAttributesSum={totalAttributesSum}
 			/>
+
+			{/* Category Mastery Progression */}
+			<CategoryMasteryCard />
 
 			{/* Perk Tree */}
 			<TalentPerkTree

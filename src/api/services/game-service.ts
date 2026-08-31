@@ -1,31 +1,63 @@
-import { apiDelete, apiGet, apiPost, apiPut } from "@/api/client";
+import { apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/api/client";
 import type {
+	AscensionPath,
 	Avatar,
 	AwardHealthDayRequest,
 	AwardResult,
 	Buff,
+	CategoryMasterySummary,
+	Circle,
+	CircleActivity,
+	CircleActivitySummary,
+	CircleGoal,
+	CircleInvite,
+	CircleMember,
+	CircleSummary,
 	Claim,
 	CompleteQuestRequest,
+	CreateCircleGoalInput,
+	CreateCircleInput,
 	CreateQuestRequest,
 	CreateShopItemRequest,
+	Goal,
+	GoalSummary,
 	HealthDaySummary,
 	IngestHealthSamplesRequest,
 	InventoryItem,
+	InviteMemberInput,
 	LedgerPage,
+	Milestone,
 	Perk,
 	Player,
 	PlayerSummary,
+	Project,
 	PurchaseResult,
 	Quest,
-	TodayQuest,
 	QuestCadence,
+	QuestCategory,
 	QuestEffort,
 	QuestPage,
 	QuestPrice,
+	ReactToActivityInput,
+	RecoverySummary,
+	RescheduleQuestInput,
+	Review,
+	ReviewSummary,
 	RolloverQuestsRequest,
+	Routine,
+	ScheduleQuestInput,
 	ShopItem,
 	ShopItemKind,
+	TodayQuest,
+	UpdateCircleInput,
+	UpdateMemberSettingsInput,
 	UpdateQuestRequest,
+	UpdateWorkloadConfigInput,
+	WorkloadConfig,
+	WorkloadDaySummary,
+	CalendarEventSummary,
+	CloseGoalRetrospectiveInput,
+	GoalRetrospectiveSummary,
 } from "@/api/types";
 
 export const gameService = {
@@ -277,6 +309,370 @@ export const gameService = {
 		return apiPost<{ award: AwardResult }, AwardHealthDayRequest>(
 			"/game/health/award",
 			payload,
+		);
+	},
+
+	// --- Goals, Projects, Milestones ---
+	async listGoals(): Promise<{ goals: GoalSummary[] }> {
+		return apiGet<{ goals: GoalSummary[] }>("/game/goals");
+	},
+
+	async getGoalSummary(id: string): Promise<{ goal: GoalSummary }> {
+		return apiGet<{ goal: GoalSummary }>(`/game/goals/${id}`);
+	},
+
+	async createGoal(payload: Partial<Goal>): Promise<{ goal: Goal }> {
+		return apiPost<{ goal: Goal }>("/game/goals", payload);
+	},
+
+	async updateGoal(
+		id: string,
+		payload: Partial<Goal>,
+	): Promise<{ goal: Goal }> {
+		return apiPut<{ goal: Goal }>(`/game/goals/${id}`, payload);
+	},
+
+	async deleteGoal(id: string): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/game/goals/${id}`);
+	},
+
+	async completeGoal(id: string): Promise<{ award: AwardResult }> {
+		return apiPost<{ award: AwardResult }>(`/game/goals/${id}/complete`);
+	},
+
+	async createProject(
+		payload: Partial<Project>,
+	): Promise<{ project: Project }> {
+		return apiPost<{ project: Project }>("/game/projects", payload);
+	},
+
+	async updateProject(
+		id: string,
+		payload: Partial<Project>,
+	): Promise<{ project: Project }> {
+		return apiPut<{ project: Project }>(`/game/projects/${id}`, payload);
+	},
+
+	async deleteProject(id: string): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/game/projects/${id}`);
+	},
+
+	async createMilestone(
+		payload: Partial<Milestone>,
+	): Promise<{ milestone: Milestone }> {
+		return apiPost<{ milestone: Milestone }>("/game/milestones", payload);
+	},
+
+	async updateMilestone(
+		id: string,
+		payload: Partial<Milestone>,
+	): Promise<{ milestone: Milestone }> {
+		return apiPut<{ milestone: Milestone }>(
+			`/game/milestones/${id}`,
+			payload,
+		);
+	},
+
+	async deleteMilestone(id: string): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/game/milestones/${id}`);
+	},
+
+	async completeMilestone(id: string): Promise<{ award: AwardResult }> {
+		return apiPost<{ award: AwardResult }>(
+			`/game/milestones/${id}/complete`,
+		);
+	},
+
+	// --- Routines ---
+	async listRoutines(): Promise<{ routines: Routine[] }> {
+		return apiGet<{ routines: Routine[] }>("/game/routines");
+	},
+
+	async createRoutine(
+		payload: Partial<Routine>,
+	): Promise<{ routine: Routine }> {
+		return apiPost<{ routine: Routine }>("/game/routines", payload);
+	},
+
+	async updateRoutine(
+		id: string,
+		payload: Partial<Routine>,
+	): Promise<{ routine: Routine }> {
+		return apiPut<{ routine: Routine }>(`/game/routines/${id}`, payload);
+	},
+
+	async deleteRoutine(id: string): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/game/routines/${id}`);
+	},
+
+	// --- Recovery ---
+	async getRecoverySummary(
+		on?: string,
+	): Promise<{ recovery: RecoverySummary }> {
+		return apiGet<{ recovery: RecoverySummary }>("/game/recovery", {
+			params: on ? { on } : undefined,
+		});
+	},
+
+	async declareRestDay(on?: string): Promise<{ recovery: RecoverySummary }> {
+		return apiPost<{ recovery: RecoverySummary }>(
+			"/game/recovery/rest-day",
+			{ on },
+		);
+	},
+
+	async toggleVacationMode(
+		enable: boolean,
+		on?: string,
+	): Promise<{ recovery: RecoverySummary }> {
+		return apiPost<{ recovery: RecoverySummary }>(
+			"/game/recovery/vacation",
+			{ enable, on },
+		);
+	},
+
+	// --- Reviews ---
+	async getReviewSummary(
+		type: "weekly" | "monthly",
+		period: string,
+	): Promise<{ summary: ReviewSummary }> {
+		return apiGet<{ summary: ReviewSummary }>("/game/reviews/summary", {
+			params: { type, period },
+		});
+	},
+
+	async finalizeReview(payload: {
+		period_type: "weekly" | "monthly";
+		period: string;
+		reflection_notes: string;
+		next_priorities: string[];
+	}): Promise<{ review: Review }> {
+		return apiPost<{ review: Review }>("/game/reviews", payload);
+	},
+
+	async listReviews(
+		page = 1,
+		limit = 20,
+	): Promise<{ reviews: Review[]; count: number; total_pages: number }> {
+		return apiGet<{
+			reviews: Review[];
+			count: number;
+			total_pages: number;
+		}>("/game/reviews", {
+			params: { page, limit },
+		});
+	},
+
+	// --- Mastery & Ascension ---
+	async getCategoryMasterySummary(): Promise<{
+		mastery: CategoryMasterySummary;
+	}> {
+		return apiGet<{ mastery: CategoryMasterySummary }>("/game/masteries");
+	},
+
+	async setCategorySpecialization(
+		primary: QuestCategory,
+		secondary: QuestCategory,
+	): Promise<{ mastery: CategoryMasterySummary }> {
+		return apiPost<{ mastery: CategoryMasterySummary }>(
+			"/game/masteries/specialize",
+			{
+				primary,
+				secondary,
+			},
+		);
+	},
+
+	async ascendWithPath(path: AscensionPath): Promise<{ player: Player }> {
+		return apiPost<{ player: Player }>("/game/player/ascend-path", {
+			path,
+		});
+	},
+
+	// --- Calendar & Workload ---
+	async getCalendarEvents(
+		from?: string,
+		to?: string,
+	): Promise<{ events: CalendarEventSummary[] }> {
+		return apiGet<{ events: CalendarEventSummary[] }>(
+			"/game/calendar/events",
+			{
+				params: { from, to },
+			},
+		);
+	},
+
+	async scheduleQuest(
+		payload: ScheduleQuestInput,
+	): Promise<{ event: CalendarEventSummary }> {
+		return apiPost<{ event: CalendarEventSummary }>(
+			"/game/calendar/schedule",
+			payload,
+		);
+	},
+
+	async rescheduleQuest(
+		payload: RescheduleQuestInput,
+	): Promise<{ event: CalendarEventSummary }> {
+		return apiPut<{ event: CalendarEventSummary }>(
+			"/game/calendar/reschedule",
+			payload,
+		);
+	},
+
+	async deleteScheduledEvent(id: string): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(`/game/calendar/events/${id}`);
+	},
+
+	async getWorkloadCapacity(
+		from?: string,
+		to?: string,
+	): Promise<{ workload: WorkloadDaySummary[] }> {
+		return apiGet<{ workload: WorkloadDaySummary[] }>(
+			"/game/workload/capacity",
+			{
+				params: { from, to },
+			},
+		);
+	},
+
+	async updateWorkloadConfig(
+		payload: UpdateWorkloadConfigInput,
+	): Promise<{ config: WorkloadConfig }> {
+		return apiPut<{ config: WorkloadConfig }>(
+			"/game/workload/config",
+			payload,
+		);
+	},
+
+	// --- Goal Retrospectives ---
+	async closeGoalWithRetrospective(
+		goalId: string,
+		payload: CloseGoalRetrospectiveInput,
+	): Promise<{ summary: GoalRetrospectiveSummary }> {
+		return apiPost<{ summary: GoalRetrospectiveSummary }>(
+			`/game/goals/${goalId}/retrospective`,
+			payload,
+		);
+	},
+
+	async getGoalRetrospective(
+		goalId: string,
+	): Promise<{ summary: GoalRetrospectiveSummary }> {
+		return apiGet<{ summary: GoalRetrospectiveSummary }>(
+			`/game/goals/${goalId}/retrospective`,
+		);
+	},
+
+	// --- Circles (Persistent Co-op) ---
+	async getCurrentCircle(): Promise<{ circle: CircleSummary }> {
+		return apiGet<{ circle: CircleSummary }>("/game/circles/current");
+	},
+
+	async createCircle(
+		payload: CreateCircleInput,
+	): Promise<{ circle: CircleSummary }> {
+		return apiPost<{ circle: CircleSummary }>("/game/circles", payload);
+	},
+
+	async updateCircle(
+		payload: UpdateCircleInput,
+	): Promise<{ circle: CircleSummary }> {
+		return apiPatch<{ circle: CircleSummary }>(
+			"/game/circles/current",
+			payload,
+		);
+	},
+
+	async leaveCircle(): Promise<{ deleted: boolean }> {
+		return apiPost<{ deleted: boolean }>("/game/circles/current/leave");
+	},
+
+	async removeCircleMember(memberId: string): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(
+			`/game/circles/current/members/${memberId}`,
+		);
+	},
+
+	async updateMemberSettings(
+		payload: UpdateMemberSettingsInput,
+	): Promise<{ member: CircleMember }> {
+		return apiPatch<{ member: CircleMember }>(
+			"/game/circles/current/members/me",
+			payload,
+		);
+	},
+
+	async createCircleInvite(
+		payload: InviteMemberInput,
+	): Promise<{ invite: CircleInvite }> {
+		return apiPost<{ invite: CircleInvite }>(
+			"/game/circles/current/invites",
+			payload,
+		);
+	},
+
+	async listCircleInvites(): Promise<{ invites: CircleInvite[] }> {
+		return apiGet<{ invites: CircleInvite[] }>(
+			"/game/circles/current/invites",
+		);
+	},
+
+	async acceptCircleInvite(code: string): Promise<{ circle: CircleSummary }> {
+		return apiPost<{ circle: CircleSummary }>(
+			`/game/circles/invites/${code}/accept`,
+		);
+	},
+
+	async declineCircleInvite(code: string): Promise<{ deleted: boolean }> {
+		return apiPost<{ deleted: boolean }>(
+			`/game/circles/invites/${code}/decline`,
+		);
+	},
+
+	async cancelCircleInvite(inviteId: string): Promise<{ deleted: boolean }> {
+		return apiDelete<{ deleted: boolean }>(
+			`/game/circles/current/invites/${inviteId}`,
+		);
+	},
+
+	async listCircleActivities(): Promise<{
+		activities: CircleActivitySummary[];
+	}> {
+		return apiGet<{ activities: CircleActivitySummary[] }>(
+			"/game/circles/current/activity",
+		);
+	},
+
+	async reactToActivity(
+		payload: ReactToActivityInput,
+	): Promise<{ activity: CircleActivity }> {
+		return apiPost<{ activity: CircleActivity }>(
+			"/game/circles/current/reactions",
+			payload,
+		);
+	},
+
+	async nudgeMember(receiverUserId: string): Promise<{ deleted: boolean }> {
+		return apiPost<{ deleted: boolean }>("/game/circles/current/nudges", {
+			receiver_user_id: receiverUserId,
+		});
+	},
+
+	async setCircleGoal(
+		payload: CreateCircleGoalInput,
+	): Promise<{ goal: CircleGoal }> {
+		return apiPost<{ goal: CircleGoal }>(
+			"/game/circles/current/goals",
+			payload,
+		);
+	},
+
+	async claimWeeklyCircleReward(
+		weekId: string,
+	): Promise<{ award: AwardResult }> {
+		return apiPost<{ award: AwardResult }>(
+			`/game/circles/current/rewards/${weekId}/claim`,
 		);
 	},
 };

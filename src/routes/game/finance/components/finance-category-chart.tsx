@@ -33,11 +33,15 @@ const glassCard = {
 interface FinanceCategoryChartProps {
 	period: string;
 	data: Array<{ category: string; amount: number }>;
+	selectedCategory?: string;
+	onSelectCategory?: (category: string) => void;
 }
 
 export const FinanceCategoryChart: React.FC<FinanceCategoryChartProps> = ({
 	period,
 	data,
+	selectedCategory,
+	onSelectCategory,
 }) => {
 	const { t } = useTranslation();
 	const categoryChart = useChart({
@@ -112,6 +116,16 @@ export const FinanceCategoryChart: React.FC<FinanceCategoryChartProps> = ({
 								dataKey={categoryChart.key("amount")}
 								fill={categoryChart.color("purple.solid")}
 								radius={[0, 4, 4, 0]}
+								style={{ cursor: "pointer" }}
+								onClick={(entry: any) => {
+									if (entry && entry.category) {
+										onSelectCategory?.(
+											selectedCategory === entry.category
+												? ""
+												: entry.category,
+										);
+									}
+								}}
 							/>
 						</BarChart>
 					</ResponsiveContainer>

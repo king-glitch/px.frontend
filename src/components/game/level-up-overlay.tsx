@@ -30,13 +30,12 @@ const shardFly = keyframes({
 
 const SHARD_COUNT = 10;
 
-// Matches theme.ts holo.cyan/lavender/blush/butter — gradients can't consume Chakra
-// tokens directly, so raw rgba mirrors the existing codebase precedent (see index.tsx).
-const LIME_STOPS = [
-	"rgba(152, 238, 44, 0.9)",
-	"rgba(255, 255, 255, 0.8)",
-	"rgba(152, 238, 44, 0.7)",
-	"rgba(152, 238, 44, 0.9)",
+// Matches theme.ts holo.cyan/lavender/blush/butter pastel holographic spectrum
+const HOLO_STOPS = [
+	"rgba(165, 243, 252, 0.85)", // Prism Cyan
+	"rgba(221, 214, 254, 0.85)", // Soft Lavender
+	"rgba(251, 207, 232, 0.85)", // Pastel Blush
+	"rgba(254, 240, 138, 0.85)", // Spectral Pale Yellow
 ];
 
 export interface LevelUpOverlayProps {
@@ -55,8 +54,15 @@ export const LevelUpOverlay: React.FC<LevelUpOverlayProps> = ({
 
 	React.useEffect(() => {
 		if (!open) return;
+		const handleKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape") onDone();
+		};
+		window.addEventListener("keydown", handleKeyDown);
 		const timeout = setTimeout(onDone, 2200);
-		return () => clearTimeout(timeout);
+		return () => {
+			window.removeEventListener("keydown", handleKeyDown);
+			clearTimeout(timeout);
+		};
 	}, [open, onDone]);
 
 	if (!open) return null;
@@ -95,7 +101,7 @@ export const LevelUpOverlay: React.FC<LevelUpOverlayProps> = ({
 					rounded="full"
 					filter="blur(40px)"
 					opacity={0.65}
-					backgroundImage={`conic-gradient(from 0deg, ${LIME_STOPS.join(", ")}, ${LIME_STOPS[0]})`}
+					backgroundImage={`conic-gradient(from 0deg, ${HOLO_STOPS.join(", ")}, ${HOLO_STOPS[0]})`}
 					animation={`${prismSpin} 6s linear infinite`}
 				/>
 			)}
