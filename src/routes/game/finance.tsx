@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import { Container, Grid, Stack } from "@chakra-ui/react";
+import { Box, Grid, Stack } from "@chakra-ui/react";
 import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
 import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
@@ -133,7 +133,7 @@ export const Finance: React.FC = () => {
 	}, [periodEntries]);
 
 	return (
-		<Container maxW="6xl" py={{ base: 4, md: 8 }}>
+		<Box flex="1" pb={12}>
 			<RewardFlight />
 			<Stack gap={6}>
 				{/* Header Bar */}
@@ -194,7 +194,7 @@ export const Finance: React.FC = () => {
 				loading={convert.isPending}
 				onConfirm={handleExecuteConvert}
 			/>
-		</Container>
+		</Box>
 	);
 };
 

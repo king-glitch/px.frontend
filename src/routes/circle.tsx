@@ -267,10 +267,72 @@ export const CircleRoute: React.FC = () => {
 	if (isLoading) {
 		return (
 			<Box flex="1" pb={12}>
-				<VStack gap={4} align="stretch">
-					<Skeleton h="120px" rounded="card" />
-					<Skeleton h="200px" rounded="card" />
-					<Skeleton h="300px" rounded="card" />
+				<VStack gap={6} align="stretch">
+					{/* Header Skeleton */}
+					<Flex
+						direction={{ base: "column", md: "row" }}
+						justify="space-between"
+						align={{ base: "flex-start", md: "center" }}
+						gap={4}
+					>
+						<HStack gap={3}>
+							<Skeleton h="36px" w="36px" rounded="full" />
+							<VStack align="flex-start" gap={2}>
+								<Skeleton h="24px" w="180px" rounded="md" />
+								<Skeleton h="14px" w="240px" rounded="md" />
+							</VStack>
+						</HStack>
+						<HStack gap={2}>
+							<Skeleton h="32px" w="100px" rounded="pill" />
+							<Skeleton h="32px" w="110px" rounded="pill" />
+						</HStack>
+					</Flex>
+
+					{/* Roster & Squad Matrix Skeleton */}
+					<Box {...glassCard} p={6}>
+						<Flex justify="space-between" align="center" mb={5}>
+							<HStack gap={2}>
+								<Skeleton h="16px" w="120px" rounded="md" />
+								<Skeleton h="20px" w="50px" rounded="pill" />
+							</HStack>
+							<Skeleton h="20px" w="100px" rounded="pill" />
+						</Flex>
+						<SimpleGrid columns={{ base: 2, sm: 3, md: 6 }} gap={3}>
+							{[1, 2, 3, 4, 5, 6].map((i) => (
+								<VStack
+									key={i}
+									p={3}
+									rounded="xl"
+									bg="bg.panel"
+									borderWidth="1px"
+									borderColor="border.glass"
+									gap={2}
+									align="center"
+								>
+									<Skeleton h="40px" w="40px" rounded="full" />
+									<Skeleton h="14px" w="60px" rounded="md" />
+									<Skeleton h="10px" w="45px" rounded="pill" />
+								</VStack>
+							))}
+						</SimpleGrid>
+					</Box>
+
+					{/* Tier Milestone Gauge Skeleton */}
+					<Box {...glassCard} p={6}>
+						<Flex justify="space-between" align="center" mb={4}>
+							<VStack align="flex-start" gap={1}>
+								<Skeleton h="18px" w="150px" rounded="md" />
+								<Skeleton h="12px" w="200px" rounded="md" />
+							</VStack>
+							<Skeleton h="24px" w="80px" rounded="pill" />
+						</Flex>
+						<Skeleton h="10px" w="100%" rounded="full" mb={4} />
+						<SimpleGrid columns={{ base: 2, md: 4 }} gap={2}>
+							{[1, 2, 3, 4].map((i) => (
+								<Skeleton key={i} h="36px" rounded="lg" />
+							))}
+						</SimpleGrid>
+					</Box>
 				</VStack>
 			</Box>
 		);

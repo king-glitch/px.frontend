@@ -278,9 +278,39 @@ export const ReviewsRoute: React.FC = () => {
 					</HStack>
 
 					{isLoading || !summary ? (
-						<VStack gap={4} align="stretch">
-							<Skeleton h="120px" rounded="card" />
-							<Skeleton h="200px" rounded="card" />
+						<VStack gap={6} align="stretch">
+							{/* KPI Row Skeletons */}
+							<SimpleGrid columns={{ base: 2, md: 4 }} gap={4}>
+								{[1, 2, 3, 4].map((i) => (
+									<Box key={i} {...glassCard} p={4}>
+										<Skeleton h="12px" w="80px" rounded="md" mb={2} />
+										<Skeleton h="28px" w="60px" rounded="md" mb={2} />
+										<Skeleton h="10px" w="100px" rounded="md" />
+									</Box>
+								))}
+							</SimpleGrid>
+
+							{/* Category Distribution Skeleton */}
+							<Box {...glassCard} p={5}>
+								<Skeleton h="16px" w="160px" rounded="md" mb={4} />
+								<VStack gap={3} align="stretch">
+									{[1, 2, 3, 4].map((i) => (
+										<Box key={i}>
+											<Flex justify="space-between" mb={1}>
+												<Skeleton h="12px" w="70px" rounded="md" />
+												<Skeleton h="12px" w="40px" rounded="md" />
+											</Flex>
+											<Skeleton h="6px" w="100%" rounded="full" />
+										</Box>
+									))}
+								</VStack>
+							</Box>
+
+							{/* Reflection Skeleton */}
+							<Box {...glassCard} p={5}>
+								<Skeleton h="16px" w="180px" rounded="md" mb={3} />
+								<Skeleton h="80px" w="100%" rounded="xl" />
+							</Box>
 						</VStack>
 					) : (
 						<>

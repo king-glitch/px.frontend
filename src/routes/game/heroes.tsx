@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from "react";
 import { useParams } from "react-router";
-import { Box, Container, Grid, Skeleton, Stack, Text } from "@chakra-ui/react";
+import { Box, Flex, Grid, HStack, Skeleton, Stack, Text, VStack } from "@chakra-ui/react";
 import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
 import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
@@ -116,9 +116,47 @@ export const Heroes: React.FC = () => {
 		return (
 			<Box flex="1" pb={12}>
 				<Stack gap={6}>
-					<Skeleton h="120px" rounded="card" />
-					<Skeleton h="60px" rounded="card" />
-					<Skeleton h="400px" rounded="card" />
+					{/* Header Skeleton */}
+					<Flex justify="space-between" align="center" wrap="wrap" gap={3}>
+						<Stack gap={2}>
+							<HStack gap={3}>
+								<Skeleton h="32px" w="220px" rounded="md" />
+								<Skeleton h="24px" w="60px" rounded="pill" />
+							</HStack>
+							<Skeleton h="14px" w="320px" rounded="md" />
+						</Stack>
+						<HStack gap={3}>
+							<Skeleton h="36px" w="130px" rounded="pill" />
+							<Skeleton h="36px" w="140px" rounded="card" />
+						</HStack>
+					</Flex>
+
+					{/* Topbar Skeleton */}
+					<Box {...glassCard} p={2.5}>
+						<Flex justify="space-between" align="center">
+							<HStack gap={2}>
+								<Skeleton h="32px" w="90px" rounded="pill" />
+								<Skeleton h="32px" w="110px" rounded="pill" />
+								<Skeleton h="32px" w="130px" rounded="pill" />
+							</HStack>
+							<HStack gap={2} pr={2}>
+								<Skeleton h="32px" w="32px" rounded="full" />
+								<VStack align="flex-start" gap={1}>
+									<Skeleton h="12px" w="60px" rounded="md" />
+									<Skeleton h="10px" w="75px" rounded="md" />
+								</VStack>
+							</HStack>
+						</Flex>
+					</Box>
+
+					{/* Section Matrix Skeleton */}
+					<Grid templateColumns={{ base: "1fr", lg: "340px 1fr" }} gap={6}>
+						<Skeleton h="380px" rounded="card" />
+						<VStack gap={5} align="stretch">
+							<Skeleton h="180px" rounded="card" />
+							<Skeleton h="220px" rounded="card" />
+						</VStack>
+					</Grid>
 				</Stack>
 			</Box>
 		);

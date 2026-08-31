@@ -108,6 +108,65 @@ const GOAL_CATEGORIES = [
 	{ label: "Finance", value: "finance" },
 ];
 
+const GoalCardSkeleton: React.FC = () => (
+	<Box {...glassCard} p={{ base: 5, md: 6 }}>
+		<Flex justify="space-between" align="flex-start" mb={4}>
+			<VStack align="flex-start" gap={2} flex="1">
+				<HStack gap={2}>
+					<Skeleton h="20px" w="70px" rounded="pill" />
+					<Skeleton h="20px" w="60px" rounded="pill" />
+				</HStack>
+				<Skeleton h="24px" w="55%" rounded="lg" />
+				<Skeleton h="14px" w="35%" rounded="md" />
+			</VStack>
+			<HStack gap={2}>
+				<Skeleton h="28px" w="90px" rounded="pill" />
+				<Skeleton h="28px" w="28px" rounded="full" />
+			</HStack>
+		</Flex>
+
+		<Box mb={5}>
+			<Flex justify="space-between" mb={2}>
+				<Skeleton h="12px" w="120px" rounded="md" />
+				<Skeleton h="12px" w="35px" rounded="md" />
+			</Flex>
+			<Skeleton h="8px" w="100%" rounded="full" />
+		</Box>
+
+		<VStack
+			gap={3}
+			align="stretch"
+			pt={4}
+			borderTopWidth="1px"
+			borderColor="border.glass"
+		>
+			<Flex justify="space-between" align="center">
+				<Skeleton h="14px" w="140px" rounded="md" />
+				<Skeleton h="24px" w="85px" rounded="pill" />
+			</Flex>
+			<Box
+				bg="bg.panel"
+				p={4}
+				rounded="xl"
+				borderWidth="1px"
+				borderColor="border.glass"
+			>
+				<Flex justify="space-between" align="center" mb={3}>
+					<HStack gap={2}>
+						<Skeleton h="24px" w="24px" rounded="full" />
+						<Skeleton h="16px" w="120px" rounded="md" />
+					</HStack>
+					<Skeleton h="20px" w="70px" rounded="pill" />
+				</Flex>
+				<VStack gap={2} align="stretch">
+					<Skeleton h="36px" w="100%" rounded="pill" />
+					<Skeleton h="36px" w="100%" rounded="pill" />
+				</VStack>
+			</Box>
+		</VStack>
+	</Box>
+);
+
 export const GoalsRoute: React.FC = () => {
 	const { data: goals = [], isLoading } = useGoals();
 	const createGoalMutation = useCreateGoal();
@@ -305,38 +364,38 @@ export const GoalsRoute: React.FC = () => {
 				mb={6}
 			>
 				<VStack align="flex-start" gap={1}>
-					<HStack gap={2}>
+					<HStack gap={2.5}>
 						<Circle
-							size="32px"
+							size="36px"
 							bg="lime.500/15"
 							color="lime.500"
 						>
 							<Icon as={LuTarget} boxSize={5} />
 						</Circle>
-						<Heading size="xl" fontWeight="bold">
+						<Heading size="2xl" fontWeight="bold">
 							Goals & Projects
 						</Heading>
 					</HStack>
 					<Text color="fg.muted" fontSize="sm">
-						Life Area → Goal → Project → Milestone hierarchy
-						connecting daily quests to long-term outcomes.
+						Life Area → Goal → Project → Milestone hierarchy connecting daily quests to long-term vision.
 					</Text>
 				</VStack>
 
-				<Button
-					colorPalette="lime"
-					rounded="full"
+				<PillButton
+					variant="mint"
+					size="sm"
+					icon={LuPlus}
 					onClick={() => {
 						goalForm.reset();
 						setIsCreateGoalOpen(true);
 					}}
 				>
-					<Icon as={LuPlus} /> New Goal
-				</Button>
+					New Goal
+				</PillButton>
 			</Flex>
 
-			{/* Area Tabs */}
-			<HStack gap={2} mb={6} overflowX="auto" py={2} px={1}>
+			{/* Area Filter Tabs */}
+			<HStack gap={2} mb={6} overflowX="auto" py={1}>
 				{[
 					"all",
 					"health",
@@ -361,24 +420,41 @@ export const GoalsRoute: React.FC = () => {
 
 			{/* Goal List */}
 			{isLoading ? (
-				<VStack gap={4} align="stretch">
-					{[1, 2].map((i) => (
-						<Skeleton key={i} h="160px" rounded="card" />
-					))}
+				<VStack gap={6} align="stretch">
+					<GoalCardSkeleton />
+					<GoalCardSkeleton />
 				</VStack>
 			) : filteredGoals.length === 0 ? (
-				<Box {...glassCard} p={10}>
-					<EmptyState
-						title="No Goals Found"
-						description="Create a goal to set milestones and projects for your long-term roadmap."
-					/>
+				<Box {...glassCard} p={12} textAlign="center">
+					<VStack gap={4} align="center">
+						<Circle size="48px" bg="lime.500/15" color="lime.500">
+							<Icon as={LuTarget} boxSize={6} />
+						</Circle>
+						<VStack gap={1}>
+							<Heading size="md" fontWeight="bold">
+								No Goals Found
+							</Heading>
+							<Text fontSize="sm" color="fg.muted" maxW="400px">
+								Create a long-term goal to organize step-by-step projects and milestones.
+							</Text>
+						</VStack>
+						<PillButton
+							variant="mint"
+							size="sm"
+							icon={LuPlus}
+							onClick={() => {
+								goalForm.reset();
+								setIsCreateGoalOpen(true);
+							}}
+						>
+							Create First Goal
+						</PillButton>
+					</VStack>
 				</Box>
 			) : (
 				<VStack gap={6} align="stretch">
 					{filteredGoals.map(
 						({ goal, projects, milestones, progress }) => {
-							const areaStyle =
-								AREA_COLORS[goal.area] || AREA_COLORS.mastery;
 							const isDone =
 								goal.status === "completed" || progress >= 100;
 
@@ -386,7 +462,7 @@ export const GoalsRoute: React.FC = () => {
 								<Box
 									key={goal.id}
 									{...glassCard}
-									p={{ base: 4, md: 6 }}
+									p={{ base: 5, md: 6 }}
 									position="relative"
 								>
 									{/* Goal Top Row */}
@@ -410,41 +486,37 @@ export const GoalsRoute: React.FC = () => {
 										>
 											<HStack gap={2} wrap="wrap">
 												<Badge
-													bg={areaStyle.bg}
-													color={areaStyle.color}
-													borderWidth="1px"
-													borderColor={
-														areaStyle.border
-													}
-													rounded="full"
-													px={2.5}
-													py={0.5}
-													textTransform="uppercase"
-													fontSize="xs"
+													colorPalette="lime"
+													variant="subtle"
+													rounded="pill"
+													size="sm"
+													textTransform="capitalize"
 													fontWeight="bold"
 												>
 													{goal.area}
 												</Badge>
 												<Badge
-													variant="subtle"
-													colorPalette="gray"
-													rounded="full"
+													variant="outline"
+													rounded="pill"
+													size="sm"
+													textTransform="capitalize"
 												>
 													{goal.category}
 												</Badge>
-												{goal.status ===
-													"completed" && (
+												{isDone && (
 													<Badge
-														colorPalette="green"
+														colorPalette="lime"
 														variant="solid"
-														rounded="full"
+														rounded="pill"
+														size="sm"
 													>
+														<Icon as={LuCheck} mr={1} />
 														Completed
 													</Badge>
 												)}
 											</HStack>
 
-											<Heading size="md">
+											<Heading size="lg" fontWeight="bold">
 												{goal.title}
 											</Heading>
 											{goal.description && (
@@ -457,12 +529,13 @@ export const GoalsRoute: React.FC = () => {
 											)}
 										</VStack>
 
-										<HStack gap={3}>
+										<HStack gap={2.5} wrap="wrap">
 											{goal.status !== "completed" &&
 												progress >= 100 && (
-													<Button
-														size="sm"
-														colorPalette="lime"
+													<PillButton
+														size="xs"
+														variant="mint"
+														icon={LuAward}
 														onClick={(e) =>
 															handleCompleteGoal(
 																goal,
@@ -470,28 +543,27 @@ export const GoalsRoute: React.FC = () => {
 															)
 														}
 													>
-														<Icon as={LuAward} />{" "}
 														Claim Reward
-													</Button>
+													</PillButton>
 												)}
 
-											<Button
-												size="sm"
-												variant="outline"
-												colorPalette="gray"
+											<PillButton
+												size="xs"
+												variant="dark"
+												icon={LuHistory}
 												onClick={() =>
 													setRetrospectiveGoal(goal)
 												}
 											>
-												<Icon as={LuHistory} mr={1} />{" "}
 												Retrospective
-											</Button>
+											</PillButton>
 
 											<IconButton
-												size="sm"
+												size="xs"
 												variant="ghost"
 												colorPalette="red"
 												aria-label="Delete goal"
+												rounded="full"
 												onClick={() =>
 													deleteGoalMutation.mutate(
 														goal.id,
@@ -510,10 +582,10 @@ export const GoalsRoute: React.FC = () => {
 											fontSize="xs"
 											mb={1.5}
 										>
-											<Text color="fg.muted">
-												Goal Progress
+											<Text color="fg.muted" fontWeight="medium">
+												Overall Goal Progress
 											</Text>
-											<Text fontWeight="bold">
+											<Text fontWeight="bold" color="lime.500">
 												{Math.round(progress)}%
 											</Text>
 										</Flex>
@@ -523,10 +595,10 @@ export const GoalsRoute: React.FC = () => {
 											size="sm"
 										>
 											<Progress.Track
-												bg="bg.subtle"
+												bg="bg.muted"
 												rounded="full"
 											>
-												<Progress.Range bg="lime.solid" />
+												<Progress.Range bg="lime.solid" rounded="full" />
 											</Progress.Track>
 										</Progress.Root>
 									</Box>
@@ -535,7 +607,7 @@ export const GoalsRoute: React.FC = () => {
 									<VStack
 										gap={4}
 										align="stretch"
-										pt={2}
+										pt={4}
 										borderTopWidth="1px"
 										borderColor="border.glass"
 									>
@@ -548,14 +620,15 @@ export const GoalsRoute: React.FC = () => {
 												fontWeight="bold"
 												textTransform="uppercase"
 												color="fg.muted"
+												letterSpacing="wider"
 											>
 												Projects & Milestones (
 												{projects.length})
 											</Text>
-											<Button
+											<PillButton
 												size="xs"
-												variant="subtle"
-												colorPalette="lime"
+												variant="outline"
+												icon={LuPlus}
 												onClick={() => {
 													projectForm.reset({
 														goal_id: goal.id,
@@ -569,217 +642,303 @@ export const GoalsRoute: React.FC = () => {
 													);
 												}}
 											>
-												<Icon as={LuPlus} /> Add Project
-											</Button>
+												Add Project
+											</PillButton>
 										</Flex>
 
 										{projects.length === 0 ? (
-											<Text
-												fontSize="xs"
-												color="fg.muted"
-												fontStyle="italic"
+											<Box
+												p={4}
+												rounded="xl"
+												bg="bg.panel"
+												borderWidth="1px"
+												borderColor="border.glass"
+												textAlign="center"
 											>
-												No projects yet. Add a project
-												to organize step-by-step
-												milestones.
-											</Text>
+												<Text
+													fontSize="xs"
+													color="fg.muted"
+												>
+													No projects yet. Add a project to organize step-by-step milestones.
+												</Text>
+											</Box>
 										) : (
-											<VStack gap={3} align="stretch">
+											<VStack gap={3.5} align="stretch">
 												{projects.map(
 													({
 														project,
 														milestones: pMilestones,
 														progress: pProg,
-													}) => (
-														<Box
-															key={project.id}
-															bg="bg.panel"
-															p={3.5}
-															rounded="lg"
-															borderWidth="1px"
-															borderColor="border.subtle"
-														>
-															<Flex
-																justify="space-between"
-																align="center"
-																mb={2}
+													}) => {
+														const completedCount =
+															pMilestones.filter(
+																(m) =>
+																	m.status ===
+																	"completed",
+															).length;
+
+														return (
+															<Box
+																key={project.id}
+																bg="bg.panel"
+																p={4}
+																rounded="xl"
+																borderWidth="1px"
+																borderColor="border.glass"
+																shadow="sm"
 															>
-																<HStack gap={2}>
-																	<Icon
-																		as={
-																			LuFolder
-																		}
-																		color="lime.500"
-																	/>
-																	<Text
-																		fontWeight="semibold"
-																		fontSize="sm"
-																	>
-																		{
-																			project.title
-																		}
-																	</Text>
-																	<Badge
-																		size="xs"
-																		variant="outline"
-																	>
-																		{Math.round(
-																			pProg,
-																		)}
-																		%
-																	</Badge>
-																</HStack>
-
-																<HStack gap={1}>
-																	<Button
-																		size="2xs"
-																		variant="ghost"
-																		colorPalette="lime"
-																		onClick={() => {
-																			milestoneForm.reset(
-																				{
-																					goal_id:
-																						goal.id,
-																					project_id:
-																						project.id,
-																					title: "",
-																					order: 0,
-																				},
-																			);
-																			setActiveProjectForMilestone(
-																				{
-																					goalId: goal.id,
-																					projectId:
-																						project.id,
-																				},
-																			);
-																		}}
-																	>
-																		<Icon
-																			as={
-																				LuPlus
-																			}
-																		/>{" "}
-																		Milestone
-																	</Button>
-																	<IconButton
-																		size="2xs"
-																		variant="ghost"
-																		colorPalette="red"
-																		aria-label="Delete project"
-																		onClick={() =>
-																			deleteProjectMutation.mutate(
-																				project.id,
-																			)
-																		}
-																	>
-																		<Icon
-																			as={
-																				LuTrash2
-																			}
-																		/>
-																	</IconButton>
-																</HStack>
-															</Flex>
-
-															{/* Milestones inside project */}
-															{pMilestones.length >
-																0 && (
-																<VStack
-																	gap={1.5}
-																	align="stretch"
-																	pl={4}
-																	pt={1}
+																<Flex
+																	justify="space-between"
+																	align="center"
+																	wrap="wrap"
+																	gap={2}
+																	mb={pMilestones.length > 0 ? 3 : 0}
 																>
-																	{pMilestones.map(
-																		(m) => {
-																			const isMCompleted =
-																				m.status ===
-																				"completed";
-																			return (
-																				<Flex
-																					key={
-																						m.id
-																					}
-																					justify="space-between"
-																					align="center"
-																					bg="bg.canvas"
-																					p={
-																						2
-																					}
-																					rounded="md"
-																					borderWidth="1px"
-																					borderColor={
-																						isMCompleted
-																							? "lime.500/30"
-																							: "border.subtle"
-																					}
+																	<HStack gap={2.5}>
+																		<Circle
+																			size="28px"
+																			bg="lime.500/15"
+																			color="lime.500"
+																		>
+																			<Icon
+																				as={
+																					LuFolder
+																				}
+																				boxSize={3.5}
+																			/>
+																		</Circle>
+																		<VStack align="flex-start" gap={0}>
+																			<HStack gap={2}>
+																				<Text
+																					fontWeight="bold"
+																					fontSize="sm"
 																				>
-																					<HStack
-																						gap={
-																							2
+																					{
+																						project.title
+																					}
+																				</Text>
+																				<Badge
+																					size="xs"
+																					rounded="pill"
+																					variant="subtle"
+																					colorPalette="lime"
+																				>
+																					{Math.round(
+																						pProg,
+																					)}
+																					%
+																				</Badge>
+																			</HStack>
+																			{project.description && (
+																				<Text
+																					fontSize="xs"
+																					color="fg.muted"
+																				>
+																					{project.description}
+																				</Text>
+																			)}
+																		</VStack>
+																	</HStack>
+
+																	<HStack gap={2}>
+																		<Text
+																			fontSize="xs"
+																			color="fg.muted"
+																		>
+																			{completedCount} / {pMilestones.length} done
+																		</Text>
+																		<PillButton
+																			size="xs"
+																			variant="dark"
+																			icon={LuPlus}
+																			onClick={() => {
+																				milestoneForm.reset(
+																					{
+																						goal_id:
+																							goal.id,
+																						project_id:
+																							project.id,
+																						title: "",
+																						order: 0,
+																					},
+																				);
+																				setActiveProjectForMilestone(
+																					{
+																						goalId: goal.id,
+																						projectId:
+																							project.id,
+																					},
+																				);
+																			}}
+																		>
+																			Milestone
+																		</PillButton>
+																		<IconButton
+																			size="2xs"
+																			variant="ghost"
+																			colorPalette="red"
+																			aria-label="Delete project"
+																			rounded="full"
+																			onClick={() =>
+																				deleteProjectMutation.mutate(
+																					project.id,
+																				)
+																			}
+																		>
+																			<Icon
+																				as={
+																					LuTrash2
+																				}
+																			/>
+																		</IconButton>
+																	</HStack>
+																</Flex>
+
+																{/* Milestones inside project */}
+																{pMilestones.length >
+																	0 && (
+																	<VStack
+																		gap={2}
+																		align="stretch"
+																		pt={2}
+																		borderTopWidth="1px"
+																		borderColor="border.subtle"
+																	>
+																		{pMilestones.map(
+																			(m) => {
+																				const isMCompleted =
+																					m.status ===
+																					"completed";
+																				return (
+																					<Flex
+																						key={
+																							m.id
 																						}
+																						justify="space-between"
+																						align="center"
+																						p={2.5}
+																						px={3}
+																						rounded="pill"
+																						bg="bg.muted"
+																						borderWidth="1px"
+																						borderColor={
+																							isMCompleted
+																								? "lime.500/25"
+																								: "border"
+																						}
+																						transition="all 0.15s ease"
 																					>
-																						<IconButton
-																							size="2xs"
-																							variant={
-																								isMCompleted
-																									? "solid"
-																									: "outline"
-																							}
-																							colorPalette={
-																								isMCompleted
-																									? "lime"
-																									: "gray"
-																							}
-																							aria-label="Toggle milestone"
-																							onClick={(
-																								e,
-																							) => {
-																								if (
-																									!isMCompleted
-																								) {
-																									handleCompleteMilestone(
-																										m,
-																										e,
-																									);
+																						<HStack
+																							gap={2.5}
+																						>
+																							<Circle
+																								size="22px"
+																								bg={
+																									isMCompleted
+																										? "lime.500"
+																										: "bg.panel"
 																								}
-																							}}
+																								color={
+																									isMCompleted
+																										? "black"
+																										: "fg.muted"
+																								}
+																								borderWidth={
+																									isMCompleted
+																										? "0px"
+																										: "1px"
+																								}
+																								borderColor="border"
+																								cursor={
+																									isMCompleted
+																										? "default"
+																										: "pointer"
+																								}
+																								display="flex"
+																								alignItems="center"
+																								justifyContent="center"
+																								onClick={(
+																									e,
+																								) => {
+																									if (
+																										!isMCompleted
+																									) {
+																										handleCompleteMilestone(
+																											m,
+																											e,
+																										);
+																									}
+																								}}
+																							>
+																								{isMCompleted ? (
+																									<Icon
+																										as={
+																											LuCheck
+																										}
+																										boxSize={3}
+																									/>
+																								) : (
+																									<Icon
+																										as={
+																											LuFlag
+																										}
+																										boxSize={2.5}
+																									/>
+																								)}
+																							</Circle>
+																							<Text
+																								fontSize="xs"
+																								fontWeight={
+																									isMCompleted
+																										? "normal"
+																										: "medium"
+																								}
+																								textDecoration={
+																									isMCompleted
+																										? "line-through"
+																										: "none"
+																								}
+																								color={
+																									isMCompleted
+																										? "fg.muted"
+																										: "fg"
+																								}
+																							>
+																								{
+																									m.title
+																								}
+																							</Text>
+																						</HStack>
+
+																						<HStack
+																							gap={1}
+																							bg="bg.panel"
+																							px={2}
+																							py={0.5}
+																							rounded="pill"
+																							fontSize="10px"
+																							color="lime.500"
+																							fontWeight="bold"
 																						>
 																							<Icon
 																								as={
-																									isMCompleted
-																										? LuCheck
-																										: LuFlag
+																									LuZap
 																								}
+																								boxSize={2.5}
 																							/>
-																						</IconButton>
-																						<Text
-																							fontSize="xs"
-																							textDecoration={
-																								isMCompleted
-																									? "line-through"
-																									: "none"
-																							}
-																							color={
-																								isMCompleted
-																									? "fg.muted"
-																									: "fg.default"
-																							}
-																						>
-																							{
-																								m.title
-																							}
-																						</Text>
-																					</HStack>
-																				</Flex>
-																			);
-																		},
-																	)}
-																</VStack>
-															)}
-														</Box>
-													),
+																							<Text>
+																								XP & PX
+																							</Text>
+																						</HStack>
+																					</Flex>
+																				);
+																			},
+																		)}
+																	</VStack>
+																)}
+															</Box>
+														);
+													},
 												)}
 											</VStack>
 										)}

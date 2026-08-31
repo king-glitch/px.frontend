@@ -420,9 +420,16 @@ export const TasksRoute: React.FC = () => {
 						sm: "repeat(3, 1fr)",
 					}}
 				>
-					<Skeleton h="24" rounded="card" />
-					<Skeleton h="24" rounded="card" />
-					<Skeleton h="24" rounded="card" />
+					{[1, 2, 3].map((i) => (
+						<Box key={i} {...glassCard} p={4}>
+							<Flex justify="space-between" align="center" mb={2}>
+								<Skeleton h="12px" w="80px" rounded="md" />
+								<Skeleton h="16px" w="16px" rounded="full" />
+							</Flex>
+							<Skeleton h="28px" w="90px" rounded="md" mb={2} />
+							<Skeleton h="10px" w="110px" rounded="md" />
+						</Box>
+					))}
 				</Grid>
 			) : (
 				<Grid
@@ -613,10 +620,29 @@ export const TasksRoute: React.FC = () => {
 
 				{/* Task Rows List */}
 				{isLoading ? (
-					<Stack gap={2} pt={2}>
-						<Skeleton h="14" rounded="card" />
-						<Skeleton h="14" rounded="card" />
-						<Skeleton h="14" rounded="card" />
+					<Stack gap={2.5} mt={1} flex="1">
+						{[1, 2, 3, 4].map((i) => (
+							<Flex
+								key={i}
+								justify="space-between"
+								align="center"
+								p={3.5}
+								{...glassCard}
+							>
+								<HStack gap={3} flex="1">
+									<Skeleton h="20px" w="20px" rounded="full" />
+									<VStack align="flex-start" gap={1.5} flex="1">
+										<Skeleton h="14px" w="40%" rounded="md" />
+										<Skeleton h="10px" w="25%" rounded="md" />
+									</VStack>
+								</HStack>
+								<HStack gap={2}>
+									<Skeleton h="20px" w="50px" rounded="pill" />
+									<Skeleton h="20px" w="60px" rounded="pill" />
+									<Skeleton h="28px" w="28px" rounded="full" />
+								</HStack>
+							</Flex>
+						))}
 					</Stack>
 				) : filteredQuests.length === 0 ? (
 					<EmptyState
