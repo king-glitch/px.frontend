@@ -24,17 +24,19 @@ import type { CircleReactionType } from "@/api/types";
 import { Field } from "@/components/ui/field";
 import { toaster } from "@/components/ui/toaster";
 import {
-	Badge,
-	Box,
-	Button,
-	Card,
-	Container,
 	DialogBody,
 	DialogContent,
 	DialogFooter,
 	DialogHeader,
 	DialogRoot,
 	DialogTitle,
+} from "@/components/ui/dialog";
+import {
+	Badge,
+	Box,
+	Button,
+	Card,
+	Container,
 	Flex,
 	HStack,
 	Heading,
@@ -45,7 +47,7 @@ import {
 	Skeleton,
 	Text,
 	Textarea,
-	VStack
+	VStack,
 } from "@chakra-ui/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
@@ -1084,9 +1086,6 @@ export const CircleRoute: React.FC = () => {
 									>
 										<option value="consistency">
 											Consistency (20 Contribution Days)
-										</option>
-										<option value="routine">
-											Routine (15 Routine Runs)
 										</option>
 										<option value="balance">
 											Balance (5 Disciplines Active)

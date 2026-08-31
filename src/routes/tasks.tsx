@@ -1041,8 +1041,8 @@ export const TasksRoute: React.FC = () => {
 										>
 											<Input
 												type="number"
-												min={1}
-												max={720}
+												min={5}
+												max={120}
 												{...register("minutes", {
 													valueAsNumber: true,
 												})}
@@ -1054,7 +1054,7 @@ export const TasksRoute: React.FC = () => {
 										</Field>
 										{/* Quick Duration Preset Chips */}
 										<HStack gap={1.5} wrap="wrap">
-											{[15, 30, 45, 60, 90, 120].map(
+											{[5, 15, 30, 45, 60, 90, 120].map(
 												(m) => (
 													<Button
 														key={m}

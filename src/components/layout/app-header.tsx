@@ -7,15 +7,17 @@ import {
 	HStack,
 	Icon,
 	IconButton,
-	MenuRoot,
-	MenuTrigger,
-	MenuContent,
-	MenuItem,
-	MenuSeparator,
 	Stack,
 	Text,
 	VStack,
 } from "@chakra-ui/react";
+import {
+	MenuContent,
+	MenuItem,
+	MenuRoot,
+	MenuSeparator,
+	MenuTrigger,
+} from "@/components/ui/menu";
 import {
 	LuChevronDown,
 	LuCoins,

@@ -130,8 +130,6 @@ export const GoalsRoute: React.FC = () => {
 			area: "mastery",
 			category: "learning",
 			target_date: "",
-			exp_reward: 500,
-			px_reward: 100,
 		},
 	});
 
@@ -153,8 +151,6 @@ export const GoalsRoute: React.FC = () => {
 			project_id: "",
 			title: "",
 			order: 0,
-			exp_reward: 150,
-			px_reward: 30,
 		},
 	});
 
@@ -446,33 +442,6 @@ export const GoalsRoute: React.FC = () => {
 										</VStack>
 
 										<HStack gap={3}>
-											<VStack align="flex-end" gap={0}>
-												<HStack
-													gap={1}
-													color="purple.400"
-													fontSize="sm"
-													fontWeight="bold"
-												>
-													<Icon
-														as={LuZap}
-														boxSize={3.5}
-													/>
-													+{goal.exp_reward} XP
-												</HStack>
-												<HStack
-													gap={1}
-													color="yellow.400"
-													fontSize="sm"
-													fontWeight="bold"
-												>
-													<Icon
-														as={LuCoins}
-														boxSize={3.5}
-													/>
-													+{goal.px_reward} PX
-												</HStack>
-											</VStack>
-
 											{goal.status !== "completed" &&
 												progress >= 100 && (
 													<Button
@@ -664,8 +633,6 @@ export const GoalsRoute: React.FC = () => {
 																						project.id,
 																					title: "",
 																					order: 0,
-																					exp_reward: 150,
-																					px_reward: 30,
 																				},
 																			);
 																			setActiveProjectForMilestone(
@@ -936,22 +903,12 @@ export const GoalsRoute: React.FC = () => {
 									</Field>
 								</SimpleGrid>
 
-								<SimpleGrid columns={2} gap={4} w="full">
-									<Field label="Target Date">
-										<Input
-											type="date"
-											{...goalForm.register(
-												"target_date",
-											)}
-										/>
-									</Field>
-									<Field label="XP Reward">
-										<Input
-											type="number"
-											{...goalForm.register("exp_reward")}
-										/>
-									</Field>
-								</SimpleGrid>
+								<Field label="Target Date">
+									<Input
+										type="date"
+										{...goalForm.register("target_date")}
+									/>
+								</Field>
 							</VStack>
 						</DialogBody>
 
@@ -1071,24 +1028,6 @@ export const GoalsRoute: React.FC = () => {
 										placeholder="e.g. Finish units 1–5"
 									/>
 								</Field>
-								<SimpleGrid columns={2} gap={4} w="full">
-									<Field label="XP Reward">
-										<Input
-											type="number"
-											{...milestoneForm.register(
-												"exp_reward",
-											)}
-										/>
-									</Field>
-									<Field label="PX Reward">
-										<Input
-											type="number"
-											{...milestoneForm.register(
-												"px_reward",
-											)}
-										/>
-									</Field>
-								</SimpleGrid>
 							</VStack>
 						</DialogBody>
 

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/api/query-keys";
 import { gameService } from "@/api/services/game-service";
-import {
+import type {
 	AscensionPath,
 	CreateCircleGoalInput,
 	CreateCircleInput,

@@ -77,7 +77,7 @@ const PATHS: Array<{
 		icon: LuUsers,
 		color: "pink.400",
 		desc: "Social & Synergy. +20% Social XP.",
-		perk: "+25% XP bonus when completing full routines.",
+		perk: "+25% XP bonus from Co-op Circle shared activities.",
 	},
 ];
 
