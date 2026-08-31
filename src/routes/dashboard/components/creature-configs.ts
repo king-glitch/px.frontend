@@ -72,9 +72,9 @@ export const CREATURE_CONFIGS: FloatingCreatureConfig[] = [
 		},
 		animation: `${starfallDrift1} 16s ease-in-out infinite`,
 		glowGradient:
-			"radial-gradient(circle at 50% 50%, rgba(165, 243, 252, 0.5) 0%, rgba(221, 214, 254, 0.3) 45%, transparent 75%)",
+			"radial-gradient(circle at 50% 50%, rgba(165, 243, 252, 0.7) 0%, rgba(221, 214, 254, 0.45) 45%, transparent 75%)",
 		blur: "2.5px",
-		opacity: 0.9,
+		opacity: 0.95,
 	},
 
 	// 2. Ocelly - Upper-Center (Distant Deep Background) -> Heavy atmospheric bokeh (7px)
@@ -95,9 +95,9 @@ export const CREATURE_CONFIGS: FloatingCreatureConfig[] = [
 		},
 		animation: `${starfallDrift2} 18s ease-in-out infinite 1.5s`,
 		glowGradient:
-			"radial-gradient(circle at 50% 50%, rgba(254, 240, 138, 0.45) 0%, rgba(251, 207, 232, 0.3) 45%, transparent 75%)",
+			"radial-gradient(circle at 50% 50%, rgba(254, 240, 138, 0.65) 0%, rgba(251, 207, 232, 0.4) 45%, transparent 75%)",
 		blur: "7px",
-		opacity: 0.6,
+		opacity: 0.7,
 	},
 
 	// 3. Pollelly - Mid-Left crossing near 'P' (In-Focus Plane) -> 100% Crisp & Sharp (0px blur)
@@ -118,7 +118,7 @@ export const CREATURE_CONFIGS: FloatingCreatureConfig[] = [
 		},
 		animation: `${starfallDrift3} 15s ease-in-out infinite 2.5s`,
 		glowGradient:
-			"radial-gradient(circle at 50% 50%, rgba(251, 207, 232, 0.5) 0%, rgba(221, 214, 254, 0.3) 45%, transparent 75%)",
+			"radial-gradient(circle at 50% 50%, rgba(251, 207, 232, 0.7) 0%, rgba(221, 214, 254, 0.45) 45%, transparent 75%)",
 		blur: "0px",
 		opacity: 1,
 	},
@@ -141,7 +141,7 @@ export const CREATURE_CONFIGS: FloatingCreatureConfig[] = [
 		},
 		animation: `${starfallHero} 14s ease-in-out infinite`,
 		glowGradient:
-			"radial-gradient(circle at 50% 50%, rgba(221, 214, 254, 0.55) 0%, rgba(251, 207, 232, 0.38) 45%, transparent 75%)",
+			"radial-gradient(circle at 50% 50%, rgba(221, 214, 254, 0.8) 0%, rgba(251, 207, 232, 0.5) 45%, transparent 75%)",
 		blur: "0px",
 		opacity: 1,
 	},
@@ -164,8 +164,8 @@ export const CREATURE_CONFIGS: FloatingCreatureConfig[] = [
 		},
 		animation: `${starfallDrift4} 17s ease-in-out infinite 1.2s`,
 		glowGradient:
-			"radial-gradient(circle at 50% 50%, rgba(163, 247, 136, 0.45) 0%, rgba(165, 243, 252, 0.3) 45%, transparent 75%)",
+			"radial-gradient(circle at 50% 50%, rgba(163, 247, 136, 0.65) 0%, rgba(165, 243, 252, 0.45) 45%, transparent 75%)",
 		blur: "4px",
-		opacity: 0.82,
+		opacity: 0.9,
 	},
 ];

@@ -147,13 +147,13 @@ export const FloatingCreaturesScene: React.FC = () => {
 				position="absolute"
 				left="50%"
 				top="50%"
-				transform={`translate(-50%, -50%) translate3d(${mouse.x * 8}px, ${mouse.y * 8}px, 0)`}
-				w="clamp(420px, 40vw, 650px)"
-				h="clamp(320px, 30vw, 500px)"
-				opacity={0.45}
+				transform={`translate(-50%, -50%) translate3d(${mouse.x * 12}px, ${mouse.y * 12}px, 0)`}
+				w="clamp(550px, 60vw, 900px)"
+				h="clamp(450px, 50vw, 750px)"
+				opacity={0.65}
 				style={{
 					background:
-						"radial-gradient(circle at center, rgba(221, 214, 254, 0.5) 0%, rgba(251, 207, 232, 0.3) 40%, rgba(165, 243, 252, 0.2) 60%, transparent 75%)",
+						"radial-gradient(circle at center, rgba(221, 214, 254, 0.6) 0%, rgba(251, 207, 232, 0.4) 35%, rgba(165, 243, 252, 0.25) 55%, transparent 75%)",
 					willChange: "transform",
 				}}
 			/>

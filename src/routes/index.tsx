@@ -97,11 +97,64 @@ export const Index: React.FC = () => {
 			position="relative"
 			flex="1"
 			h="full"
+			mx={{ base: -4, md: -6, xl: -8 }}
+			my={{ base: -4, md: -6 }}
+			px={{ base: 4, md: 6, xl: 8 }}
+			py={{ base: 4, md: 6 }}
 			overflow="hidden"
 			display="flex"
 			flexDirection="column"
 			justifyContent="space-between"
 		>
+			{/* Full-bleed ambient creature glow & lighting background shining behind all cards */}
+			<Box
+				position="absolute"
+				inset="-50px"
+				pointerEvents="none"
+				userSelect="none"
+				zIndex={0}
+				overflow="hidden"
+			>
+				{/* Top-left & Center-left creature stage aura */}
+				<Box
+					position="absolute"
+					left="30%"
+					top="25%"
+					w="900px"
+					h="650px"
+					transform="translate(-50%, -50%)"
+					rounded="full"
+					filter="blur(85px)"
+					opacity={{ base: 0.45, _dark: 0.55 }}
+					bg="radial-gradient(circle, rgba(221, 214, 254, 0.6) 0%, rgba(251, 207, 232, 0.4) 35%, rgba(165, 243, 252, 0.25) 60%, transparent 75%)"
+				/>
+				{/* Bottom cards under-glow aura */}
+				<Box
+					position="absolute"
+					left="35%"
+					bottom="-5%"
+					w="950px"
+					h="500px"
+					transform="translate(-50%, 0)"
+					rounded="full"
+					filter="blur(80px)"
+					opacity={{ base: 0.4, _dark: 0.5 }}
+					bg="radial-gradient(circle, rgba(163, 247, 136, 0.5) 0%, rgba(165, 243, 252, 0.35) 35%, rgba(221, 214, 254, 0.2) 60%, transparent 75%)"
+				/>
+				{/* Right column cards under-glow aura */}
+				<Box
+					position="absolute"
+					right="-5%"
+					top="30%"
+					w="700px"
+					h="800px"
+					rounded="full"
+					filter="blur(90px)"
+					opacity={{ base: 0.35, _dark: 0.45 }}
+					bg="radial-gradient(circle, rgba(251, 207, 232, 0.5) 0%, rgba(221, 214, 254, 0.35) 40%, rgba(163, 247, 136, 0.25) 65%, transparent 80%)"
+				/>
+			</Box>
+
 			<Grid
 				flex="1"
 				minH="0"
