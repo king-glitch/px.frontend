@@ -342,14 +342,14 @@ export const CircleRoute: React.FC = () => {
 					onOpenChange={(e) => setIsCreateOpen(e.open)}
 				>
 					<DialogContent bg="bg.panel" backdropFilter="blur(20px)">
-						<DialogHeader>
-							<DialogTitle>Create Your Circle</DialogTitle>
-						</DialogHeader>
 						<form
 							onSubmit={createForm.handleSubmit(
 								handleCreateCircle,
 							)}
 						>
+							<DialogHeader>
+								<DialogTitle>Create Your Circle</DialogTitle>
+							</DialogHeader>
 							<DialogBody>
 								<VStack gap={4}>
 									<Field
@@ -975,10 +975,10 @@ export const CircleRoute: React.FC = () => {
 				onOpenChange={(e) => setIsInviteOpen(e.open)}
 			>
 				<DialogContent bg="bg.panel" backdropFilter="blur(20px)">
-					<DialogHeader>
-						<DialogTitle>Invite to Circle</DialogTitle>
-					</DialogHeader>
 					<form onSubmit={inviteForm.handleSubmit(handleSendInvite)}>
+						<DialogHeader>
+							<DialogTitle>Invite to Circle</DialogTitle>
+						</DialogHeader>
 						<DialogBody>
 							<VStack gap={4}>
 								<Text fontSize="sm" color="fg.muted">
@@ -1065,10 +1065,10 @@ export const CircleRoute: React.FC = () => {
 				onOpenChange={(e) => setIsGoalOpen(e.open)}
 			>
 				<DialogContent bg="bg.panel" backdropFilter="blur(20px)">
-					<DialogHeader>
-						<DialogTitle>Set Weekly Shared Goal</DialogTitle>
-					</DialogHeader>
 					<form onSubmit={goalForm.handleSubmit(handleSetGoal)}>
+						<DialogHeader>
+							<DialogTitle>Set Weekly Shared Goal</DialogTitle>
+						</DialogHeader>
 						<DialogBody>
 							<VStack gap={4}>
 								<Field label="Goal Type" required>

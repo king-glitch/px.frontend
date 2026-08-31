@@ -51,7 +51,13 @@ export const DialogCloseTrigger = React.forwardRef<
 	);
 });
 
-export const DialogRoot = ChakraDialog.Root;
+export interface DialogRootProps extends ChakraDialog.RootProps {}
+
+export const DialogRoot: React.FC<DialogRootProps> = (props) => {
+	const { placement = "center", ...rest } = props;
+	return <ChakraDialog.Root placement={placement} {...rest} />;
+};
+
 export const DialogFooter = ChakraDialog.Footer;
 export const DialogHeader = ChakraDialog.Header;
 export const DialogBody = ChakraDialog.Body;
