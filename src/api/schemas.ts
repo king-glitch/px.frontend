@@ -45,32 +45,45 @@ export const subtaskSchema = z.object({
 	order: z.number(),
 });
 
-export const questSchema = z.object({
-	title: z.string().min(1, "Quest title is required"),
-	notes: z.string().optional(),
-	category: z.enum([
-		"work",
-		"health",
-		"learning",
-		"chores",
-		"mindfulness",
-		"social",
-		"finance",
-	]),
-	cadence: z.enum(["daily", "weekly", "monthly", "one_off"]),
-	effort: z.enum(["trivial", "light", "moderate", "hard", "grueling"]),
-	minutes: z
-		.number()
-		.min(1, "Duration must be at least 1 minute")
-		.max(720, "Duration cannot exceed 12 hours"),
-	scored: z.boolean(),
-	schedule_days: z.array(z.number()).optional(),
-	subtasks: z.array(subtaskSchema).optional(),
-	project_id: z.string().optional(),
-	milestone_id: z.string().optional(),
-	is_mvq: z.boolean().optional(),
-	mvq_minutes: z.number().optional(),
-});
+export const questSchema = z
+	.object({
+		title: z.string().min(1, "Quest title is required"),
+		notes: z.string().optional(),
+		category: z.enum([
+			"work",
+			"health",
+			"learning",
+			"chores",
+			"mindfulness",
+			"social",
+			"finance",
+		]),
+		cadence: z.enum(["daily", "weekly", "monthly", "one_off"]),
+		effort: z.enum(["trivial", "light", "moderate", "hard", "grueling"]),
+		minutes: z
+			.number()
+			.min(5, "Duration must be between 5 and 120 minutes")
+			.max(120, "Duration must be between 5 and 120 minutes"),
+		scored: z.boolean(),
+		schedule_days: z.array(z.number()).optional(),
+		subtasks: z.array(subtaskSchema).optional(),
+		project_id: z.string().optional(),
+		milestone_id: z.string().optional(),
+		is_mvq: z.boolean().optional(),
+		mvq_minutes: z.number().optional(),
+	})
+	.refine(
+		(data) => {
+			if (data.is_mvq && data.mvq_minutes !== undefined) {
+				return data.mvq_minutes >= 5 && data.mvq_minutes < data.minutes;
+			}
+			return true;
+		},
+		{
+			message: "MVQ duration must be at least 5 minutes and less than full quest minutes",
+			path: ["mvq_minutes"],
+		},
+	);
 
 export type QuestFormData = z.infer<typeof questSchema>;
 
@@ -93,8 +106,6 @@ export const goalSchema = z.object({
 	target_date: z.string().optional(),
 	target_metric: z.string().optional(),
 	target_value: z.number().optional(),
-	exp_reward: z.number().min(0),
-	px_reward: z.number().min(0),
 });
 
 export type GoalFormData = z.infer<typeof goalSchema>;
@@ -114,41 +125,9 @@ export const milestoneSchema = z.object({
 	project_id: z.string().min(1, "Project ID is required"),
 	title: z.string().min(1, "Milestone title is required"),
 	order: z.number(),
-	exp_reward: z.number().min(0),
-	px_reward: z.number().min(0),
 });
 
 export type MilestoneFormData = z.infer<typeof milestoneSchema>;
-
-/**
- * Routine Schemas
- */
-export const routineStepSchema = z.object({
-	title: z.string().min(1, "Step title is required"),
-	minutes: z.number().min(1, "Minutes must be >= 1"),
-	category: z.enum([
-		"work",
-		"health",
-		"learning",
-		"chores",
-		"mindfulness",
-		"social",
-		"finance",
-	]),
-	effort: z.enum(["trivial", "light", "moderate", "hard", "grueling"]),
-	order: z.number(),
-});
-
-export const routineSchema = z.object({
-	title: z.string().min(1, "Routine title is required"),
-	description: z.string().optional(),
-	schedule_days: z.array(z.number()),
-	estimated_m: z.number().min(0),
-	steps: z.array(routineStepSchema),
-	is_template: z.boolean(),
-});
-
-export type RoutineFormData = z.infer<typeof routineSchema>;
 
 /**
  * Review Schemas
@@ -197,39 +176,6 @@ export const financeConvertSchema = z.object({
 });
 
 export type FinanceConvertFormData = z.infer<typeof financeConvertSchema>;
-
-export const scheduleQuestSchema = z.object({
-	quest_id: z.string().min(1, "Quest is required"),
-	scheduled_date: z.string().min(1, "Scheduled date is required"),
-	start_time: z.string().optional(),
-	end_time: z.string().optional(),
-	estimated_minutes: z.coerce
-		.number()
-		.min(1, "Estimated minutes must be positive")
-		.default(30),
-	is_recurring_exception: z.boolean().default(false),
-});
-
-export type ScheduleQuestFormData = z.infer<typeof scheduleQuestSchema>;
-
-export const rescheduleQuestSchema = z.object({
-	schedule_id: z.string().min(1, "Schedule ID is required"),
-	scheduled_date: z.string().min(1, "Scheduled date is required"),
-	start_time: z.string().optional(),
-	end_time: z.string().optional(),
-});
-
-export type RescheduleQuestFormData = z.infer<typeof rescheduleQuestSchema>;
-
-export const updateWorkloadConfigSchema = z.object({
-	daily_capacity_minutes: z.record(z.string(), z.coerce.number()).optional(),
-	max_hard_quests_per_day: z.coerce.number().min(1).default(2),
-	buffer_minutes: z.coerce.number().min(0).default(30),
-});
-
-export type UpdateWorkloadConfigFormData = z.infer<
-	typeof updateWorkloadConfigSchema
->;
 
 export const closeGoalRetrospectiveSchema = z.object({
 	outcome: z.enum([
@@ -283,7 +229,6 @@ export const createCircleGoalSchema = z.object({
 	goal_type: z.enum([
 		"consistency",
 		"balance",
-		"routine",
 		"progress",
 		"recovery",
 		"reflection",

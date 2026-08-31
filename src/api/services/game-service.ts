@@ -40,22 +40,15 @@ import type {
 	QuestPrice,
 	ReactToActivityInput,
 	RecoverySummary,
-	RescheduleQuestInput,
 	Review,
 	ReviewSummary,
 	RolloverQuestsRequest,
-	Routine,
-	ScheduleQuestInput,
 	ShopItem,
 	ShopItemKind,
 	TodayQuest,
 	UpdateCircleInput,
 	UpdateMemberSettingsInput,
 	UpdateQuestRequest,
-	UpdateWorkloadConfigInput,
-	WorkloadConfig,
-	WorkloadDaySummary,
-	CalendarEventSummary,
 	CloseGoalRetrospectiveInput,
 	GoalRetrospectiveSummary,
 } from "@/api/types";
@@ -383,27 +376,7 @@ export const gameService = {
 		);
 	},
 
-	// --- Routines ---
-	async listRoutines(): Promise<{ routines: Routine[] }> {
-		return apiGet<{ routines: Routine[] }>("/game/routines");
-	},
 
-	async createRoutine(
-		payload: Partial<Routine>,
-	): Promise<{ routine: Routine }> {
-		return apiPost<{ routine: Routine }>("/game/routines", payload);
-	},
-
-	async updateRoutine(
-		id: string,
-		payload: Partial<Routine>,
-	): Promise<{ routine: Routine }> {
-		return apiPut<{ routine: Routine }>(`/game/routines/${id}`, payload);
-	},
-
-	async deleteRoutine(id: string): Promise<{ deleted: boolean }> {
-		return apiDelete<{ deleted: boolean }>(`/game/routines/${id}`);
-	},
 
 	// --- Recovery ---
 	async getRecoverySummary(
@@ -489,61 +462,7 @@ export const gameService = {
 		});
 	},
 
-	// --- Calendar & Workload ---
-	async getCalendarEvents(
-		from?: string,
-		to?: string,
-	): Promise<{ events: CalendarEventSummary[] }> {
-		return apiGet<{ events: CalendarEventSummary[] }>(
-			"/game/calendar/events",
-			{
-				params: { from, to },
-			},
-		);
-	},
 
-	async scheduleQuest(
-		payload: ScheduleQuestInput,
-	): Promise<{ event: CalendarEventSummary }> {
-		return apiPost<{ event: CalendarEventSummary }>(
-			"/game/calendar/schedule",
-			payload,
-		);
-	},
-
-	async rescheduleQuest(
-		payload: RescheduleQuestInput,
-	): Promise<{ event: CalendarEventSummary }> {
-		return apiPut<{ event: CalendarEventSummary }>(
-			"/game/calendar/reschedule",
-			payload,
-		);
-	},
-
-	async deleteScheduledEvent(id: string): Promise<{ deleted: boolean }> {
-		return apiDelete<{ deleted: boolean }>(`/game/calendar/events/${id}`);
-	},
-
-	async getWorkloadCapacity(
-		from?: string,
-		to?: string,
-	): Promise<{ workload: WorkloadDaySummary[] }> {
-		return apiGet<{ workload: WorkloadDaySummary[] }>(
-			"/game/workload/capacity",
-			{
-				params: { from, to },
-			},
-		);
-	},
-
-	async updateWorkloadConfig(
-		payload: UpdateWorkloadConfigInput,
-	): Promise<{ config: WorkloadConfig }> {
-		return apiPut<{ config: WorkloadConfig }>(
-			"/game/workload/config",
-			payload,
-		);
-	},
 
 	// --- Goal Retrospectives ---
 	async closeGoalWithRetrospective(

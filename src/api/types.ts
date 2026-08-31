@@ -256,7 +256,20 @@ export interface Quest extends ModelBase {
 	longest_streak: number;
 	exp_value: number;
 	px_value: number;
+	reward_formula_version?: number;
+	base_exp_reward?: number;
+	base_px_reward?: number;
+	mvq_exp_reward?: number;
+	mvq_px_reward?: number;
 	archived_at?: ISO8601String;
+}
+
+export interface QuestRewardPreview {
+	exp: number;
+	px: number;
+	mvq_exp?: number;
+	mvq_px?: number;
+	formula_version: number;
 }
 
 export interface Goal extends ModelBase {
@@ -270,8 +283,6 @@ export interface Goal extends ModelBase {
 	target_metric?: string;
 	current_value?: number;
 	target_value?: number;
-	exp_reward: number;
-	px_reward: number;
 	completed_at?: ISO8601String;
 }
 
@@ -308,26 +319,6 @@ export interface GoalSummary {
 	projects: ProjectSummary[];
 	milestones: Milestone[];
 	progress: number;
-}
-
-export interface RoutineStep {
-	title: string;
-	minutes: number;
-	category: QuestCategory;
-	effort: QuestEffort;
-	linked_quest_id?: ObjectID;
-	order: number;
-}
-
-export interface Routine extends ModelBase {
-	user_id: ObjectID;
-	title: string;
-	description: string;
-	schedule_days: number[];
-	estimated_m: number;
-	steps: RoutineStep[];
-	is_template: boolean;
-	is_active: boolean;
 }
 
 export interface RecoverySummary {
@@ -392,24 +383,6 @@ export interface CategoryMasterySummary {
 export type GoalRetrospectiveOutcome =
 	"achieved" | "partially_achieved" | "abandoned" | "replaced";
 export type WorkloadFatigueScore = "low" | "balanced" | "heavy" | "overloaded";
-
-export interface CalendarEventSummary {
-	schedule_id: ObjectID;
-	quest_id: ObjectID;
-	title: string;
-	category: QuestCategory;
-	effort: QuestEffort;
-	scheduled_date: string;
-	start_time?: string;
-	end_time?: string;
-	estimated_minutes: number;
-	completed: boolean;
-	is_mvq?: boolean;
-	mvq_minutes?: number;
-	is_recurring_exception?: boolean;
-	project_title?: string;
-	goal_title?: string;
-}
 
 export interface WorkloadDaySummary {
 	date: string;

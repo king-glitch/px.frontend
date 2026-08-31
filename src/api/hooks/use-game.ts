@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@/api/query-keys";
 import { gameService } from "@/api/services/game-service";
-import type {
+import {
 	AscensionPath,
 	CreateCircleGoalInput,
 	CreateCircleInput,
@@ -17,14 +17,10 @@ import type {
 	QuestEffort,
 	ReactToActivityInput,
 	RolloverQuestsRequest,
-	Routine,
 	ShopItemKind,
 	UpdateCircleInput,
 	UpdateMemberSettingsInput,
 	UpdateQuestRequest,
-	ScheduleQuestInput,
-	RescheduleQuestInput,
-	UpdateWorkloadConfigInput,
 	CloseGoalRetrospectiveInput,
 } from "@/api/types";
 
@@ -652,73 +648,7 @@ export function useCompleteMilestone() {
 	});
 }
 
-// ==========================================
-// Routines Hooks
-// ==========================================
 
-export function useRoutines() {
-	return useQuery({
-		queryKey: queryKeys.game.routines(),
-		queryFn: async () => {
-			const res = await gameService.listRoutines();
-			return res.routines;
-		},
-	});
-}
-
-export function useCreateRoutine() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: async (payload: Partial<Routine>) => {
-			const res = await gameService.createRoutine(payload);
-			return res.routine;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: queryKeys.game.routines(),
-			});
-		},
-	});
-}
-
-export function useUpdateRoutine() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: async ({
-			id,
-			payload,
-		}: {
-			id: string;
-			payload: Partial<Routine>;
-		}) => {
-			const res = await gameService.updateRoutine(id, payload);
-			return res.routine;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: queryKeys.game.routines(),
-			});
-		},
-	});
-}
-
-export function useDeleteRoutine() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: async (id: string) => {
-			const res = await gameService.deleteRoutine(id);
-			return res.deleted;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: queryKeys.game.routines(),
-			});
-		},
-	});
-}
 
 // ==========================================
 // Recovery Hooks
@@ -867,85 +797,7 @@ export function useAscendWithPath() {
 	});
 }
 
-// ==========================================
-// Calendar & Workload Hooks
-// ==========================================
 
-export function useCalendarEvents(from?: string, to?: string) {
-	return useQuery({
-		queryKey: queryKeys.game.calendarEvents(from, to),
-		queryFn: async () => {
-			const res = await gameService.getCalendarEvents(from, to);
-			return res.events;
-		},
-	});
-}
-
-export function useScheduleQuest() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: async (payload: ScheduleQuestInput) => {
-			const res = await gameService.scheduleQuest(payload);
-			return res.event;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
-		},
-	});
-}
-
-export function useRescheduleQuest() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: async (payload: RescheduleQuestInput) => {
-			const res = await gameService.rescheduleQuest(payload);
-			return res.event;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
-		},
-	});
-}
-
-export function useDeleteScheduledEvent() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: async (id: string) => {
-			const res = await gameService.deleteScheduledEvent(id);
-			return res.deleted;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
-		},
-	});
-}
-
-export function useWorkloadCapacity(from?: string, to?: string) {
-	return useQuery({
-		queryKey: queryKeys.game.workloadCapacity(from, to),
-		queryFn: async () => {
-			const res = await gameService.getWorkloadCapacity(from, to);
-			return res.workload;
-		},
-	});
-}
-
-export function useUpdateWorkloadConfig() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: async (payload: UpdateWorkloadConfigInput) => {
-			const res = await gameService.updateWorkloadConfig(payload);
-			return res.config;
-		},
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
-		},
-	});
-}
 
 // ==========================================
 // Goal Retrospective Hooks

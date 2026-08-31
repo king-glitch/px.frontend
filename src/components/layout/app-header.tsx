@@ -51,10 +51,8 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenSidebar }) => {
 	const getPageTitle = () => {
 		if (pathname === "/" || pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/goals")) return "Goals & Projects";
-		if (pathname.startsWith("/calendar")) return "Calendar";
 		if (pathname.startsWith("/circle")) return "Co-op Circle";
 		if (pathname.startsWith("/tasks")) return "Tasks & Habits";
-		if (pathname.startsWith("/routines")) return "Routines";
 		if (pathname.startsWith("/reviews")) return "Reviews & Reflection";
 		if (pathname.startsWith("/health")) return "Health & Energy";
 		if (pathname.startsWith("/game/heroes")) return "Heroes & Avatar";

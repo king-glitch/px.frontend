@@ -61,7 +61,6 @@ export const queryKeys = {
 		goals: () => [...queryKeys.game.all, "goals"] as const,
 		goalSummary: (id: string) =>
 			[...queryKeys.game.all, "goal", id] as const,
-		routines: () => [...queryKeys.game.all, "routines"] as const,
 		recovery: (on?: string) =>
 			[...queryKeys.game.all, "recovery", on ?? "today"] as const,
 		reviewSummary: (type: string, period: string) =>
@@ -69,20 +68,6 @@ export const queryKeys = {
 		reviews: (page = 1, limit = 20) =>
 			[...queryKeys.game.all, "reviews", page, limit] as const,
 		masteries: () => [...queryKeys.game.all, "masteries"] as const,
-		calendarEvents: (from?: string, to?: string) =>
-			[
-				...queryKeys.game.all,
-				"calendar-events",
-				from ?? "",
-				to ?? "",
-			] as const,
-		workloadCapacity: (from?: string, to?: string) =>
-			[
-				...queryKeys.game.all,
-				"workload-capacity",
-				from ?? "",
-				to ?? "",
-			] as const,
 		goalRetrospective: (goalId: string) =>
 			[...queryKeys.game.all, "goal-retrospective", goalId] as const,
 		circle: () => [...queryKeys.game.all, "circle"] as const,

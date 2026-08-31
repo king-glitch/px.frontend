@@ -14,11 +14,9 @@ import {
 } from "@chakra-ui/react";
 import {
 	LuActivity,
-	LuCalendar,
 	LuCircleCheck,
 	LuLayoutDashboard,
 	LuLogOut,
-	LuRepeat,
 	LuSettings,
 	LuSparkles,
 	LuSwords,
@@ -71,16 +69,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 					label: "Goals & Projects",
 					to: "/goals",
 					icon: LuTarget,
-				},
-				{
-					label: "Calendar",
-					to: "/calendar",
-					icon: LuCalendar,
-				},
-				{
-					label: "Routines",
-					to: "/routines",
-					icon: LuRepeat,
 				},
 			],
 		},
