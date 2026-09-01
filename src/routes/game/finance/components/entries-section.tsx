@@ -26,7 +26,9 @@ import {
 	LuTrendingUp,
 } from "react-icons/lu";
 import { CreateEntryDialog } from "./create-entry-dialog";
+import { EditEntryDialog } from "./edit-entry-dialog";
 import { EntryItemRow } from "./entry-item-row";
+import type { FinanceEntry } from "@/api/types";
 
 const glassCard = {
 	bg: "bg.glass",
@@ -54,6 +56,7 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({
 	const [filterDirection, setFilterDirection] = useState<string>("all");
 	const [searchCategory, setSearchCategory] = useState("");
 	const [isAdding, setIsAdding] = useState(false);
+	const [editingEntry, setEditingEntry] = useState<FinanceEntry | null>(null);
 
 	const { data: entriesData, isLoading: entriesLoading } = useFinanceEntries(
 		page,
@@ -251,6 +254,7 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({
 							<EntryItemRow
 								key={entry.id}
 								entry={entry}
+								onEdit={(e) => setEditingEntry(e)}
 								onDelete={(id) => confirmDelete.ask(id)}
 							/>
 						))}
@@ -294,6 +298,13 @@ export const EntriesSection: React.FC<EntriesSectionProps> = ({
 					</Flex>
 				)}
 			</Stack>
+
+			{/* Edit Entry Dialog */}
+			<EditEntryDialog
+				entry={editingEntry}
+				isOpen={!!editingEntry}
+				onClose={() => setEditingEntry(null)}
+			/>
 
 			{/* Confirm Delete Entry Dialog */}
 			<ConfirmDialog

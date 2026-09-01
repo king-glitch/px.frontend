@@ -20,7 +20,7 @@ export const HeroSnapshotCard: React.FC<HeroSnapshotCardProps> = ({
 	const player = summary?.player;
 
 	return (
-		<Box {...holoGlassCard} p={{ base: 5, xl: 6 }}>
+		<Box {...holoGlassCard} p={{ base: 4, xl: 4.5 }}>
 			{isLoading ? (
 				<Stack gap={3}>
 					<Skeleton h="12" rounded="lg" w="70%" />

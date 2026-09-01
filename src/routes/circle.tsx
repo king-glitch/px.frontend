@@ -21,6 +21,7 @@ import {
 	type InviteMemberFormData,
 } from "@/api/schemas";
 import type { CircleReactionType } from "@/api/types";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Avatar } from "@/components/ui/avatar";
 import { Field } from "@/components/ui/field";
 import { PillButton } from "@/components/ui/pill-button";
@@ -143,6 +144,7 @@ export const CircleRoute: React.FC = () => {
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [isInviteOpen, setIsInviteOpen] = useState(false);
 	const [isGoalOpen, setIsGoalOpen] = useState(false);
+	const [isLeaveConfirmOpen, setIsLeaveConfirmOpen] = useState(false);
 	const [joinCode, setJoinCode] = useState("");
 	const [copiedCode, setCopiedCode] = useState("");
 
@@ -613,7 +615,7 @@ export const CircleRoute: React.FC = () => {
 								variant="outline"
 								colorPalette="gray"
 								rounded="full"
-								onClick={() => leaveCircleMutation.mutate()}
+								onClick={() => setIsLeaveConfirmOpen(true)}
 								loading={leaveCircleMutation.isPending}
 							>
 								<Icon as={LuLogOut} /> Leave
@@ -1183,6 +1185,26 @@ export const CircleRoute: React.FC = () => {
 					</form>
 				</DialogContent>
 			</DialogRoot>
+
+			{/* Confirm Leave Circle Dialog */}
+			<ConfirmDialog
+				open={isLeaveConfirmOpen}
+				onOpenChange={setIsLeaveConfirmOpen}
+				title="Leave Circle"
+				description={
+					<>
+						Are you sure you want to leave{" "}
+						<strong>"{circleData?.circle.name || "this Circle"}"</strong>? You will lose access to shared weekly momentum bonuses and shared goals.
+					</>
+				}
+				confirmLabel="Leave Circle"
+				destructive
+				loading={leaveCircleMutation.isPending}
+				onConfirm={async () => {
+					await leaveCircleMutation.mutateAsync();
+					setIsLeaveConfirmOpen(false);
+				}}
+			/>
 		</Box>
 	);
 };

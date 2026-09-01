@@ -5,11 +5,13 @@ import {
 	useCreateMilestone,
 	useCreateProject,
 	useDeleteGoal,
+	useDeleteMilestone,
 	useDeleteProject,
 	useGoals,
 	type Goal,
 	type LifeArea,
 	type Milestone,
+	type Project,
 } from "@/api";
 import {
 	goalSchema,
@@ -20,6 +22,7 @@ import {
 	type ProjectFormData,
 } from "@/api/schemas";
 import { RewardFlight, useRewardFlight } from "@/components/game";
+import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
 import {
 	DialogActionTrigger,
 	DialogBody,
@@ -36,6 +39,9 @@ import { PillButton } from "@/components/ui/pill-button";
 import { SearchableSelect } from "@/components/ui/searchable-select";
 import { toaster } from "@/components/ui/toaster";
 import { GoalRetrospectiveDialog } from "@/routes/goals/goal-retrospective-dialog";
+import { EditGoalDialog } from "@/routes/goals/edit-goal-dialog";
+import { EditProjectDialog } from "@/routes/goals/edit-project-dialog";
+import { EditMilestoneDialog } from "@/routes/goals/edit-milestone-dialog";
 import {
 	Badge,
 	Box,
@@ -60,11 +66,15 @@ import { useForm } from "react-hook-form";
 import {
 	LuAward,
 	LuCheck,
+	LuChevronRight,
 	LuCoins,
+	LuCompass,
 	LuFlag,
 	LuFolder,
 	LuHistory,
+	LuPencil,
 	LuPlus,
+	LuSparkles,
 	LuTarget,
 	LuTrash2,
 	LuZap,
@@ -175,10 +185,20 @@ export const GoalsRoute: React.FC = () => {
 	const createProjectMutation = useCreateProject();
 	const deleteProjectMutation = useDeleteProject();
 	const createMilestoneMutation = useCreateMilestone();
-	const deleteMilestoneMutation = useCompleteMilestone();
+	const deleteMilestoneMutation = useDeleteMilestone();
 	const completeMilestoneMutation = useCompleteMilestone();
 
 	const [isCreateGoalOpen, setIsCreateGoalOpen] = useState(false);
+	const [editingGoal, setEditingGoal] = useState<Goal | null>(null);
+	const [editingProject, setEditingProject] = useState<Project | null>(null);
+	const [editingMilestone, setEditingMilestone] = useState<Milestone | null>(
+		null,
+	);
+
+	const deleteGoalConfirm = useConfirm<Goal>();
+	const deleteProjectConfirm = useConfirm<Project>();
+	const deleteMilestoneConfirm = useConfirm<Milestone>();
+
 	const [activeGoalForProject, setActiveGoalForProject] = useState<
 		string | null
 	>(null);
@@ -561,13 +581,23 @@ export const GoalsRoute: React.FC = () => {
 											<IconButton
 												size="xs"
 												variant="ghost"
+												aria-label="Edit goal"
+												rounded="full"
+												onClick={() =>
+													setEditingGoal(goal)
+												}
+											>
+												<Icon as={LuPencil} />
+											</IconButton>
+
+											<IconButton
+												size="xs"
+												variant="ghost"
 												colorPalette="red"
 												aria-label="Delete goal"
 												rounded="full"
 												onClick={() =>
-													deleteGoalMutation.mutate(
-														goal.id,
-													)
+													deleteGoalConfirm.ask(goal)
 												}
 											>
 												<Icon as={LuTrash2} />
@@ -776,12 +806,29 @@ export const GoalsRoute: React.FC = () => {
 																		<IconButton
 																			size="2xs"
 																			variant="ghost"
+																			aria-label="Edit project"
+																			rounded="full"
+																			onClick={() =>
+																				setEditingProject(
+																					project,
+																				)
+																			}
+																		>
+																			<Icon
+																				as={
+																					LuPencil
+																				}
+																			/>
+																		</IconButton>
+																		<IconButton
+																			size="2xs"
+																			variant="ghost"
 																			colorPalette="red"
 																			aria-label="Delete project"
 																			rounded="full"
 																			onClick={() =>
-																				deleteProjectMutation.mutate(
-																					project.id,
+																				deleteProjectConfirm.ask(
+																					project,
 																				)
 																			}
 																		>
@@ -910,25 +957,64 @@ export const GoalsRoute: React.FC = () => {
 																							</Text>
 																						</HStack>
 
-																						<HStack
-																							gap={1}
-																							bg="bg.panel"
-																							px={2}
-																							py={0.5}
-																							rounded="pill"
-																							fontSize="10px"
-																							color="lime.500"
-																							fontWeight="bold"
-																						>
-																							<Icon
-																								as={
-																									LuZap
+																						<HStack gap={1.5}>
+																							<HStack
+																								gap={1}
+																								bg="bg.panel"
+																								px={2}
+																								py={0.5}
+																								rounded="pill"
+																								fontSize="10px"
+																								color="lime.500"
+																								fontWeight="bold"
+																							>
+																								<Icon
+																									as={
+																										LuZap
+																									}
+																									boxSize={2.5}
+																								/>
+																								<Text>
+																									XP & PX
+																								</Text>
+																							</HStack>
+																							<IconButton
+																								size="2xs"
+																								variant="ghost"
+																								aria-label="Edit milestone"
+																								rounded="full"
+																								onClick={() =>
+																									setEditingMilestone(
+																										m,
+																									)
 																								}
-																								boxSize={2.5}
-																							/>
-																							<Text>
-																								XP & PX
-																							</Text>
+																							>
+																								<Icon
+																									as={
+																										LuPencil
+																									}
+																									boxSize={2.5}
+																								/>
+																							</IconButton>
+																							<IconButton
+																								size="2xs"
+																								variant="ghost"
+																								colorPalette="red"
+																								aria-label="Delete milestone"
+																								rounded="full"
+																								onClick={() =>
+																									deleteMilestoneConfirm.ask(
+																										m,
+																									)
+																								}
+																							>
+																								<Icon
+																									as={
+																										LuTrash2
+																									}
+																									boxSize={2.5}
+																								/>
+																							</IconButton>
 																						</HStack>
 																					</Flex>
 																				);
@@ -1212,6 +1298,111 @@ export const GoalsRoute: React.FC = () => {
 				isOpen={!!retrospectiveGoal}
 				onClose={() => setRetrospectiveGoal(null)}
 				goal={retrospectiveGoal}
+			/>
+
+			{/* Edit Goal Dialog */}
+			<EditGoalDialog
+				goal={editingGoal}
+				isOpen={!!editingGoal}
+				onClose={() => setEditingGoal(null)}
+			/>
+
+			{/* Edit Project Dialog */}
+			<EditProjectDialog
+				project={editingProject}
+				isOpen={!!editingProject}
+				onClose={() => setEditingProject(null)}
+			/>
+
+			{/* Edit Milestone Dialog */}
+			<EditMilestoneDialog
+				milestone={editingMilestone}
+				isOpen={!!editingMilestone}
+				onClose={() => setEditingMilestone(null)}
+			/>
+
+			{/* Delete Goal Confirmation */}
+			<ConfirmDialog
+				open={deleteGoalConfirm.open}
+				onOpenChange={deleteGoalConfirm.onOpenChange}
+				title="Delete Goal"
+				description={
+					deleteGoalConfirm.target ? (
+						<>
+							Are you sure you want to delete goal{" "}
+							<strong>"{deleteGoalConfirm.target.title}"</strong> and all its child projects and milestones? This action cannot be undone.
+						</>
+					) : (
+						"Are you sure you want to delete this goal?"
+					)
+				}
+				confirmLabel="Delete Goal"
+				destructive
+				loading={deleteGoalMutation.isPending}
+				onConfirm={async () => {
+					if (deleteGoalConfirm.target) {
+						await deleteGoalMutation.mutateAsync(
+							deleteGoalConfirm.target.id,
+						);
+						deleteGoalConfirm.close();
+					}
+				}}
+			/>
+
+			{/* Delete Project Confirmation */}
+			<ConfirmDialog
+				open={deleteProjectConfirm.open}
+				onOpenChange={deleteProjectConfirm.onOpenChange}
+				title="Delete Project"
+				description={
+					deleteProjectConfirm.target ? (
+						<>
+							Are you sure you want to delete project{" "}
+							<strong>"{deleteProjectConfirm.target.title}"</strong> and its milestones?
+						</>
+					) : (
+						"Are you sure you want to delete this project?"
+					)
+				}
+				confirmLabel="Delete Project"
+				destructive
+				loading={deleteProjectMutation.isPending}
+				onConfirm={async () => {
+					if (deleteProjectConfirm.target) {
+						await deleteProjectMutation.mutateAsync(
+							deleteProjectConfirm.target.id,
+						);
+						deleteProjectConfirm.close();
+					}
+				}}
+			/>
+
+			{/* Delete Milestone Confirmation */}
+			<ConfirmDialog
+				open={deleteMilestoneConfirm.open}
+				onOpenChange={deleteMilestoneConfirm.onOpenChange}
+				title="Delete Milestone"
+				description={
+					deleteMilestoneConfirm.target ? (
+						<>
+							Are you sure you want to delete milestone{" "}
+							<strong>"{deleteMilestoneConfirm.target.title}"</strong>?
+						</>
+					) : (
+						"Are you sure you want to delete this milestone?"
+					)
+				}
+				confirmLabel="Delete Milestone"
+				destructive
+				loading={deleteMilestoneMutation.isPending}
+				onConfirm={async () => {
+					if (deleteMilestoneConfirm.target) {
+						await deleteMilestoneMutation.mutateAsync(
+							deleteMilestoneConfirm.target.id,
+						);
+						deleteMilestoneConfirm.close();
+					}
+				}}
 			/>
 		</Box>
 	);

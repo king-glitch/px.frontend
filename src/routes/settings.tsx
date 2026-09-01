@@ -17,7 +17,8 @@ import {
 	Stack,
 	Text,
 } from "@chakra-ui/react";
-import React from "react";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import React, { useState } from "react";
 import {
 	LuExternalLink,
 	LuFlame,
@@ -43,12 +44,19 @@ export const Settings: React.FC = () => {
 	const { user } = useAuthContext();
 	const { data: status, isLoading } = useDuolingoStatus();
 	const disconnect = useDisconnectDuolingo();
+	const [isDisconnectConfirmOpen, setIsDisconnectConfirmOpen] = useState(false);
 
 	const isConnected = status !== null && status !== undefined;
 
 	const handleDisconnect = async () => {
 		try {
 			await disconnect.mutateAsync();
+			setIsDisconnectConfirmOpen(false);
+			toaster.create({
+				title: "Duolingo Disconnected",
+				description: "Your Duolingo account has been unlinked.",
+				type: "success",
+			});
 		} catch (err) {
 			if (err instanceof ApiError && err.violations?._error) {
 				toaster.create({
@@ -331,7 +339,7 @@ export const Settings: React.FC = () => {
 										rounded="pill"
 										colorPalette="red"
 										loading={disconnect.isPending}
-										onClick={handleDisconnect}
+										onClick={() => setIsDisconnectConfirmOpen(true)}
 									>
 										{t("routes.settings.disconnect")}
 									</Button>
@@ -366,6 +374,23 @@ export const Settings: React.FC = () => {
 					</Box>
 				</Stack>
 			</Stack>
+
+			{/* Confirm Disconnect Dialog */}
+			<ConfirmDialog
+				open={isDisconnectConfirmOpen}
+				onOpenChange={setIsDisconnectConfirmOpen}
+				title="Disconnect Duolingo"
+				description={
+					<>
+						Are you sure you want to disconnect your Duolingo account{" "}
+						<strong>"{status?.username || "Duolingo"}"</strong>? Daily language streak synchronization and XP updates will stop.
+					</>
+				}
+				confirmLabel="Disconnect"
+				destructive
+				loading={disconnect.isPending}
+				onConfirm={handleDisconnect}
+			/>
 		</Container>
 	);
 };

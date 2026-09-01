@@ -30,8 +30,8 @@ export const DuolingoCard: React.FC<DuolingoCardProps> = ({
 	return (
 		<Box
 			{...holoGlassCard}
-			p={{ base: 5, xl: 6 }}
-			minH={{ base: "140px", xl: "155px" }}
+			p={{ base: 4, xl: 4.5 }}
+			minH={{ base: "120px", xl: "135px" }}
 			position="relative"
 		>
 			{isLoading ? (

@@ -51,6 +51,7 @@ import type {
 	UpdateQuestRequest,
 	CloseGoalRetrospectiveInput,
 	GoalRetrospectiveSummary,
+	WardrobeItem,
 } from "@/api/types";
 
 export const gameService = {
@@ -227,6 +228,15 @@ export const gameService = {
 	},
 
 	/**
+	 * Path: POST /api/v1/game/shop/items/:id/buy-and-equip
+	 */
+	async buyAndEquipItem(id: string): Promise<{ result: PurchaseResult }> {
+		return apiPost<{ result: PurchaseResult }>(
+			`/game/shop/items/${id}/buy-and-equip`,
+		);
+	},
+
+	/**
 	 * Path: GET /api/v1/game/avatar
 	 */
 	async getAvatar(): Promise<{ avatar: Avatar }> {
@@ -240,6 +250,38 @@ export const gameService = {
 		equipped: Record<string, string>,
 	): Promise<{ avatar: Avatar }> {
 		return apiPut<{ avatar: Avatar }>("/game/avatar", { equipped });
+	},
+
+	/**
+	 * Path: GET /api/v1/game/avatar/wardrobe
+	 */
+	async listWardrobe(): Promise<{ wardrobe: WardrobeItem[] }> {
+		return apiGet<{ wardrobe: WardrobeItem[] }>("/game/avatar/wardrobe");
+	},
+
+	/**
+	 * Path: POST /api/v1/game/avatar/presets
+	 */
+	async saveAvatarPreset(name: string): Promise<{ avatar: Avatar }> {
+		return apiPost<{ avatar: Avatar }>("/game/avatar/presets", { name });
+	},
+
+	/**
+	 * Path: POST /api/v1/game/avatar/presets/:presetId/apply
+	 */
+	async applyAvatarPreset(presetId: string): Promise<{ avatar: Avatar }> {
+		return apiPost<{ avatar: Avatar }>(
+			`/game/avatar/presets/${presetId}/apply`,
+		);
+	},
+
+	/**
+	 * Path: DELETE /api/v1/game/avatar/presets/:presetId
+	 */
+	async deleteAvatarPreset(presetId: string): Promise<{ avatar: Avatar }> {
+		return apiDelete<{ avatar: Avatar }>(
+			`/game/avatar/presets/${presetId}`,
+		);
 	},
 
 	/**

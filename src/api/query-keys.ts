@@ -54,6 +54,8 @@ export const queryKeys = {
 			] as const,
 		catalog: (kind?: ShopItemKind) =>
 			[...queryKeys.game.all, "catalog", kind ?? "all"] as const,
+		wardrobe: () => [...queryKeys.game.all, "wardrobe"] as const,
+		presets: () => [...queryKeys.game.all, "presets"] as const,
 		inventory: () => [...queryKeys.game.all, "inventory"] as const,
 		claims: () => [...queryKeys.game.all, "claims"] as const,
 		healthSummary: (day?: string) =>

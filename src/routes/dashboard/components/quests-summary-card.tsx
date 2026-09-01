@@ -10,6 +10,7 @@ import {
 	Text,
 } from "@chakra-ui/react";
 import { LuArrowUpRight } from "react-icons/lu";
+import { useNavigate } from "react-router";
 import { holoGlassCard } from "./holo-card";
 import { useTranslation } from "@/lib/i18n";
 
@@ -29,11 +30,12 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 	isError,
 }) => {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	return (
 		<Box
 			{...holoGlassCard}
-			p={{ base: 5, xl: 6 }}
-			minH={{ base: "140px", xl: "155px" }}
+			p={{ base: 4, xl: 4.5 }}
+			minH={{ base: "120px", xl: "135px" }}
 			position="relative"
 		>
 			{isLoading ? (
@@ -79,6 +81,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 						pr={{ xl: 4 }}
 						borderRightWidth={{ xl: "1px" }}
 						borderColor="border.glass"
+						cursor="pointer"
+						onClick={() => navigate("/tasks")}
+						_hover={{ opacity: 0.85 }}
 					>
 						<Text
 							fontSize="sm"
@@ -87,7 +92,7 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 						>
 							{t("components.dashboard.questsSummaryCard.todo")}
 						</Text>
-						<HStack align="baseline" gap={2} mt={4}>
+						<HStack align="baseline" gap={2} mt={3}>
 							<Text
 								fontSize={{
 									base: "2.4rem",
@@ -117,6 +122,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 						pr={{ xl: 4 }}
 						borderRightWidth={{ xl: "1px" }}
 						borderColor="border.glass"
+						cursor="pointer"
+						onClick={() => navigate("/tasks")}
+						_hover={{ opacity: 0.85 }}
 					>
 						<Text
 							fontSize="sm"
@@ -142,7 +150,7 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 						>
 							<Icon as={LuArrowUpRight} boxSize={4} />
 						</Circle>
-						<HStack align="baseline" gap={2} mt={4}>
+						<HStack align="baseline" gap={2} mt={3}>
 							<Text
 								fontSize={{
 									base: "2.4rem",
@@ -172,6 +180,8 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 						pr={{ xl: 4 }}
 						borderRightWidth={{ xl: "1px" }}
 						borderColor="border.glass"
+						cursor="pointer"
+						onClick={() => navigate("/tasks")}
 					>
 						<Text
 							fontSize="sm"
@@ -197,10 +207,9 @@ export const QuestsSummaryCard: React.FC<QuestsSummaryCardProps> = ({
 							px={4}
 							py={2}
 							justify="space-between"
-							mt={3}
+							mt={2}
 							w="fit-content"
 							gap={3}
-							cursor="pointer"
 							transition="all 0.15s ease-out"
 							_hover={{
 								transform: "translateY(-1px)",

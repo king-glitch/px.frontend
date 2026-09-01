@@ -511,12 +511,34 @@ export interface Perk extends ModelBase {
 	rank: number;
 }
 
+export interface AvatarPreset {
+	id: string;
+	name: string;
+	equipped: Record<string, string>;
+	palette_id?: string;
+}
+
 export interface Avatar extends ModelBase {
 	user_id: ObjectID;
 	seed: string;
 	equipped: Record<string, string>;
 	palette_id?: string;
 	title?: string;
+	presets?: AvatarPreset[];
+}
+
+export interface WardrobeItem {
+	cosmetic_key: string;
+	shop_item_id?: string;
+	slot: string;
+	name: string;
+	description: string;
+	price_px: number;
+	owned: boolean;
+	equipped: boolean;
+	unlock_type: "default" | "purchase" | "perk" | "achievement";
+	required_perk?: PerkID;
+	required_level: number;
 }
 
 export interface PlayerSummary {
@@ -533,6 +555,17 @@ export interface QuestPrice {
 	px: number;
 }
 
+export interface RewardBreakdown {
+	base_exp: number;
+	base_px: number;
+	streak_multiplier: number;
+	perk_multiplier: number;
+	buff_multiplier: number;
+	decay_factor: number;
+	final_exp: number;
+	final_px: number;
+}
+
 export interface AwardResult {
 	exp: number;
 	px: number;
@@ -540,6 +573,7 @@ export interface AwardResult {
 	decay_factor: number;
 	leveled_to: number;
 	skill_points_gained: number;
+	breakdown?: RewardBreakdown;
 }
 
 export interface HealthMetricSummary {

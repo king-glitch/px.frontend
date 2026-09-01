@@ -39,12 +39,15 @@ const glassCard = {
 	backdropFilter: "blur(20px)",
 };
 
-function getCurrentWeekPeriod(): string {
-	const now = new Date();
-	const startOfYear = new Date(now.getFullYear(), 0, 1);
-	const pastDaysOfYear = (now.getTime() - startOfYear.getTime()) / 86400000;
-	const weekNum = Math.ceil((pastDaysOfYear + startOfYear.getDay() + 1) / 7);
-	return `${now.getFullYear()}-W${String(weekNum).padStart(2, "0")}`;
+function getCurrentWeekPeriod(d: Date = new Date()): string {
+	const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+	const dayNum = date.getUTCDay() || 7;
+	date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+	const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+	const weekNo = Math.ceil(
+		((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7,
+	);
+	return `${date.getUTCFullYear()}-W${String(weekNo).padStart(2, "0")}`;
 }
 
 function getCurrentMonthPeriod(): string {
@@ -63,13 +66,28 @@ export const ReviewsRoute: React.FC = () => {
 		periodType,
 		selectedPeriod,
 	);
-	const { data: historyData } = useReviews(1, 20);
+	const { data: historyData } = useReviews(1, 50);
 	const finalizeMutation = useFinalizeReview();
 	const { triggerFlight } = useRewardFlight();
 
 	const [reflection, setReflection] = useState("");
 	const [priorityInput, setPriorityInput] = useState("");
 	const [nextPriorities, setNextPriorities] = useState<string[]>([]);
+
+	const existingReview = historyData?.reviews?.find(
+		(r) => r.period_type === periodType && r.period === selectedPeriod,
+	);
+	const isFinalized = Boolean(existingReview);
+
+	React.useEffect(() => {
+		if (existingReview) {
+			setReflection(existingReview.reflection_notes || "");
+			setNextPriorities(existingReview.next_priorities || []);
+		} else {
+			setReflection("");
+			setNextPriorities([]);
+		}
+	}, [existingReview, selectedPeriod, periodType]);
 
 	const handlePeriodTypeChange = (type: ReviewPeriodType) => {
 		setPeriodType(type);
@@ -81,16 +99,18 @@ export const ReviewsRoute: React.FC = () => {
 	};
 
 	const addPriority = () => {
-		if (!priorityInput.trim()) return;
+		if (!priorityInput.trim() || isFinalized) return;
 		setNextPriorities((prev) => [...prev, priorityInput.trim()]);
 		setPriorityInput("");
 	};
 
 	const removePriority = (index: number) => {
+		if (isFinalized) return;
 		setNextPriorities((prev) => prev.filter((_, i) => i !== index));
 	};
 
 	const handleFinalize = async (event?: React.MouseEvent) => {
+		if (isFinalized) return;
 		try {
 			await finalizeMutation.mutateAsync({
 				period_type: periodType,
@@ -475,18 +495,35 @@ export const ReviewsRoute: React.FC = () => {
 
 							{/* Reflection & Next Priorities */}
 							<Box {...glassCard} p={5}>
-								<Heading size="sm" mb={3}>
-									Reflection & Next Period Focus
-								</Heading>
+								<Flex justify="space-between" align="center" mb={3}>
+									<Heading size="sm">
+										Reflection & Next Period Focus
+									</Heading>
+									{isFinalized && (
+										<Badge
+											colorPalette="lime"
+											variant="subtle"
+											size="md"
+											rounded="pill"
+										>
+											<Icon as={LuAward} mr={1} /> Finalized ({selectedPeriod})
+										</Badge>
+									)}
+								</Flex>
 
 								<VStack gap={4} align="stretch">
 									<Field label="What went well? What will you adjust?">
 										<Textarea
 											value={reflection}
+											readOnly={isFinalized}
 											onChange={(e) =>
 												setReflection(e.target.value)
 											}
-											placeholder="Write open reflections without judgment..."
+											placeholder={
+												isFinalized
+													? "No reflection notes recorded for this period."
+													: "Write open reflections without judgment..."
+											}
 											rows={3}
 											rounded="xl"
 											bg="bg.muted"
@@ -496,75 +533,97 @@ export const ReviewsRoute: React.FC = () => {
 									</Field>
 
 									<Field label="Top Priorities for Next Period">
-										<HStack gap={2} mb={2}>
-											<Input
-												size="sm"
-												placeholder="Add a priority outcome..."
-												value={priorityInput}
-												onChange={(e) =>
-													setPriorityInput(
-														e.target.value,
-													)
-												}
-												onKeyDown={(e) => {
-													if (e.key === "Enter") {
-														e.preventDefault();
-														addPriority();
+										{!isFinalized && (
+											<HStack gap={2} mb={2}>
+												<Input
+													size="sm"
+													placeholder="Add a priority outcome..."
+													value={priorityInput}
+													onChange={(e) =>
+														setPriorityInput(
+															e.target.value,
+														)
 													}
-												}}
-												rounded="pill"
-												bg="bg.muted"
-												borderColor="border"
-												fontSize="sm"
-											/>
-											<Button
-												size="sm"
-												variant="subtle"
-												colorPalette="lime"
-												onClick={addPriority}
-											>
-												Add
-											</Button>
-										</HStack>
+													onKeyDown={(e) => {
+														if (e.key === "Enter") {
+															e.preventDefault();
+															addPriority();
+														}
+													}}
+													rounded="pill"
+													bg="bg.muted"
+													borderColor="border"
+													fontSize="sm"
+												/>
+												<Button
+													size="sm"
+													variant="subtle"
+													colorPalette="lime"
+													onClick={addPriority}
+												>
+													Add
+												</Button>
+											</HStack>
+										)}
 
 										<HStack gap={2} wrap="wrap">
-											{nextPriorities.map((p, idx) => (
-												<Badge
-													key={idx}
-													colorPalette="lime"
-													variant="solid"
-													size="md"
-													rounded="full"
-													px={3}
-													py={1}
-												>
-													{idx + 1}. {p}
-													<IconButton
-														size="2xs"
-														variant="ghost"
-														aria-label="Remove priority"
-														onClick={() =>
-															removePriority(idx)
-														}
-														ml={1}
+											{nextPriorities.length === 0 && isFinalized ? (
+												<Text fontSize="xs" color="fg.muted">
+													No priority goals recorded for this period.
+												</Text>
+											) : (
+												nextPriorities.map((p, idx) => (
+													<Badge
+														key={idx}
+														colorPalette="lime"
+														variant="solid"
+														size="md"
+														rounded="full"
+														px={3}
+														py={1}
 													>
-														<Icon as={LuX} />
-													</IconButton>
-												</Badge>
-											))}
+														{idx + 1}. {p}
+														{!isFinalized && (
+															<IconButton
+																size="2xs"
+																variant="ghost"
+																aria-label="Remove priority"
+																onClick={() =>
+																	removePriority(idx)
+																}
+																ml={1}
+															>
+																<Icon as={LuX} />
+															</IconButton>
+														)}
+													</Badge>
+												))
+											)}
 										</HStack>
 									</Field>
 
-									<Button
-										colorPalette="lime"
-										size="lg"
-										mt={4}
-										onClick={(e) => handleFinalize(e)}
-										loading={finalizeMutation.isPending}
-									>
-										<Icon as={LuAward} /> Finalize Review
-										(+200 EXP, +50 PX)
-									</Button>
+									{isFinalized ? (
+										<Button
+											colorPalette="gray"
+											variant="subtle"
+											size="lg"
+											mt={4}
+											disabled
+										>
+											<Icon as={LuAward} /> Review Finalized (+200 EXP Claimed)
+										</Button>
+									) : (
+										<Button
+											colorPalette="lime"
+											size="lg"
+											mt={4}
+											onClick={(e) => handleFinalize(e)}
+											loading={finalizeMutation.isPending}
+										>
+											<Icon as={LuAward} /> Finalize Review
+											(+200 EXP, +50 PX)
+										</Button>
+									)}
 								</VStack>
 							</Box>
 						</>

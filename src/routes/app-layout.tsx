@@ -3,11 +3,13 @@ import { AppSidebar } from "@/components/layout/app-sidebar";
 import { useAuthContext } from "@/contexts/auth-context";
 import { Box, Container, Flex, Spinner } from "@chakra-ui/react";
 import React, { useState } from "react";
-import { Navigate, Outlet } from "react-router";
+import { useLocation, Navigate, Outlet } from "react-router";
 
 export const AppLayout: React.FC = () => {
 	const { isAuthenticated, isLoading } = useAuthContext();
 	const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+	const { pathname } = useLocation();
+	const isDashboard = pathname === "/" || pathname === "/dashboard";
 
 	if (isLoading) {
 		return (
@@ -79,11 +81,13 @@ export const AppLayout: React.FC = () => {
 					<Box
 						flex="1"
 						minH={0}
-						overflowY="auto"
+						display="flex"
+						flexDirection="column"
+						overflowY={{ base: "auto", lg: isDashboard ? "hidden" : "auto" }}
 						overflowX="hidden"
 						position="relative"
 						px={{ base: 4, md: 6, xl: 8 }}
-						py={{ base: 4, md: 6 }}
+						py={{ base: 4, md: isDashboard ? 4 : 6 }}
 					>
 						<Outlet />
 					</Box>

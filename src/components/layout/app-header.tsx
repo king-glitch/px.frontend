@@ -34,7 +34,7 @@ import { useLocation, useNavigate } from "react-router";
 import { Avatar } from "@/components/ui/avatar";
 import { useColorMode } from "@/components/ui/color-mode";
 import { useAuthContext } from "@/contexts/auth-context";
-import { usePlayerSummary } from "@/api/hooks/use-game";
+import { usePlayerSummary, useRecovery } from "@/api/hooks/use-game";
 import { useTranslation } from "@/lib/i18n";
 
 export interface AppHeaderProps {
@@ -49,6 +49,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenSidebar }) => {
 	const { colorMode, toggleColorMode } = useColorMode();
 
 	const { data: playerSummary } = usePlayerSummary();
+	const { data: recovery } = useRecovery();
 
 	const getPageTitle = () => {
 		if (pathname === "/" || pathname.startsWith("/dashboard")) return "Dashboard";
@@ -99,13 +100,44 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenSidebar }) => {
 						<Text fontSize="md" fontWeight="bold" letterSpacing="-0.02em">
 							{getPageTitle()}
 						</Text>
+						{recovery?.vacation_mode && (
+							<Badge
+								colorPalette="orange"
+								variant="subtle"
+								size="sm"
+								rounded="pill"
+								px={2}
+							>
+								🌴 Vacation Mode
+							</Badge>
+						)}
 					</HStack>
 				</VStack>
 			</HStack>
 
 			{/* Right: Player Stats Pill + Theme + User Menu */}
 			<HStack gap={{ base: 2, md: 3 }} flexShrink={0}>
-				{/* Player Level & Currency Stats Pill */}
+				{/* Mobile Compact PX Badge */}
+				{playerSummary?.player && (
+					<HStack
+						display={{ base: "flex", sm: "none" }}
+						bg="bg.muted"
+						borderWidth="1px"
+						borderColor="border.glass"
+						rounded="pill"
+						px={2.5}
+						py={1}
+						gap={1}
+						fontSize="xs"
+					>
+						<Icon as={LuCoins} color="lime.400" boxSize={3.5} />
+						<Text fontWeight="bold">
+							{playerSummary.player.px.toLocaleString()}
+						</Text>
+					</HStack>
+				)}
+
+				{/* Desktop Player Level & Currency Stats Pill */}
 				{playerSummary?.player && (
 					<HStack
 						display={{ base: "none", sm: "flex" }}
@@ -131,7 +163,10 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ onOpenSidebar }) => {
 						<HStack gap={1}>
 							<Icon as={LuCoins} color="lime.400" boxSize={3.5} />
 							<Text fontWeight="semibold">
-								{playerSummary.player.px.toLocaleString()} <Text as="span" color="fg.muted" fontSize="10px">PX</Text>
+								{playerSummary.player.px.toLocaleString()}{" "}
+								<Text as="span" color="fg.muted" fontSize="10px">
+									PX
+								</Text>
 							</Text>
 						</HStack>
 

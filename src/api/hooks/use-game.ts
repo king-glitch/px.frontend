@@ -16,7 +16,6 @@ import type {
 	QuestCategory,
 	QuestEffort,
 	ReactToActivityInput,
-	RolloverQuestsRequest,
 	ShopItemKind,
 	UpdateCircleInput,
 	UpdateMemberSettingsInput,
@@ -232,21 +231,6 @@ export function useUndoCompleteQuest() {
 }
 
 /**
- * Mutation to roll over quests into a new cadence window.
- */
-export function useRolloverQuests() {
-	const queryClient = useQueryClient();
-
-	return useMutation({
-		mutationFn: (payload: RolloverQuestsRequest) =>
-			gameService.rolloverQuests(payload),
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
-		},
-	});
-}
-
-/**
  * Hook to fetch the shop catalog, optionally filtered by kind.
  */
 export function useShopCatalog(kind?: ShopItemKind) {
@@ -316,8 +300,43 @@ export function usePurchaseItem() {
 			return res.result;
 		},
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: queryKeys.game.all });
+			queryClient.invalidateQueries({ queryKey: queryKeys.game.inventory() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.game.wardrobe() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.game.playerSummary() });
 			queryClient.invalidateQueries({ queryKey: queryKeys.currency.all });
+		},
+	});
+}
+
+/**
+ * Mutation to purchase and immediately equip a cosmetic item.
+ */
+export function useBuyAndEquipItem() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (id: string) => {
+			const res = await gameService.buyAndEquipItem(id);
+			return res.result;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: queryKeys.game.inventory() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.game.wardrobe() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.game.playerSummary() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.currency.all });
+		},
+	});
+}
+
+/**
+ * Hook to fetch the unified player wardrobe catalog.
+ */
+export function useWardrobe() {
+	return useQuery({
+		queryKey: queryKeys.game.wardrobe(),
+		queryFn: async () => {
+			const res = await gameService.listWardrobe();
+			return res.wardrobe ?? [];
 		},
 	});
 }
@@ -344,6 +363,72 @@ export function useUpdateAvatar() {
 	return useMutation({
 		mutationFn: async (equipped: Record<string, string>) => {
 			const res = await gameService.updateAvatar(equipped);
+			return res.avatar;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.game.playerSummary(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.game.inventory(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.game.wardrobe(),
+			});
+		},
+	});
+}
+
+/**
+ * Mutation to save the current avatar outfit as a preset.
+ */
+export function useSaveAvatarPreset() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (name: string) => {
+			const res = await gameService.saveAvatarPreset(name);
+			return res.avatar;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.game.playerSummary(),
+			});
+		},
+	});
+}
+
+/**
+ * Mutation to apply a saved avatar preset.
+ */
+export function useApplyAvatarPreset() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (presetId: string) => {
+			const res = await gameService.applyAvatarPreset(presetId);
+			return res.avatar;
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.game.playerSummary(),
+			});
+			queryClient.invalidateQueries({
+				queryKey: queryKeys.game.wardrobe(),
+			});
+		},
+	});
+}
+
+/**
+ * Mutation to delete an avatar preset.
+ */
+export function useDeleteAvatarPreset() {
+	const queryClient = useQueryClient();
+
+	return useMutation({
+		mutationFn: async (presetId: string) => {
+			const res = await gameService.deleteAvatarPreset(presetId);
 			return res.avatar;
 		},
 		onSuccess: () => {

@@ -1,6 +1,6 @@
 import React from "react";
 import { Badge, Box, HStack, Icon, Stack, Text } from "@chakra-ui/react";
-import { LuTrash2 } from "react-icons/lu";
+import { LuPencil, LuTrash2 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import type { FinanceBudget } from "@/api/types";
 
@@ -16,12 +16,14 @@ const glassCard = {
 interface BudgetCardProps {
 	budget: FinanceBudget;
 	spent: number;
+	onEdit?: (budget: FinanceBudget) => void;
 	onDelete: (id: string) => void;
 }
 
 export const BudgetCard: React.FC<BudgetCardProps> = ({
 	budget,
 	spent,
+	onEdit,
 	onDelete,
 }) => {
 	const pct =
@@ -37,14 +39,25 @@ export const BudgetCard: React.FC<BudgetCardProps> = ({
 					<Text fontWeight="bold" fontSize="sm">
 						{budget.category}
 					</Text>
-					<Button
-						variant="ghost"
-						size="xs"
-						colorPalette="red"
-						onClick={() => onDelete(budget.id)}
-					>
-						<Icon as={LuTrash2} boxSize={3.5} />
-					</Button>
+					<HStack gap={1}>
+						{onEdit && (
+							<Button
+								variant="ghost"
+								size="xs"
+								onClick={() => onEdit(budget)}
+							>
+								<Icon as={LuPencil} boxSize={3.5} />
+							</Button>
+						)}
+						<Button
+							variant="ghost"
+							size="xs"
+							colorPalette="red"
+							onClick={() => onDelete(budget.id)}
+						>
+							<Icon as={LuTrash2} boxSize={3.5} />
+						</Button>
+					</HStack>
 				</HStack>
 
 				<HStack justify="space-between" fontSize="xs">

@@ -51,7 +51,9 @@ export const Finance: React.FC = () => {
 		return () => registerRewardFlightTarget(null);
 	}, []);
 
-	const alreadyConverted = convertedPeriods.has(period);
+	const alreadyConverted = Boolean(
+		summary?.is_converted || summary?.converted_at || convertedPeriods.has(period),
+	);
 
 	const handleExecuteConvert = async () => {
 		if (!confirmConvert.target) return;

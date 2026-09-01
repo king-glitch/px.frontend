@@ -5,14 +5,36 @@ import {
 	type FloatingCreatureConfig,
 } from "./creature-configs";
 
+function usePrefersReducedMotion(): boolean {
+	const [matches, setMatches] = React.useState(() => {
+		if (typeof window === "undefined") return false;
+		return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	});
+
+	React.useEffect(() => {
+		if (typeof window === "undefined") return;
+		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+		const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
+		mediaQuery.addEventListener("change", handler);
+		return () => mediaQuery.removeEventListener("change", handler);
+	}, []);
+
+	return matches;
+}
+
 // Smooth physics-based mouse parallax hook (GPU-lerped 60fps)
-function useMouseParallax() {
+function useMouseParallax(reducedMotion: boolean) {
 	const [offset, setOffset] = React.useState({ x: 0, y: 0 });
 	const targetRef = React.useRef({ x: 0, y: 0 });
 	const currentRef = React.useRef({ x: 0, y: 0 });
 	const rafRef = React.useRef<number | null>(null);
 
 	React.useEffect(() => {
+		if (reducedMotion) {
+			setOffset({ x: 0, y: 0 });
+			return;
+		}
+
 		const handleMouseMove = (e: MouseEvent) => {
 			const { innerWidth, innerHeight } = window;
 			const nx = (e.clientX / innerWidth - 0.5) * 2;
@@ -60,13 +82,14 @@ function useMouseParallax() {
 			);
 			if (rafRef.current) cancelAnimationFrame(rafRef.current);
 		};
-	}, []);
+	}, [reducedMotion]);
 
 	return offset;
 }
 
 export const FloatingCreaturesScene: React.FC = () => {
-	const mouse = useMouseParallax();
+	const reducedMotion = usePrefersReducedMotion();
+	const mouse = useMouseParallax(reducedMotion);
 
 	const backCreatures = CREATURE_CONFIGS.filter((c) => c.layer === "back");
 	const frontCreatures = CREATURE_CONFIGS.filter((c) => c.layer === "front");
@@ -102,7 +125,7 @@ export const FloatingCreaturesScene: React.FC = () => {
 					w="full"
 					h="full"
 					position="relative"
-					animation={creature.animation}
+					animation={reducedMotion ? "none" : creature.animation}
 				>
 					{/* Individual creature soft glow */}
 					<Box

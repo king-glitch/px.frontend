@@ -96,12 +96,9 @@ export const Index: React.FC = () => {
 		<Box
 			position="relative"
 			flex="1"
+			w="full"
+			minH="full"
 			h="full"
-			mx={{ base: -4, md: -6, xl: -8 }}
-			my={{ base: -4, md: -6 }}
-			px={{ base: 4, md: 6, xl: 8 }}
-			py={{ base: 4, md: 6 }}
-			overflow="hidden"
 			display="flex"
 			flexDirection="column"
 			justifyContent="space-between"
@@ -158,12 +155,14 @@ export const Index: React.FC = () => {
 			<Grid
 				flex="1"
 				minH="0"
+				w="full"
 				h="full"
-				gap={{ base: 4, lg: 6, xl: 8 }}
+				gap={{ base: 4, lg: 5, xl: 6 }}
 				templateColumns={{
 					base: "1fr",
-					lg: "minmax(0, 1fr) 370px",
-					xl: "minmax(0, 1fr) 420px",
+					lg: "minmax(0, 1.2fr) minmax(360px, 420px)",
+					xl: "minmax(0, 1.3fr) minmax(400px, 460px)",
+					"2xl": "minmax(0, 1.4fr) minmax(440px, 520px)",
 				}}
 				position="relative"
 				zIndex={1}
@@ -171,11 +170,12 @@ export const Index: React.FC = () => {
 				{/* Center Column: Open Creature Stage Box & Bottom Daily Summary */}
 				<GridItem
 					h="full"
-					minH="0"
+					minH={{ base: "auto", lg: "0" }}
 					display="flex"
 					flexDirection="column"
 					justifyContent="space-between"
 					position="relative"
+					gap={4}
 				>
 					{/* Dedicated Creature Stage Box */}
 					<Box
@@ -190,12 +190,12 @@ export const Index: React.FC = () => {
 					</Box>
 
 					{/* Bottom: Daily Summary Dock */}
-					<Stack gap={3.5} pb={3} position="relative" zIndex={2}>
-						<HStack gap={2.5}>
-							<Text fontSize="lg" fontWeight="bold">
+					<Stack gap={2.5} position="relative" zIndex={2} flexShrink={0}>
+						<HStack gap={2}>
+							<Text fontSize="md" fontWeight="bold">
 								{t("routes.index.dailyPrefix")}
 							</Text>
-							<Text fontSize="lg">
+							<Text fontSize="md">
 								<OutlinePill>
 									{t("routes.index.dailyHighlight")}
 								</OutlinePill>
@@ -203,11 +203,11 @@ export const Index: React.FC = () => {
 						</HStack>
 
 						<Grid
-							gap={{ base: 3, xl: 4 }}
+							gap={{ base: 3, xl: 3.5 }}
 							templateColumns={{
 								base: "1fr",
-								lg: "220px 1fr",
-								xl: "260px 1fr",
+								lg: "210px 1fr",
+								xl: "240px 1fr",
 							}}
 						>
 							{/* 1. Isolated Duolingo Card */}
@@ -237,8 +237,7 @@ export const Index: React.FC = () => {
 						direction="column"
 						h="full"
 						justify="space-between"
-						gap={4}
-						pb={3}
+						gap={{ base: 3, lg: 3, xl: 3.5 }}
 					>
 						{/* Hero Snapshot Card */}
 						<HeroSnapshotCard

@@ -1,9 +1,12 @@
-import { useHealthDay } from "@/api";
+import { useAwardHealthDay, useHealthDay } from "@/api";
 import { PillButton } from "@/components/ui/pill-button";
+import { toaster } from "@/components/ui/toaster";
 import { useTranslation } from "@/lib/i18n";
+import { LogHealthDialog } from "./health/log-health-dialog";
 import {
 	Badge,
 	Box,
+	Button,
 	Circle,
 	Flex,
 	Grid,
@@ -16,15 +19,17 @@ import {
 	Text,
 	VStack,
 } from "@chakra-ui/react";
-import React from "react";
+import React, { useState } from "react";
 import {
 	LuActivity,
 	LuApple,
 	LuBed,
+	LuCheck,
 	LuDroplets,
 	LuFlame,
 	LuFootprints,
 	LuHeart,
+	LuPlus,
 	LuSparkles,
 	LuTrendingUp,
 } from "react-icons/lu";
@@ -42,6 +47,8 @@ export const HealthRoute: React.FC = () => {
 	const { t } = useTranslation();
 	const today = new Date().toISOString().split("T")[0];
 	const { data: healthSummary, isLoading } = useHealthDay(today);
+	const awardMutation = useAwardHealthDay();
+	const [isLogOpen, setIsLogOpen] = useState(false);
 
 	const metrics = (healthSummary?.metrics ?? {}) as Partial<
 		Record<
@@ -58,10 +65,28 @@ export const HealthRoute: React.FC = () => {
 	const sleepMetric = metrics["sleep_minutes"];
 	const activeEnergyMetric = metrics["active_energy"];
 	const hrvMetric = metrics["hrv"];
+	const restingHrMetric = metrics["resting_hr"];
 	const totalExp = Object.values(metrics).reduce(
 		(acc, m) => acc + (m?.exp ?? 0),
 		0,
 	);
+
+	const handleAwardHealth = async () => {
+		try {
+			const res = await awardMutation.mutateAsync(today);
+			toaster.create({
+				title: "Health Rewards Settled!",
+				description: `Claimed +${res.exp} EXP and +${res.px} PX!`,
+				type: "success",
+			});
+		} catch (err: any) {
+			toaster.create({
+				title: "Failed to settle health awards",
+				description: err?.message || "Something went wrong",
+				type: "error",
+			});
+		}
+	};
 
 	return (
 		<Box
@@ -71,6 +96,12 @@ export const HealthRoute: React.FC = () => {
 			flexDirection="column"
 			gap={5}
 		>
+			<LogHealthDialog
+				isOpen={isLogOpen}
+				onClose={() => setIsLogOpen(false)}
+				day={today}
+			/>
+
 			{/* Top Vital Matrix Cards */}
 			{isLoading ? (
 				<SimpleGrid columns={{ base: 1, sm: 2, lg: 4 }} gap={4}>
@@ -96,16 +127,29 @@ export const HealthRoute: React.FC = () => {
 						</HStack>
 						<HStack align="baseline" gap={2} mt={2}>
 							<Heading size="3xl">
-								{hrvMetric?.score
-									? `${Math.round(hrvMetric.score * 100)}%`
-									: "92%"}
+								{hrvMetric !== undefined
+									? `${Math.round((hrvMetric.score || 0) * 100)}%`
+									: "—"}
 							</Heading>
-							<Text fontSize="xs" color="fg.muted">
-								+45 {t("common.units.exp")}
-							</Text>
+							{hrvMetric ? (
+								<Text fontSize="xs" color="fg.muted">
+									+{hrvMetric.exp || 0} {t("common.units.exp")}
+								</Text>
+							) : (
+								<Button
+									size="2xs"
+									variant="subtle"
+									colorPalette="lime"
+									onClick={() => setIsLogOpen(true)}
+								>
+									Log
+								</Button>
+							)}
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							{t("routes.health.cards.hrvBaseline")}
+							{hrvMetric
+								? t("routes.health.cards.hrvBaseline")
+								: "No HRV recorded today"}
 						</Text>
 					</Box>
 
@@ -124,23 +168,29 @@ export const HealthRoute: React.FC = () => {
 						</HStack>
 						<HStack align="baseline" gap={2} mt={2}>
 							<Heading size="3xl">
-								{stepsMetric?.value
-									? Math.round(
-											stepsMetric.value,
-										).toLocaleString()
-									: "8,420"}
+								{stepsMetric !== undefined
+									? Math.round(stepsMetric.value).toLocaleString()
+									: "—"}
 							</Heading>
-							<Text fontSize="xs" color="fg.muted">
-								/{" "}
-								{stepsMetric?.target
-									? Math.round(
-											stepsMetric.target,
-										).toLocaleString()
-									: "10,000"}
-							</Text>
+							{stepsMetric?.target ? (
+								<Text fontSize="xs" color="fg.muted">
+									/ {Math.round(stepsMetric.target).toLocaleString()}
+								</Text>
+							) : (
+								<Button
+									size="2xs"
+									variant="subtle"
+									colorPalette="lime"
+									onClick={() => setIsLogOpen(true)}
+								>
+									Log Steps
+								</Button>
+							)}
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							{t("routes.health.cards.movementProgress")}
+							{stepsMetric
+								? t("routes.health.cards.movementProgress")
+								: "No steps recorded today"}
 						</Text>
 					</Box>
 
@@ -159,19 +209,30 @@ export const HealthRoute: React.FC = () => {
 						</HStack>
 						<HStack align="baseline" gap={2} mt={2}>
 							<Heading size="3xl">
-								{sleepMetric?.value
+								{sleepMetric !== undefined
 									? `${Math.floor(sleepMetric.value / 60)}h ${Math.round(sleepMetric.value % 60)}m`
-									: "7h 48m"}
+									: "—"}
 							</Heading>
-							<Text fontSize="xs" color="fg.muted">
-								{t("routes.health.cards.score")}{" "}
-								{sleepMetric?.score
-									? Math.round(sleepMetric.score * 100)
-									: 88}
-							</Text>
+							{sleepMetric ? (
+								<Text fontSize="xs" color="fg.muted">
+									{t("routes.health.cards.score")}{" "}
+									{Math.round((sleepMetric.score || 0) * 100)}
+								</Text>
+							) : (
+								<Button
+									size="2xs"
+									variant="subtle"
+									colorPalette="lime"
+									onClick={() => setIsLogOpen(true)}
+								>
+									Log Sleep
+								</Button>
+							)}
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							{t("routes.health.cards.sleepRecovery")}
+							{sleepMetric
+								? t("routes.health.cards.sleepRecovery")
+								: "No sleep logged today"}
 						</Text>
 					</Box>
 
@@ -190,16 +251,29 @@ export const HealthRoute: React.FC = () => {
 						</HStack>
 						<HStack align="baseline" gap={2} mt={2}>
 							<Heading size="3xl">
-								{activeEnergyMetric?.value
-									? Math.round(activeEnergyMetric.value)
-									: 640}
+								{activeEnergyMetric !== undefined
+									? Math.round(activeEnergyMetric.value).toLocaleString()
+									: "—"}
 							</Heading>
-							<Text fontSize="xs" color="fg.muted">
-								{t("routes.health.cards.kcal")}
-							</Text>
+							{activeEnergyMetric ? (
+								<Text fontSize="xs" color="fg.muted">
+									{t("routes.health.cards.kcal")}
+								</Text>
+							) : (
+								<Button
+									size="2xs"
+									variant="subtle"
+									colorPalette="lime"
+									onClick={() => setIsLogOpen(true)}
+								>
+									Log Calories
+								</Button>
+							)}
 						</HStack>
 						<Text fontSize="xs" color="fg.muted" mt={1}>
-							{t("routes.health.cards.activeCalorieOutput")}
+							{activeEnergyMetric
+								? t("routes.health.cards.activeCalorieOutput")
+								: "No active calories logged"}
 						</Text>
 					</Box>
 				</SimpleGrid>
@@ -219,7 +293,7 @@ export const HealthRoute: React.FC = () => {
 					flexDirection="column"
 					gap={5}
 				>
-					<Flex justify="space-between" align="center">
+					<Flex justify="space-between" align="center" wrap="wrap" gap={3}>
 						<Stack gap={0.5}>
 							<Heading size="lg">
 								{t("routes.health.protocol.heading")}
@@ -228,20 +302,32 @@ export const HealthRoute: React.FC = () => {
 								{t("routes.health.protocol.subtitle")}
 							</Text>
 						</Stack>
-						{healthSummary?.exp_awarded ? (
-							<Badge size="lg" rounded="pill" variant="subtle">
-								{t("routes.health.protocol.settled")} +
-								{healthSummary.exp_awarded}{" "}
-								{t("common.units.exp")} (+
-								{healthSummary.px_awarded}{" "}
-								{t("common.units.px")})
-							</Badge>
-						) : (
-							<Badge size="lg" rounded="pill" variant="subtle">
-								{t("routes.health.protocol.awardPending")}
-								{totalExp || 120} {t("common.units.exp")}
-							</Badge>
-						)}
+						<HStack gap={2}>
+							{healthSummary?.exp_awarded ? (
+								<Badge size="lg" rounded="pill" variant="subtle" colorPalette="lime">
+									<Icon as={LuCheck} mr={1} />
+									{t("routes.health.protocol.settled")} +
+									{healthSummary.exp_awarded}{" "}
+									{t("common.units.exp")} (+
+									{healthSummary.px_awarded}{" "}
+									{t("common.units.px")})
+								</Badge>
+							) : totalExp > 0 ? (
+								<Button
+									size="sm"
+									colorPalette="lime"
+									rounded="pill"
+									onClick={handleAwardHealth}
+									loading={awardMutation.isPending}
+								>
+									<Icon as={LuSparkles} mr={1} /> Claim +{totalExp} {t("common.units.exp")}
+								</Button>
+							) : (
+								<Badge size="lg" rounded="pill" variant="subtle">
+									Log vitals to earn daily EXP
+								</Badge>
+							)}
+						</HStack>
 					</Flex>
 
 					{isLoading ? (
@@ -489,6 +575,7 @@ export const HealthRoute: React.FC = () => {
 									variant="dark"
 									w="full"
 									icon={LuActivity}
+									onClick={() => setIsLogOpen(true)}
 								>
 									{t("routes.health.sidebar.syncBioData")}
 								</PillButton>

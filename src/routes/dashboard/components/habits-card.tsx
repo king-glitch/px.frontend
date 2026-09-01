@@ -9,6 +9,7 @@ import {
 	Stack,
 	Text,
 } from "@chakra-ui/react";
+import { useNavigate } from "react-router";
 import type { TodayQuest } from "@/api/types";
 import { OutlinePill, holoGlassCard } from "./holo-card";
 import { useTranslation } from "@/lib/i18n";
@@ -27,8 +28,9 @@ export const HabitsCard: React.FC<HabitsCardProps> = ({
 	todayLabel,
 }) => {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	return (
-		<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
+		<Box {...holoGlassCard} p={{ base: 4, xl: 4.5 }}>
 			<Heading fontSize="xl" fontWeight="normal" letterSpacing="-0.03em">
 				{t("components.dashboard.habitsCard.titlePrefix")}{" "}
 				<OutlinePill>
@@ -72,6 +74,9 @@ export const HabitsCard: React.FC<HabitsCardProps> = ({
 							px={4}
 							py={2}
 							gap={2.5}
+							cursor="pointer"
+							onClick={() => navigate("/tasks")}
+							_hover={{ transform: "translateY(-1px)", shadow: "glass" }}
 						>
 							<Circle size="2.5" bg="fg.muted" />
 							<Text
@@ -106,6 +111,7 @@ export const HabitsCard: React.FC<HabitsCardProps> = ({
 								py={2}
 								gap={2.5}
 								cursor="pointer"
+								onClick={() => navigate("/tasks")}
 								transition="all 0.15s ease-out"
 								shadow={
 									tq.completed

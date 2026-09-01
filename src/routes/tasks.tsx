@@ -23,6 +23,7 @@ import {
 	registerRewardFlightTarget,
 	useRewardFlight,
 } from "@/components/game";
+import { useSearchParams } from "react-router";
 import { ConfirmDialog, useConfirm } from "@/components/ui/confirm-dialog";
 import {
 	DialogBody,
@@ -73,6 +74,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
+	LuChevronDown,
+	LuChevronUp,
+	LuCircleAlert,
 	LuCircleCheck,
 	LuEllipsisVertical,
 	LuFlame,
@@ -194,7 +198,7 @@ export const TasksRoute: React.FC = () => {
 	const FILTER_CATEGORIES = React.useMemo(() => getFilterCategories(t), [t]);
 	const CADENCE_OPTIONS = React.useMemo(() => getCadenceOptions(t), [t]);
 	const EFFORT_OPTIONS = React.useMemo(() => getEffortOptions(t), [t]);
-	const { data: todayQuests = [], isLoading } = useTodayQuests();
+	const { data: todayQuests = [], isLoading, isError, error, refetch } = useTodayQuests();
 	const { data: summary } = usePlayerSummary();
 
 	const completeMutation = useCompleteQuest();
@@ -213,10 +217,27 @@ export const TasksRoute: React.FC = () => {
 	}, []);
 
 	// Dialog & Form State
+	const [searchParams, setSearchParams] = useSearchParams();
+	const selectedTab = searchParams.get("tab") || "All";
+	const setSelectedTab = (tab: string) => {
+		setSearchParams((prev) => {
+			const next = new URLSearchParams(prev);
+			if (tab === "All") {
+				next.delete("tab");
+			} else {
+				next.set("tab", tab);
+			}
+			return next;
+		});
+	};
+
 	const [isCreateOpen, setIsCreateOpen] = useState(false);
 	const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
-	const [selectedTab, setSelectedTab] = useState<string>("All");
 	const [scheduleDays, setScheduleDays] = useState<number[]>([]);
+	const [showCompleted, setShowCompleted] = useState(false);
+	const [completingQuestIds, setCompletingQuestIds] = useState<Set<string>>(
+		() => new Set(),
+	);
 
 	const {
 		register,
@@ -274,6 +295,17 @@ export const TasksRoute: React.FC = () => {
 		);
 	}, [todayQuests, selectedTab]);
 
+	const incompleteQuests = useMemo(
+		() => filteredQuests.filter((q) => !q.completed),
+		[filteredQuests],
+	);
+	const completedQuests = useMemo(
+		() => filteredQuests.filter((q) => q.completed),
+		[filteredQuests],
+	);
+	const nextQuest = incompleteQuests[0];
+	const remainingQuests = incompleteQuests.slice(1);
+
 	const handleOpenCreate = () => {
 		setEditingQuest(null);
 		setScheduleDays([]);
@@ -305,20 +337,20 @@ export const TasksRoute: React.FC = () => {
 	};
 
 	const handleToggleTask = async (tq: TodayQuest, el: HTMLElement) => {
-		if (tq.completed) {
-			try {
+		if (
+			completingQuestIds.has(tq.quest.id) ||
+			completeMutation.isPending ||
+			undoMutation.isPending
+		) {
+			return;
+		}
+
+		setCompletingQuestIds((prev) => new Set(prev).add(tq.quest.id));
+
+		try {
+			if (tq.completed) {
 				await undoMutation.mutateAsync({ id: tq.quest.id });
-			} catch (err) {
-				if (err instanceof ApiError && err.violations?._error) {
-					toaster.create({
-						title: t("routes.tasks.toasts.validationError"),
-						description: err.violations._error.message,
-						type: "error",
-					});
-				}
-			}
-		} else {
-			try {
+			} else {
 				const award = await completeMutation.mutateAsync({
 					id: tq.quest.id,
 				});
@@ -326,15 +358,31 @@ export const TasksRoute: React.FC = () => {
 					void fly(el, award.exp, "exp");
 					void fly(el, award.px, "px");
 				}
-			} catch (err) {
-				if (err instanceof ApiError && err.violations?._error) {
-					toaster.create({
-						title: t("routes.tasks.toasts.validationError"),
-						description: err.violations._error.message,
-						type: "error",
-					});
+				let breakdownDetails = `+${award.exp} EXP · +${award.px} PX`;
+				if (award.breakdown && award.breakdown.streak_multiplier > 1.0) {
+					const bonus = Math.round((award.breakdown.streak_multiplier - 1.0) * 100);
+					breakdownDetails += ` (${bonus}% streak bonus!)`;
 				}
+				toaster.create({
+					title: `${tq.quest.title} Complete!`,
+					description: breakdownDetails,
+					type: "success",
+				});
 			}
+		} catch (err) {
+			if (err instanceof ApiError && err.violations?._error) {
+				toaster.create({
+					title: t("routes.tasks.toasts.validationError"),
+					description: err.violations._error.message,
+					type: "error",
+				});
+			}
+		} finally {
+			setCompletingQuestIds((prev) => {
+				const next = new Set(prev);
+				next.delete(tq.quest.id);
+				return next;
+			});
 		}
 	};
 
@@ -619,7 +667,18 @@ export const TasksRoute: React.FC = () => {
 				</Flex>
 
 				{/* Task Rows List */}
-				{isLoading ? (
+				{isError ? (
+					<Box p={8} textAlign="center" {...glassCard} my={2}>
+						<Icon as={LuCircleAlert} boxSize={8} color="red.fg" mb={2} />
+						<Heading size="md" mb={1}>Failed to load daily quests</Heading>
+						<Text fontSize="xs" color="fg.muted" mb={4}>
+							{error instanceof Error ? error.message : "An unexpected server or network error occurred."}
+						</Text>
+						<Button size="xs" colorPalette="mint" rounded="pill" onClick={() => refetch()}>
+							Retry
+						</Button>
+					</Box>
+				) : isLoading ? (
 					<Stack gap={2.5} mt={1} flex="1">
 						{[1, 2, 3, 4].map((i) => (
 							<Flex
@@ -649,262 +708,449 @@ export const TasksRoute: React.FC = () => {
 						title={t("routes.tasks.empty.title")}
 						description={t("routes.tasks.empty.description")}
 						icon={<Icon as={LuTarget} boxSize={6} />}
-					/>
+					>
+						<Button
+							size="xs"
+							colorPalette="mint"
+							variant="solid"
+							rounded="pill"
+							mt={3}
+							onClick={handleOpenCreate}
+						>
+							<Icon as={LuPlus} mr={1} /> {t("routes.tasks.header.newQuest")}
+						</Button>
+					</EmptyState>
 				) : (
-					<Stack gap={2.5} mt={1} flex="1">
-						{filteredQuests.map((tq) => {
-							const isCompleted = tq.completed;
-							const isToggling =
-								(completeMutation.isPending &&
-									completeMutation.variables?.id ===
-										tq.quest.id) ||
-								(undoMutation.isPending &&
-									undoMutation.variables?.id === tq.quest.id);
-
-							return (
-								<Flex
-									key={tq.quest.id}
-									align="center"
-									justify="space-between"
-									p={3.5}
-									rounded="card"
-									bg={isCompleted ? "bg.muted" : "bg.panel"}
-									borderWidth="1px"
-									borderColor="border.glass"
-									opacity={isToggling ? 0.7 : 1}
-									transition="all 0.15s ease-out"
-									_hover={{
-										transform: "translateY(-1px)",
-										shadow: "glass",
-									}}
+					<Stack gap={3} mt={1} flex="1">
+						{/* Next Up Priority Action Card */}
+						{nextQuest && (
+							<Flex
+								align="center"
+								justify="space-between"
+								p={3.5}
+								rounded="card"
+								bg="bg.panel"
+								borderWidth="1px"
+								borderColor="border.glass"
+								shadow="glass"
+								transition="all 0.15s ease-out"
+								_hover={{
+									transform: "translateY(-1px)",
+									shadow: "float",
+								}}
+							>
+								<HStack
+									gap={3}
+									cursor="pointer"
+									flex="1"
+									onClick={(e) =>
+										!completeMutation.isPending &&
+										handleToggleTask(nextQuest, e.currentTarget)
+									}
 								>
-									<HStack
-										gap={3}
-										cursor="pointer"
-										flex="1"
-										onClick={(e) =>
-											!isToggling &&
-											handleToggleTask(
-												tq,
-												e.currentTarget,
-											)
-										}
+									<Circle
+										size="6"
+										bg="transparent"
+										borderWidth="2px"
+										borderColor="border"
+										color="transparent"
 									>
-										<Circle
-											size="6"
-											bg={
-												isCompleted
-													? "mint.solid"
-													: "transparent"
-											}
-											borderWidth={
-												isCompleted ? 0 : "2px"
-											}
-											borderColor={
-												isCompleted
-													? "transparent"
-													: "border"
-											}
-											color={
-												isCompleted
-													? "mint.contrast"
-													: "transparent"
-											}
-										>
-											{isToggling ? (
-												<Spinner size="xs" color="fg" />
-											) : isCompleted ? (
-												<Icon
-													as={LuCircleCheck}
-													boxSize={3.5}
-												/>
-											) : null}
-										</Circle>
-										<Stack gap={0.5}>
-											<Text
-												fontSize="sm"
-												fontWeight={
-													isCompleted
-														? "normal"
-														: "semibold"
-												}
-												textDecoration={
-													isCompleted
-														? "line-through"
-														: "none"
-												}
-												color={
-													isCompleted
-														? "fg.muted"
-														: "fg"
-												}
-											>
-												{tq.quest.title}
+										{completeMutation.isPending &&
+										completeMutation.variables?.id === nextQuest.quest.id ? (
+											<Spinner size="xs" color="fg" />
+										) : null}
+									</Circle>
+									<Stack gap={0.5}>
+										<HStack gap={2}>
+											<Badge size="xs" rounded="pill" variant="solid" colorPalette="mint">
+												Next
+											</Badge>
+											<Text fontSize="sm" fontWeight="semibold" color="fg">
+												{nextQuest.quest.title}
 											</Text>
-											{tq.quest.notes ? (
-												<Text
-													fontSize="xs"
-													color="fg.muted"
-													truncate
-													maxW="540px"
-												>
-													{tq.quest.notes}
-												</Text>
-											) : null}
-										</Stack>
-									</HStack>
+										</HStack>
+										{nextQuest.quest.notes ? (
+											<Text fontSize="xs" color="fg.muted" truncate maxW="540px">
+												{nextQuest.quest.notes}
+											</Text>
+										) : null}
+									</Stack>
+								</HStack>
 
-									<HStack gap={2}>
-										{tq.quest.streak > 0 && (
+								<HStack gap={2}>
+									{nextQuest.quest.streak > 0 && (
+										<HStack
+											gap={1}
+											bg="bg.muted"
+											px={2}
+											py={0.5}
+											rounded="pill"
+											fontSize="10px"
+										>
+											<Icon as={LuFlame} color="mint.fg" boxSize={3} />
+											<Text fontWeight="bold">{nextQuest.quest.streak}d</Text>
+										</HStack>
+									)}
+									{nextQuest.quest.is_mvq && (
+										<Badge
+											size="xs"
+											rounded="pill"
+											variant="outline"
+											colorPalette="lime"
+										>
+											MVQ {nextQuest.quest.mvq_minutes}m
+										</Badge>
+									)}
+									{nextQuest.quest.minutes && (
+										<Badge size="xs" rounded="pill" variant="subtle">
+											{nextQuest.quest.minutes}m
+										</Badge>
+									)}
+									<Badge size="xs" rounded="pill" variant="subtle">
+										{formatScheduleBadge(t, nextQuest.quest.cadence, nextQuest.quest.schedule_days)}
+									</Badge>
+									{nextQuest.quest.scored && (
+										<Badge size="xs" rounded="pill" variant="subtle">
+											+{nextQuest.quest.exp_value} {t("common.units.exp")}
+										</Badge>
+									)}
+									<Badge size="xs" rounded="pill" variant="subtle">
+										{nextQuest.quest.category}
+									</Badge>
+
+									<MenuRoot positioning={{ placement: "bottom-end" }}>
+										<MenuTrigger asChild>
+											<IconButton
+												size="xs"
+												variant="ghost"
+												rounded="pill"
+												aria-label={t("routes.tasks.row.questActions")}
+											>
+												<Icon as={LuEllipsisVertical} boxSize={4} color="fg.muted" />
+											</IconButton>
+										</MenuTrigger>
+										<MenuContent
+											bg="bg.panel"
+											rounded="card"
+											p={1}
+											minW="140px"
+											shadow="float"
+											borderWidth="1px"
+											borderColor="border.glass"
+										>
+											<MenuItem
+												value="edit"
+												cursor="pointer"
+												rounded="pill"
+												px={3}
+												py={1.5}
+												fontSize="xs"
+												onClick={() => handleOpenEdit(nextQuest.quest)}
+											>
+												<Icon as={LuPencil} boxSize={3.5} mr={2} color="mint.fg" />
+												{t("routes.tasks.row.editQuest")}
+											</MenuItem>
+											<MenuItem
+												value="delete"
+												cursor="pointer"
+												rounded="pill"
+												px={3}
+												py={1.5}
+												fontSize="xs"
+												color="red.fg"
+												onClick={() => confirmDelete.ask(nextQuest.quest.id)}
+											>
+												<Icon as={LuTrash2} boxSize={3.5} mr={2} />
+												{t("routes.tasks.row.deleteQuest")}
+											</MenuItem>
+										</MenuContent>
+									</MenuRoot>
+								</HStack>
+							</Flex>
+						)}
+
+						{/* Remaining Incomplete Tasks */}
+						{remainingQuests.length > 0 && (
+							<Stack gap={2}>
+								{nextQuest && (
+									<Text fontSize="xs" fontWeight="semibold" color="fg.muted" textTransform="uppercase" letterSpacing="wider">
+										Remaining Today ({remainingQuests.length})
+									</Text>
+								)}
+								{remainingQuests.map((tq) => {
+									const isToggling =
+										(completeMutation.isPending &&
+											completeMutation.variables?.id === tq.quest.id) ||
+										(undoMutation.isPending &&
+											undoMutation.variables?.id === tq.quest.id);
+
+									return (
+										<Flex
+											key={tq.quest.id}
+											align="center"
+											justify="space-between"
+											p={3.5}
+											rounded="card"
+											bg="bg.panel"
+											borderWidth="1px"
+											borderColor="border.glass"
+											opacity={isToggling ? 0.7 : 1}
+											transition="all 0.15s ease-out"
+											_hover={{ transform: "translateY(-1px)", shadow: "glass" }}
+										>
 											<HStack
-												gap={1}
-												bg="bg.muted"
-												px={2}
-												py={0.5}
-												rounded="pill"
-												fontSize="10px"
+												gap={3}
+												cursor="pointer"
+												flex="1"
+												onClick={(e) =>
+													!isToggling &&
+													handleToggleTask(tq, e.currentTarget)
+												}
 											>
-												<Icon
-													as={LuFlame}
-													color="mint.fg"
-													boxSize={3}
-												/>
-												<Text fontWeight="bold">
-													{tq.quest.streak}d
-												</Text>
+												<Circle
+													size="6"
+													bg="transparent"
+													borderWidth="2px"
+													borderColor="border"
+													color="transparent"
+												>
+													{isToggling ? (
+														<Spinner size="xs" color="fg" />
+													) : null}
+												</Circle>
+												<Stack gap={0.5}>
+													<Text fontSize="sm" fontWeight="semibold" color="fg">
+														{tq.quest.title}
+													</Text>
+													{tq.quest.notes ? (
+														<Text fontSize="xs" color="fg.muted" truncate maxW="540px">
+															{tq.quest.notes}
+														</Text>
+													) : null}
+												</Stack>
 											</HStack>
-										)}
-										{tq.quest.is_mvq && (
-											<Badge
-												size="xs"
-												rounded="pill"
-												variant="outline"
-												colorPalette="lime"
-											>
-												MVQ {tq.quest.mvq_minutes}m
-											</Badge>
-										)}
-										{tq.quest.status &&
-											tq.quest.status !== "active" && (
-												<Badge
-													size="xs"
-													rounded="pill"
-													variant="subtle"
-													colorPalette="gray"
-												>
-													{tq.quest.status}
-												</Badge>
-											)}
-										<Badge
-											size="xs"
-											rounded="pill"
-											variant="subtle"
-										>
-											{formatScheduleBadge(
-												t,
-												tq.quest.cadence,
-												tq.quest.schedule_days,
-											)}
-										</Badge>
-										{tq.quest.scored && (
-											<Badge
-												size="xs"
-												rounded="pill"
-												variant="subtle"
-											>
-												+{tq.quest.exp_value}{" "}
-												{t("common.units.exp")}
-											</Badge>
-										)}
-										<Badge
-											size="xs"
-											rounded="pill"
-											variant="subtle"
-										>
-											{tq.quest.category}
-										</Badge>
 
-										{/* 3-Dots Action Menu */}
-										<MenuRoot
-											positioning={{
-												placement: "bottom-end",
-											}}
-										>
-											<MenuTrigger asChild>
-												<IconButton
-													size="xs"
-													variant="ghost"
-													rounded="pill"
-													aria-label={t(
-														"routes.tasks.row.questActions",
-													)}
+											<HStack gap={2}>
+												{tq.quest.streak > 0 && (
+													<HStack
+														gap={1}
+														bg="bg.muted"
+														px={2}
+														py={0.5}
+														rounded="pill"
+														fontSize="10px"
+													>
+														<Icon as={LuFlame} color="mint.fg" boxSize={3} />
+														<Text fontWeight="bold">{tq.quest.streak}d</Text>
+													</HStack>
+												)}
+												{tq.quest.is_mvq && (
+													<Badge size="xs" rounded="pill" variant="outline" colorPalette="lime">
+														MVQ {tq.quest.mvq_minutes}m
+													</Badge>
+												)}
+												<Badge size="xs" rounded="pill" variant="subtle">
+													{formatScheduleBadge(t, tq.quest.cadence, tq.quest.schedule_days)}
+												</Badge>
+												{tq.quest.scored && (
+													<Badge size="xs" rounded="pill" variant="subtle">
+														+{tq.quest.exp_value} {t("common.units.exp")}
+													</Badge>
+												)}
+												<Badge size="xs" rounded="pill" variant="subtle">
+													{tq.quest.category}
+												</Badge>
+
+												<MenuRoot positioning={{ placement: "bottom-end" }}>
+													<MenuTrigger asChild>
+														<IconButton
+															size="xs"
+															variant="ghost"
+															rounded="pill"
+															aria-label={t("routes.tasks.row.questActions")}
+														>
+															<Icon as={LuEllipsisVertical} boxSize={4} color="fg.muted" />
+														</IconButton>
+													</MenuTrigger>
+													<MenuContent
+														bg="bg.panel"
+														rounded="card"
+														p={1}
+														minW="140px"
+														shadow="float"
+														borderWidth="1px"
+														borderColor="border.glass"
+													>
+														<MenuItem
+															value="edit"
+															cursor="pointer"
+															rounded="pill"
+															px={3}
+															py={1.5}
+															fontSize="xs"
+															onClick={() => handleOpenEdit(tq.quest)}
+														>
+															<Icon as={LuPencil} boxSize={3.5} mr={2} color="mint.fg" />
+															{t("routes.tasks.row.editQuest")}
+														</MenuItem>
+														<MenuItem
+															value="delete"
+															cursor="pointer"
+															rounded="pill"
+															px={3}
+															py={1.5}
+															fontSize="xs"
+															color="red.fg"
+															onClick={() => confirmDelete.ask(tq.quest.id)}
+														>
+															<Icon as={LuTrash2} boxSize={3.5} mr={2} />
+															{t("routes.tasks.row.deleteQuest")}
+														</MenuItem>
+													</MenuContent>
+												</MenuRoot>
+											</HStack>
+										</Flex>
+									);
+								})}
+							</Stack>
+						)}
+
+						{/* Completed Tasks Accordion */}
+						{completedQuests.length > 0 && (
+							<Stack gap={2} mt={2}>
+								<Button
+									size="xs"
+									variant="ghost"
+									colorPalette="gray"
+									rounded="pill"
+									alignSelf="flex-start"
+									onClick={() => setShowCompleted(!showCompleted)}
+								>
+									<Icon as={showCompleted ? LuChevronUp : LuChevronDown} mr={1} />
+									Completed ({completedQuests.length})
+								</Button>
+
+								{showCompleted && (
+									<Stack gap={2}>
+										{completedQuests.map((tq) => {
+											const isToggling =
+												undoMutation.isPending &&
+												undoMutation.variables?.id === tq.quest.id;
+
+											return (
+												<Flex
+													key={tq.quest.id}
+													align="center"
+													justify="space-between"
+													p={3.5}
+													rounded="card"
+													bg="bg.muted"
+													borderWidth="1px"
+													borderColor="border.glass"
+													opacity={isToggling ? 0.7 : 0.85}
+													transition="all 0.15s ease-out"
 												>
-													<Icon
-														as={LuEllipsisVertical}
-														boxSize={4}
-														color="fg.muted"
-													/>
-												</IconButton>
-											</MenuTrigger>
-											<MenuContent
-												bg="bg.panel"
-												rounded="card"
-												p={1}
-												minW="140px"
-												shadow="float"
-												borderWidth="1px"
-												borderColor="border.glass"
-											>
-												<MenuItem
-													value="edit"
-													cursor="pointer"
-													rounded="pill"
-													px={3}
-													py={1.5}
-													fontSize="xs"
-													onClick={() =>
-														handleOpenEdit(tq.quest)
-													}
-												>
-													<Icon
-														as={LuPencil}
-														boxSize={3.5}
-														mr={2}
-														color="mint.fg"
-													/>
-													{t(
-														"routes.tasks.row.editQuest",
-													)}
-												</MenuItem>
-												<MenuItem
-													value="delete"
-													cursor="pointer"
-													rounded="pill"
-													px={3}
-													py={1.5}
-													fontSize="xs"
-													color="red.500"
-													onClick={() =>
-														confirmDelete.ask(
-															tq.quest.id,
-														)
-													}
-												>
-													<Icon
-														as={LuTrash2}
-														boxSize={3.5}
-														mr={2}
-													/>
-													{t(
-														"routes.tasks.row.deleteQuest",
-													)}
-												</MenuItem>
-											</MenuContent>
-										</MenuRoot>
-									</HStack>
-								</Flex>
-							);
-						})}
+													<HStack
+														gap={3}
+														cursor="pointer"
+														flex="1"
+														onClick={(e) =>
+															!isToggling &&
+															handleToggleTask(tq, e.currentTarget)
+														}
+													>
+														<Circle
+															size="6"
+															bg="mint.solid"
+															borderWidth={0}
+															color="mint.contrast"
+														>
+															{isToggling ? (
+																<Spinner size="xs" color="fg" />
+															) : (
+																<Icon as={LuCircleCheck} boxSize={3.5} />
+															)}
+														</Circle>
+														<Stack gap={0.5}>
+															<Text
+																fontSize="sm"
+																fontWeight="normal"
+																textDecoration="line-through"
+																color="fg.muted"
+															>
+																{tq.quest.title}
+															</Text>
+															{tq.quest.notes ? (
+																<Text fontSize="xs" color="fg.muted" truncate maxW="540px">
+																	{tq.quest.notes}
+																</Text>
+															) : null}
+														</Stack>
+													</HStack>
+
+													<HStack gap={2}>
+														<Badge size="xs" rounded="pill" variant="subtle" colorPalette="gray">
+															Completed
+														</Badge>
+														<Badge size="xs" rounded="pill" variant="subtle">
+															{tq.quest.category}
+														</Badge>
+
+														<MenuRoot positioning={{ placement: "bottom-end" }}>
+															<MenuTrigger asChild>
+																<IconButton
+																	size="xs"
+																	variant="ghost"
+																	rounded="pill"
+																	aria-label={t("routes.tasks.row.questActions")}
+																>
+																	<Icon as={LuEllipsisVertical} boxSize={4} color="fg.muted" />
+																</IconButton>
+															</MenuTrigger>
+															<MenuContent
+																bg="bg.panel"
+																rounded="card"
+																p={1}
+																minW="140px"
+																shadow="float"
+																borderWidth="1px"
+																borderColor="border.glass"
+															>
+																<MenuItem
+																	value="edit"
+																	cursor="pointer"
+																	rounded="pill"
+																	px={3}
+																	py={1.5}
+																	fontSize="xs"
+																	onClick={() => handleOpenEdit(tq.quest)}
+																>
+																	<Icon as={LuPencil} boxSize={3.5} mr={2} color="mint.fg" />
+																	{t("routes.tasks.row.editQuest")}
+																</MenuItem>
+																<MenuItem
+																	value="delete"
+																	cursor="pointer"
+																	rounded="pill"
+																	px={3}
+																	py={1.5}
+																	fontSize="xs"
+																	color="red.fg"
+																	onClick={() => confirmDelete.ask(tq.quest.id)}
+																>
+																	<Icon as={LuTrash2} boxSize={3.5} mr={2} />
+																	{t("routes.tasks.row.deleteQuest")}
+																</MenuItem>
+															</MenuContent>
+														</MenuRoot>
+													</HStack>
+												</Flex>
+											);
+										})}
+									</Stack>
+								)}
+							</Stack>
+						)}
 					</Stack>
 				)}
 			</Box>

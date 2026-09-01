@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
 	Box,
 	Grid,
@@ -42,10 +42,18 @@ interface CatalogGridProps {
 
 export const CatalogGrid: React.FC<CatalogGridProps> = ({ kind, player }) => {
 	const { t } = useTranslation();
-	const { data: items, isLoading } = useShopCatalog(kind);
+	const { data: rawItems, isLoading } = useShopCatalog(kind);
 	const { data: inventory } = useInventory();
 	const purchase = usePurchaseItem();
 	const deleteItem = useDeleteShopItem();
+
+	const items = useMemo(() => {
+		if (!rawItems) return [];
+		if (kind === "cosmetic") {
+			return rawItems.filter((item) => item.price_px > 0);
+		}
+		return rawItems;
+	}, [rawItems, kind]);
 
 	const confirmPurchase = useConfirm<ShopItem>();
 	const confirmDelete = useConfirm<string>();

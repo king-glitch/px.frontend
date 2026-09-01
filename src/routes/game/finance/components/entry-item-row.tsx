@@ -1,17 +1,19 @@
 import React from "react";
 import { Badge, Box, Flex, HStack, Icon, Stack, Text } from "@chakra-ui/react";
-import { LuArrowDownRight, LuArrowUpRight, LuTrash2 } from "react-icons/lu";
+import { LuArrowDownRight, LuArrowUpRight, LuPencil, LuTrash2 } from "react-icons/lu";
 import { Button } from "@/components/ui/button";
 import type { FinanceEntry } from "@/api/types";
 import { useTranslation } from "@/lib/i18n";
 
 interface EntryItemRowProps {
 	entry: FinanceEntry;
+	onEdit?: (entry: FinanceEntry) => void;
 	onDelete: (id: string) => void;
 }
 
 export const EntryItemRow: React.FC<EntryItemRowProps> = ({
 	entry,
+	onEdit,
 	onDelete,
 }) => {
 	const { t } = useTranslation();
@@ -65,14 +67,24 @@ export const EntryItemRow: React.FC<EntryItemRowProps> = ({
 				</Stack>
 			</HStack>
 
-			<HStack gap={3}>
+			<HStack gap={2}>
 				<Text
 					fontWeight="bold"
 					fontSize="md"
 					color={isIncome ? "mint.fg" : "fg"}
+					mr={2}
 				>
 					{isIncome ? "+" : "-"}${entry.amount.toLocaleString()}
 				</Text>
+				{onEdit && (
+					<Button
+						variant="ghost"
+						size="xs"
+						onClick={() => onEdit(entry)}
+					>
+						<Icon as={LuPencil} boxSize={3.5} />
+					</Button>
+				)}
 				<Button
 					variant="ghost"
 					size="xs"

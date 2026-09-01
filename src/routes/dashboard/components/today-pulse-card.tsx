@@ -23,12 +23,12 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 }) => {
 	const { t } = useTranslation();
 	return (
-		<Box {...holoGlassCard} p={{ base: 6, xl: 7 }}>
+		<Box {...holoGlassCard} p={{ base: 4, xl: 4.5 }}>
 			{isLoading ? (
-				<Stack gap={4}>
-					<Skeleton h="4" rounded="full" />
-					<Skeleton h="4" rounded="full" />
-					<Skeleton h="12" rounded="lg" w="70%" mt={2} />
+				<Stack gap={3}>
+					<Skeleton h="3.5" rounded="full" />
+					<Skeleton h="3.5" rounded="full" />
+					<Skeleton h="10" rounded="lg" w="70%" mt={2} />
 					<Skeleton h="3" rounded="full" w="100%" />
 				</Stack>
 			) : isError ? (
@@ -43,16 +43,16 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 			) : (
 				<>
 					<Text
-						fontSize="sm"
+						fontSize="xs"
 						fontWeight="bold"
 						textTransform="uppercase"
 						letterSpacing="0.08em"
 					>
 						{t("components.dashboard.todayPulseCard.today")}
 					</Text>
-					<Stack gap={2.5} mt={4}>
+					<Stack gap={2} mt={2.5}>
 						<Box
-							h="3.5"
+							h="3"
 							rounded="pill"
 							bg="bg.muted"
 							overflow="hidden"
@@ -65,7 +65,7 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 							/>
 						</Box>
 						<Box
-							h="3.5"
+							h="3"
 							rounded="pill"
 							bg="bg.muted"
 							overflow="hidden"
@@ -79,11 +79,11 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 						</Box>
 					</Stack>
 
-					<HStack align="baseline" gap={2} mt={5}>
+					<HStack align="baseline" gap={2} mt={3}>
 						<Text
 							fontSize={{
-								base: "3.2rem",
-								xl: "3.8rem",
+								base: "2.4rem",
+								xl: "2.8rem",
 							}}
 							fontWeight="bold"
 							letterSpacing="-0.04em"
@@ -99,9 +99,9 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 								: "—"}
 						</Text>
 						<Text
-							fontSize="sm"
+							fontSize="xs"
 							color="fg.muted"
-							pl={3}
+							pl={2}
 							fontWeight="medium"
 						>
 							{t(
@@ -110,7 +110,7 @@ export const TodayPulseCard: React.FC<TodayPulseCardProps> = ({
 						</Text>
 					</HStack>
 					{financeSummary && (
-						<Text fontSize="xs" color="fg.muted" mt={1.5}>
+						<Text fontSize="11px" color="fg.muted" mt={1}>
 							{t("components.dashboard.todayPulseCard.income")}{" "}
 							{financeSummary.income.toLocaleString()} ·{" "}
 							{t("components.dashboard.todayPulseCard.expense")}{" "}

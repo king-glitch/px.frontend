@@ -16,9 +16,10 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { toaster } from "@/components/ui/toaster";
 import { ApiError } from "@/api/client";
 import { useDeleteFinanceBudget, useFinanceBudgets } from "@/api";
-import type { FinanceEntry } from "@/api/types";
+import type { FinanceBudget, FinanceEntry } from "@/api/types";
 import { BudgetCard } from "./budget-card";
 import { CreateBudgetDialog } from "./create-budget-dialog";
+import { EditBudgetDialog } from "./edit-budget-dialog";
 import { useTranslation } from "@/lib/i18n";
 
 const glassCard = {
@@ -39,6 +40,9 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 }) => {
 	const { t } = useTranslation();
 	const [isAdding, setIsAdding] = useState(false);
+	const [editingBudget, setEditingBudget] = useState<FinanceBudget | null>(
+		null,
+	);
 	const { data: budgets = [], isLoading: budgetsLoading } =
 		useFinanceBudgets();
 	const deleteBudget = useDeleteFinanceBudget();
@@ -138,12 +142,20 @@ export const BudgetsSection: React.FC<BudgetsSectionProps> = ({
 								key={b.id}
 								budget={b}
 								spent={categorySpendMap.get(b.category) ?? 0}
+								onEdit={(budget) => setEditingBudget(budget)}
 								onDelete={(id) => confirmDeleteBudget.ask(id)}
 							/>
 						))}
 					</SimpleGrid>
 				)}
 			</Stack>
+
+			{/* Edit Budget Dialog */}
+			<EditBudgetDialog
+				budget={editingBudget}
+				isOpen={!!editingBudget}
+				onClose={() => setEditingBudget(null)}
+			/>
 
 			{/* Confirm Delete Budget Dialog */}
 			<ConfirmDialog
